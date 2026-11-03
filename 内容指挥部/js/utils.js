@@ -31,14 +31,19 @@ function formatNumber(num) {
   return String(num);
 }
 
-// 计算选题评级
-function calcRating(scores) {
-  const total = (scores.pain || 0) + (scores.useful || 0) + 
+// 计算选题评级（FR-10-03：评级线从设置读取，默认 21/17/13）
+function calcRating(scores, lines) {
+  const std = (typeof Store !== 'undefined' && Store.data && Store.data.settings)
+    ? (Store.data.settings.standards || {}) : {};
+  const S = (lines && lines.S) || std.ratingS || 21;
+  const A = (lines && lines.A) || std.ratingA || 17;
+  const B = (lines && lines.B) || std.ratingB || 13;
+  const total = (scores.pain || 0) + (scores.useful || 0) +
                 (scores.debate || 0) + (scores.suspense || 0) + (scores.track || 0);
   let rating = 'C';
-  if (total >= 21) rating = 'S';
-  else if (total >= 17) rating = 'A';
-  else if (total >= 13) rating = 'B';
+  if (total >= S) rating = 'S';
+  else if (total >= A) rating = 'A';
+  else if (total >= B) rating = 'B';
   return { rating, total };
 }
 
@@ -104,12 +109,13 @@ function checkScript(script, ip, standards) {
     tip: `预估 ${Math.round(duration)}秒，建议不超过3分钟`
   });
   
-  // 5. 封面大字 <= 12字
+  // 5. 封面大字 <= 上限（FR-10-03：coverLimit 可配置，默认 12 字）
+  const coverLimit = standards.coverLimit || 12;
   const coverChars = (script.cover || '').length;
   results.push({
     id: 'coverText',
-    name: '封面大字 <= 12字',
-    pass: coverChars <= 12,
+    name: `封面大字 <= ${coverLimit}字`,
+    pass: coverChars <= coverLimit,
     tip: `当前 ${coverChars} 字，建议精简`
   });
   

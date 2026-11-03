@@ -39,9 +39,9 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <table>
 <tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
 <tr><td><span class="fr">FR-01-01</span></td><td>IP 新建/编辑/删除（7 字段）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：补每周更新目标 weeklyGoal（默认3）</td></tr>
-<tr><td><span class="fr">FR-01-02</span></td><td>IP 数量上限 ipLimit 可配置</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1：设置项 + 新建按钮禁用</td></tr>
+<tr><td><span class="fr">FR-01-02</span></td><td>IP 数量上限 ipLimit 可配置</td><td class="p1">P1</td><td class="no">❌→✅</td><td><b>本轮实现</b>：设置「IP 数量上限」（默认 8），超限时新建 IP 拦截并提示调整入口</td></tr>
 <tr><td><span class="fr">FR-01-03</span></td><td>账号登记/编辑/删除</td><td class="p0">P0</td><td class="part">🟡</td><td>缺主页链接 link（可选项，v1.1）</td></tr>
-<tr><td><span class="fr">FR-01-04</span></td><td>平台清单 8 个 + 自定义追加</td><td class="p0">P0</td><td class="part">🟡</td><td>内置 8 平台（含微博，PRD 原文为百家号，差异待定夺）；<b>自定义追加未做</b>（v1.1）</td></tr>
+<tr><td><span class="fr">FR-01-04</span></td><td>平台清单 8 个 + 自定义追加</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮实现</b>：平台管理（设置页）——内置清单 + 自定义追加（名称+可选后台地址，追加后可开号/矩阵/筛选/直达按钮）+ 删除；<b>平台定夺（2026-11-04 用户拍板）</b>：微博与百家号都保留，默认 9 家、支持自定义</td></tr>
 <tr><td><span class="fr">FR-01-05</span></td><td>矩阵覆盖表（行=IP 列=平台 空格+开号）</td><td class="p1">P1</td><td class="part">🟡→✅</td><td><b>本轮实现</b>（用户点名）：新建/编辑 IP 可勾选开通平台自动建号；IP 页新增矩阵覆盖表，空格「+开号」预填弹窗</td></tr>
 <tr><td><span class="fr">FR-01-06</span></td><td>全局 IP 切换器，刷新记忆</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：刷新后恢复上次选择的 IP</td></tr>
 <tr><td><span class="fr">FR-01-07</span></td><td>删除级联 + 数量提示</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：删账号级联删其发布记录；删 IP 级联删账号；确认框列出涉及数量</td></tr>
@@ -78,7 +78,7 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
 <tr><td><span class="fr">FR-04-01</span></td><td>选题 CRUD + 来源徽章回链</td><td class="p0">P0</td><td class="part">🟡</td><td>CRUD 有；<b>本轮补</b>：热点/对标来源的选题卡显示徽章并可回链跳转；表单手动选来源仍未做（小项）</td></tr>
 <tr><td><span class="fr">FR-04-02</span></td><td>五维打分</td><td class="p0">P0</td><td class="ok">✅</td><td></td></tr>
-<tr><td><span class="fr">FR-04-03</span></td><td>评级 S/A/B/C（阈值可调）</td><td class="p0">P0</td><td class="part">🟡</td><td>评级有；阈值 21/17/13 硬编码，设置不可调（v1.1）</td></tr>
+<tr><td><span class="fr">FR-04-03</span></td><td>评级 S/A/B/C（阈值可调）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮实现</b>：评级线 ratingS/A/B 从硬编码改为读设置（默认 21/17/13），改动即时生效于选题池排序与评级</td></tr>
 <tr><td><span class="fr">FR-04-04</span></td><td>题型判断</td><td class="p1">P1</td><td class="ok">✅</td><td>calcTopicType</td></tr>
 <tr><td><span class="fr">FR-04-05</span></td><td>五维雷达图 + 平均画像叠加</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1：SVG 五边形</td></tr>
 <tr><td><span class="fr">FR-04-06</span></td><td>标题工坊（关键词生成 10 候选）</td><td class="p1">P1</td><td class="part">🟡</td><td>20 条公式在常量区并展示于文案工坊；选题池无工坊入口与关键词生成</td></tr>
@@ -133,9 +133,9 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <tr><td><span class="fr">FR-08-03</span></td><td>五项总览卡</td><td class="p0">P0</td><td class="ok">✅</td><td>字段口径与 PRD 略异（总点赞 vs 总涨粉）</td></tr>
 <tr><td><span class="fr">FR-08-04</span></td><td>单条诊断（结论+逐指标解读）</td><td class="p0">P0</td><td class="ok">✅</td><td>diagnosePost</td></tr>
 <tr><td><span class="fr">FR-08-05</span></td><td>象限散点图（点大小=播放 可点击）</td><td class="p1">P1</td><td class="part">🟡</td><td>SVG 有；点大小/点击看诊断 v1.1</td></tr>
-<tr><td><span class="fr">FR-08-06</span></td><td>趋势折线（30 天双轴）</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
-<tr><td><span class="fr">FR-08-07</span></td><td>对比视图（按 IP/账号条形）</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
-<tr><td><span class="fr">FR-08-08</span></td><td>筛选器（日期/平台/账号）</td><td class="p0">P0</td><td class="part">🟡</td><td>仅 IP 过滤；日期/平台/账号筛选 v1.1</td></tr>
+<tr><td><span class="fr">FR-08-06</span></td><td>趋势折线（30 天双轴）</td><td class="p1">P1</td><td class="no">❌→✅</td><td><b>本轮实现</b>：近 30 天 SVG 双轴——每日发布数（柱/左轴）+ 每日播放量（线/右轴），随筛选联动</td></tr>
+<tr><td><span class="fr">FR-08-07</span></td><td>对比视图（按 IP/账号条形）</td><td class="p1">P1</td><td class="no">❌→✅</td><td><b>本轮实现</b>：按 IP / 按账号切换，指标可选 播放/点赞/收藏，横向条形含条数标注，随筛选联动</td></tr>
+<tr><td><span class="fr">FR-08-08</span></td><td>筛选器（日期/平台/账号）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮实现</b>：时间（全部/近7天/近30天）× 平台 × 账号三联筛选（会话内记忆），作用于总览卡/趋势/对比/象限/记录表</td></tr>
 <tr><td><span class="fr">FR-08-09</span></td><td>自动周报（vs 上周期 + Word）</td><td class="p0">P0</td><td class="part">🟡</td><td>Markdown 周报有；环比对比/最佳最差/Word 导出 v1.1</td></tr>
 <tr><td><span class="fr">FR-08-10</span></td><td>删除发布记录</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮修复</b>：回填弹窗每行新增删除按钮（二次确认）</td></tr>
 </table>
@@ -159,7 +159,7 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
 <tr><td><span class="fr">FR-10-01</span></td><td>欢迎向导</td><td class="p0">P0</td><td class="part">🟡</td><td>三选一向导有；形象/称呼步骤 v1.1</td></tr>
 <tr><td><span class="fr">FR-10-02</span></td><td>工作室设置（名称/形象/IP上限）</td><td class="p0">P0</td><td class="part">🟡</td><td>主理人名称+主题有；工作室名/形象/IP上限 v1.1</td></tr>
-<tr><td><span class="fr">FR-10-03</span></td><td>数据标准（11 项阈值 + 恢复默认）</td><td class="p0">P0</td><td class="part">🟡</td><td>3 项可调（wpm/fiveSecLine/favLine）；其余 8 项 v1.1</td></tr>
+<tr><td><span class="fr">FR-10-03</span></td><td>数据标准（11 项阈值 + 恢复默认）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮实现</b>：12 项全部可配置（语速/5秒完播线/收藏率线/均播比线/评论率线/爆款倍数/收藏画像比/评级线 S·A·B/封面字数上限/IP 上限），单项↺恢复 + 全局恢复默认，非负校验 + 评级线 S&gt;A&gt;B 提醒</td></tr>
 <tr><td><span class="fr">FR-10-04</span></td><td>AI 设置（服务商/温度/测试连接）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮补全</b>：服务商预设下拉 + 温度滑条（0~2 默认 0.7）+ 测试连接按钮，随请求生效</td></tr>
 <tr><td><span class="fr">FR-10-05</span></td><td>备份导出（剥离 Key）</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮修复</b>：导出文件剥离 ai.apiKey，附导出时间</td></tr>
 <tr><td><span class="fr">FR-10-06</span></td><td>备份恢复（校验+数量核对）</td><td class="p0">P0</td><td class="part">🟡</td><td>导入可用；schema 校验/数量核对弹窗 v1.1</td></tr>
@@ -171,12 +171,12 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
 <tr><td><span class="fr">NFR-01</span></td><td>零依赖零外链，离线可用</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮修复</b>：移除 Google Fonts CDN 外链，改系统字体栈</td></tr>
 <tr><td><span class="fr">NFR-02</span></td><td>出网点清单（外链+AI 请求）</td><td class="p0">P0</td><td class="ok">✅</td><td>本轮新增的创作者后台链接属"用户点击外链"，合规</td></tr>
-<tr><td><span class="fr">NFR-03</span></td><td>性能 500 内容/2000 posts + 用量显示</td><td class="p1">P1</td><td class="part">🟡</td><td>架构满足；localStorage 用量显示未做</td></tr>
+<tr><td><span class="fr">NFR-03</span></td><td>性能 500 内容/2000 posts + 用量显示</td><td class="p1">P1</td><td class="part">🟡</td><td>架构满足；<b>本轮补</b>：设置页显示 localStorage 用量与配额占比</td></tr>
 <tr><td><span class="fr">NFR-04</span></td><td>写操作即存 + 版本迁移链</td><td class="p0">P0</td><td class="ok">✅</td><td>migrate() 存在</td></tr>
 <tr><td><span class="fr">NFR-05</span></td><td>Key 不入备份不明文回显</td><td class="p0">P0</td><td class="part">🟡→✅</td><td>密码框本就有；导出剥离本轮修复</td></tr>
 <tr><td><span class="fr">NFR-06</span></td><td>合规边界（不登录不代发不抓取）</td><td class="p0">P0</td><td class="ok">✅</td><td>代码无平台域名请求</td></tr>
 <tr><td><span class="fr">NFR-07</span></td><td>判定依据可查看</td><td class="p0">P0</td><td class="part">🟡</td><td>体检逐项 tip 本轮可见；诊断建议已有</td></tr>
-<tr><td><span class="fr">NFR-08</span></td><td>localStorage 禁用降级警告</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1：try/catch + 警告条</td></tr>
+<tr><td><span class="fr">NFR-08</span></td><td>localStorage 禁用降级警告</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮实现</b>：启动探测存储可写性，禁用时页面顶部常驻警告条，只读模式运行不抛异常</td></tr>
 <tr><td><span class="fr">NFR-09</span></td><td>关于页免责声明</td><td class="p0">P0</td><td class="part">🟡</td><td><b>本轮补充</b>：关于页加合规边界与"创作参考不保证效果"声明</td></tr>
 <tr><td><span class="fr">NFR-10</span></td><td>词表/阈值集中常量区</td><td class="p1">P1</td><td class="ok">✅</td><td>constants.js</td></tr>
 </table>

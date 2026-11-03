@@ -6,7 +6,15 @@ const Store = {
   data: null,
   
   init() {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    // NFR-08：localStorage 禁用/不可写时置 storageOk=false，由 UI 显示常驻警告条
+    try {
+      localStorage.setItem(STORAGE_KEY + '_probe', '1');
+      localStorage.removeItem(STORAGE_KEY + '_probe');
+      this.storageOk = true;
+    } catch (e) {
+      this.storageOk = false;
+    }
+    const saved = this.storageOk ? localStorage.getItem(STORAGE_KEY) : null;
     if (saved) {
       try {
         this.data = JSON.parse(saved);

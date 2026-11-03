@@ -37,6 +37,7 @@ const App = {
       if (e.target === e.currentTarget) this.closeModal();
     });
     
+    if (!Store.storageOk) document.getElementById('storageWarn').style.display = 'block'; // NFR-08
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         this.closeModal();
@@ -317,12 +318,12 @@ const App = {
             <div class="text-xs text-muted" style="margin-bottom:12px">行 = IP，列 = 平台；格内为登记粉丝数，空白格点击「+ 开号」直接登记</div>
             <div class="table-wrap">
               <table class="table">
-                <thead><tr><th style="min-width:120px">IP</th>${DEFAULT_PLATFORMS.map(p => `<th style="text-align:center"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color};margin-right:4px"></span>${p.name}</th>`).join('')}</tr></thead>
+                <thead><tr><th style="min-width:120px">IP</th>${this.getAllPlatforms().map(p => `<th style="text-align:center"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color};margin-right:4px"></span>${p.name}</th>`).join('')}</tr></thead>
                 <tbody>
                   ${ips.map(ip => `
                     <tr>
                       <td><span style="display:flex;align-items:center;gap:6px"><span style="color:${ip.color}">${ip.avatar}</span>${escHtml(ip.name)}</span></td>
-                      ${DEFAULT_PLATFORMS.map(p => {
+                      ${this.getAllPlatforms().map(p => {
                         const accs = Store.data.accounts.filter(a => a.ipId === ip.id && a.platform === p.key);
                         if (accs.length === 0) {
                           return `<td style="text-align:center"><button class="btn btn-sm btn-secondary" onclick="App.showAccountModal(null, '${ip.id}', '${p.key}')">+ 开号</button></td>`;
@@ -814,8 +815,17 @@ const App = {
   // 数据复盘
   renderReview() {
     const data = Store.getFilteredData(this.currentIp);
-    const posts = data.posts.filter(p => p.publishedAt);
     const standards = Store.data.settings.standards;
+    // FR-08-08：筛选器（日期/平台/账号），会话内记忆
+    const f = this.reviewFilter = this.reviewFilter || { days: 0, platform: '', account: '' };
+    let posts = data.posts.filter(p => p.publishedAt);
+    if (f.days > 0) {
+      const since = Date.now() - f.days * 86400000;
+      posts = posts.filter(p => new Date(p.publishedAt).getTime() >= since);
+    }
+    if (f.platform) posts = posts.filter(p => (Store.data.accounts.find(a => a.id === p.accountId) || {}).platform === f.platform);
+    if (f.account) posts = posts.filter(p => p.accountId === f.account);
+    const filterAccounts = f.platform ? Store.data.accounts.filter(a => a.platform === f.platform) : Store.data.accounts;
     
     const totalPlay = posts.reduce((sum, p) => sum + (p.play || 0), 0);
     const totalLikes = posts.reduce((sum, p) => sum + (p.likes || 0), 0);
@@ -832,12 +842,49 @@ const App = {
         </div>
         <button class="btn btn-secondary" onclick="App.showBackfillModal()">回填数据</button>
       </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
+        <select class="form-select" style="width:auto" onchange="App.setReviewFilter('days', this.value)">
+          <option value="0" ${f.days === 0 ? 'selected' : ''}>全部时间</option>
+          <option value="7" ${f.days === 7 ? 'selected' : ''}>近 7 天</option>
+          <option value="30" ${f.days === 30 ? 'selected' : ''}>近 30 天</option>
+        </select>
+        <select class="form-select" style="width:auto" onchange="App.setReviewFilter('platform', this.value)">
+          <option value="">全部平台</option>
+          ${this.getAllPlatforms().map(p => `<option value="${p.key}" ${f.platform === p.key ? 'selected' : ''}>${p.name}</option>`).join('')}
+        </select>
+        <select class="form-select" style="width:auto" onchange="App.setReviewFilter('account', this.value)">
+          <option value="">全部账号</option>
+          ${filterAccounts.map(a => `<option value="${a.id}" ${f.account === a.id ? 'selected' : ''}>${escHtml(a.name)}</option>`).join('')}
+        </select>
+        ${(f.days || f.platform || f.account) ? `<button class="btn btn-sm btn-secondary" onclick="App.reviewFilter={days:0,platform:'',account:''};App.renderPage('review')">清空筛选</button>` : ''}
+      </div>
       <div class="review-stats">
         <div class="review-stat"><div class="review-stat-value">${posts.length}</div><div class="review-stat-label">发布数</div></div>
         <div class="review-stat"><div class="review-stat-value">${formatNumber(totalPlay)}</div><div class="review-stat-label">总播放</div></div>
         <div class="review-stat"><div class="review-stat-value">${avgFiveSec.toFixed(1)}%</div><div class="review-stat-label">均5秒完播</div></div>
         <div class="review-stat"><div class="review-stat-value">${avgFavRate.toFixed(2)}%</div><div class="review-stat-label">均收藏率</div></div>
         <div class="review-stat"><div class="review-stat-value">${formatNumber(totalLikes)}</div><div class="review-stat-label">总点赞</div></div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:4px">趋势（近 30 天 · 双轴）</h3>
+          <div class="text-xs text-muted" style="margin-bottom:8px">柱 = 每日发布数（左轴）· 线 = 每日播放量（右轴）</div>
+          ${this.renderTrendChart(posts)}
+        </div>
+        <div class="card">
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:4px">对比视图</h3>
+          <div style="display:flex;gap:6px;margin-bottom:10px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-sm ${(this.compareMode || 'ip') === 'ip' ? 'btn-accent' : 'btn-secondary'}" onclick="App.compareMode='ip';App.renderPage('review')">按 IP</button>
+            <button class="btn btn-sm ${this.compareMode === 'account' ? 'btn-accent' : 'btn-secondary'}" onclick="App.compareMode='account';App.renderPage('review')">按账号</button>
+            <select class="form-select" style="width:auto;margin-left:auto" onchange="App.compareMetric=this.value;App.renderPage('review')">
+              <option value="play" ${(this.compareMetric || 'play') === 'play' ? 'selected' : ''}>总播放</option>
+              <option value="likes" ${this.compareMetric === 'likes' ? 'selected' : ''}>总点赞</option>
+              <option value="favorite" ${this.compareMetric === 'favorite' ? 'selected' : ''}>总收藏</option>
+            </select>
+          </div>
+          ${this.renderCompareChart(posts)}
+        </div>
       </div>
 
       <div class="grid-2" style="margin-bottom:24px">
@@ -902,6 +949,145 @@ const App = {
         </div>
       </div>
     `;
+  },
+
+  // FR-10-03：阈值即时生效 + 恢复默认
+  setStandard(key, val) {
+    const num = parseFloat(val);
+    if (isNaN(num) || num < 0) {
+      this.toast('请输入非负数字');
+      this.renderPage('settings');
+      return;
+    }
+    Store.data.settings.standards[key] = num;
+    Store.save();
+    const std = Store.data.settings.standards;
+    if ((std.ratingS || 0) <= (std.ratingA || 0) || (std.ratingA || 0) <= (std.ratingB || 0)) {
+      this.toast('注意：评级线应满足 S > A > B');
+    }
+  },
+
+  resetStandard(key) {
+    Store.data.settings.standards[key] = DEFAULT_STANDARDS[key];
+    Store.save();
+    this.renderPage('settings');
+  },
+
+  resetStandards() {
+    if (!confirm('将全部数据标准线恢复为默认值？改动立即生效。')) return;
+    Store.data.settings.standards = { ...DEFAULT_STANDARDS };
+    Store.save();
+    this.renderPage('settings');
+    this.toast('已恢复全部默认标准线');
+  },
+
+  // FR-01-04：自定义平台追加/删除
+  addCustomPlatform() {
+    const name = (document.getElementById('newPlatformName')?.value || '').trim();
+    const url = (document.getElementById('newPlatformUrl')?.value || '').trim();
+    if (!name) { this.toast('请输入平台名称'); return; }
+    if (url && !/^https?:\/\//i.test(url)) { this.toast('后台地址需以 http(s):// 开头'); return; }
+    if (this.getAllPlatforms().some(p => p.name === name)) { this.toast('平台「' + name + '」已存在'); return; }
+    const s = Store.data.settings;
+    s.customPlatforms = s.customPlatforms || [];
+    const palette = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#f43f5e'];
+    s.customPlatforms.push({ key: 'custom_' + Date.now(), name, color: palette[s.customPlatforms.length % palette.length], creatorUrl: url });
+    Store.save();
+    this.renderPage('settings');
+    this.toast(`已追加平台「${name}」，可在开号/矩阵中使用`);
+  },
+
+  deleteCustomPlatform(key) {
+    const p = (Store.data.settings.customPlatforms || []).find(x => x.key === key);
+    if (!p) return;
+    const inUse = Store.data.accounts.filter(a => a.platform === key).length;
+    if (!confirm(`删除自定义平台「${p.name}」？${inUse ? `该平台仍有 ${inUse} 个账号，账号数据保留但不再显示平台名。` : ''}`)) return;
+    Store.data.settings.customPlatforms = Store.data.settings.customPlatforms.filter(x => x.key !== key);
+    Store.save();
+    this.renderPage('settings');
+    this.toast('已删除自定义平台');
+  },
+
+  // FR-08-08：复盘筛选
+  setReviewFilter(key, val) {
+    this.reviewFilter = this.reviewFilter || { days: 0, platform: '', account: '' };
+    this.reviewFilter[key] = key === 'days' ? (parseInt(val) || 0) : val;
+    if (key === 'platform') this.reviewFilter.account = '';
+    this.renderPage('review');
+  },
+
+  // FR-08-06：30 天趋势图（发布数柱=左轴，播放量线=右轴）
+  renderTrendChart(posts) {
+    const days = [];
+    for (let i = 29; i >= 0; i--) {
+      days.push(new Date(Date.now() - i * 86400000).toISOString().slice(0, 10));
+    }
+    const byDay = days.map(day => {
+      const dayPosts = posts.filter(p => (p.publishedAt || '').slice(0, 10) === day);
+      return { day, count: dayPosts.length, play: dayPosts.reduce((s, p) => s + (p.play || 0), 0) };
+    });
+    const maxPlay = Math.max(1, ...byDay.map(d => d.play));
+    const maxCount = Math.max(1, ...byDay.map(d => d.count));
+    const W = 560, H = 230, P = 38;
+    const x = i => P + (W - P * 2) * (byDay.length > 1 ? i / (byDay.length - 1) : 0.5);
+    const yPlay = v => H - P - (H - P * 2) * (v / maxPlay);
+    const yCount = v => H - P - (H - P * 2) * (v / maxCount);
+    const playPath = byDay.map((d, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${yPlay(d.play).toFixed(1)}`).join(' ');
+    const bars = byDay.map((d, i) => d.count ? `<rect x="${(x(i) - 3).toFixed(1)}" y="${yCount(d.count).toFixed(1)}" width="6" height="${(H - P - yCount(d.count)).toFixed(1)}" fill="var(--accent)" opacity=".22"/>` : '').join('');
+    if (!posts.length) return '<div class="text-muted text-sm">当前筛选下暂无发布记录</div>';
+    return `
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">
+        <rect x="${P}" y="${P / 2}" width="${W - P * 2}" height="${H - P * 1.5}" fill="none" stroke="var(--line)"/>
+        ${bars}
+        <path d="${playPath}" fill="none" stroke="var(--accent)" stroke-width="2"/>
+        <text x="${P}" y="${P / 2 - 6}" font-size="10" fill="var(--muted)">播放峰值 ${formatNumber(maxPlay)}</text>
+        <text x="${W - P}" y="${P / 2 - 6}" text-anchor="end" font-size="10" fill="var(--muted)">发布峰值 ${maxCount} 条/天</text>
+        <text x="${P}" y="${H - 8}" font-size="10" fill="var(--muted)">${days[0].slice(5)}</text>
+        <text x="${W - P}" y="${H - 8}" text-anchor="end" font-size="10" fill="var(--muted)">${days[days.length - 1].slice(5)}</text>
+      </svg>`;
+  },
+
+  // FR-08-07：对比视图（按 IP / 按账号，横向条形）
+  renderCompareChart(posts) {
+    const mode = this.compareMode || 'ip';
+    const metric = this.compareMetric || 'play';
+    let groups = [];
+    if (mode === 'ip') {
+      groups = Store.data.ips.map(ip => ({
+        name: `${ip.avatar} ${ip.name}`, color: ip.color,
+        posts: posts.filter(p => {
+          const a = Store.data.accounts.find(x => x.id === p.accountId);
+          return a && a.ipId === ip.id;
+        })
+      }));
+      const orphan = posts.filter(p => {
+        const a = Store.data.accounts.find(x => x.id === p.accountId);
+        return !a || !Store.data.ips.some(ip => ip.id === a.ipId);
+      });
+      if (orphan.length) groups.push({ name: '（未归属 IP）', color: '#94a3b8', posts: orphan });
+    } else {
+      groups = Store.data.accounts.map(a => ({
+        name: a.name, color: (this.getAllPlatforms().find(p => p.key === a.platform) || {}).color || '#3b82f6',
+        posts: posts.filter(p => p.accountId === a.id)
+      })).filter(g => g.posts.length);
+    }
+    const rows = groups.map(g => ({ name: g.name, color: g.color, count: g.posts.length, value: g.posts.reduce((s, p) => s + (p[metric] || 0), 0) }))
+      .sort((a, b) => b.value - a.value);
+    if (!rows.length) return '<div class="text-muted text-sm">当前筛选下暂无数据</div>';
+    const max = Math.max(1, ...rows.map(r => r.value));
+    const metricName = { play: '播放', likes: '点赞', favorite: '收藏' }[metric];
+    return `
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${rows.map(r => `
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+            <span style="width:96px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escAttr(r.name)}">${escHtml(r.name)}<span class="text-muted"> ×${r.count}</span></span>
+            <div style="flex:1;background:var(--soft);border-radius:6px;height:18px;overflow:hidden">
+              <div style="width:${(r.value / max * 100).toFixed(1)}%;height:100%;background:${r.color};opacity:.75;border-radius:6px"></div>
+            </div>
+            <span class="font-mono" style="width:60px;text-align:right">${formatNumber(r.value)}</span>
+          </div>`).join('')}
+        <div class="text-xs text-muted">指标：${metricName}${mode === 'account' ? ' · 仅显示有记录的账号' : ''}</div>
+      </div>`;
   },
 
   // 爆款象限图（横轴5秒完播率，纵轴收藏率）
@@ -995,7 +1181,22 @@ const App = {
   renderSettings() {
     const settings = Store.data.settings;
     const standards = settings.standards;
-    
+    // FR-10-03：全部阈值可配置（改动即时生效 + 可恢复默认）
+    const stdRows = [
+      { key: 'wpm', label: '口播语速', desc: '字/分钟，用于估算时长与分镜', type: 'int' },
+      { key: 'fiveSecLine', label: '5秒完播达标线', desc: '%，象限图竖线', type: 'int' },
+      { key: 'favLine', label: '收藏率达标线', desc: '%，象限图横线', type: 'float' },
+      { key: 'avgLine', label: '均播比达标线', desc: '%（平均播放占时长比例）', type: 'int' },
+      { key: 'commentLine', label: '评论率达标线', desc: '%，诊断建议用', type: 'float' },
+      { key: 'hotMult', label: '爆款倍数', desc: '点赞 ≥ 中位数×该值 判爆款', type: 'float' },
+      { key: 'favPortrait', label: '收藏型画像比', desc: '收藏/点赞 ≥ 该值打标签', type: 'float' },
+      { key: 'ratingS', label: '选题评级线 S', desc: '五维总分 ≥ 此为 S', type: 'int' },
+      { key: 'ratingA', label: '选题评级线 A', desc: '五维总分 ≥ 此为 A', type: 'int' },
+      { key: 'ratingB', label: '选题评级线 B', desc: '五维总分 ≥ 此为 B', type: 'int' },
+      { key: 'coverLimit', label: '封面大字上限', desc: '字数，体检项用', type: 'int' },
+      { key: 'ipLimit', label: 'IP 数量上限', desc: '超出后不可新建 IP', type: 'int' }
+    ];
+
     return `
       <div style="max-width:700px">
         <div class="settings-section">
@@ -1006,19 +1207,27 @@ const App = {
           </div>
         </div>
         <div class="settings-section">
-          <div class="settings-title">数据标准线</div>
+          <div class="settings-title">数据标准线 <button class="btn btn-sm btn-secondary" style="float:right" onclick="App.resetStandards()">恢复全部默认</button></div>
+          ${stdRows.map(r => `
           <div class="settings-row">
-            <div><div class="settings-label">口播语速</div><div class="settings-desc">字/分钟，用于估算时长</div></div>
-            <input type="number" class="form-input" style="width:100px" value="${standards.wpm}" onchange="Store.data.settings.standards.wpm=parseInt(this.value);Store.save()">
+            <div><div class="settings-label">${r.label}</div><div class="settings-desc">${r.desc}（默认 ${DEFAULT_STANDARDS[r.key]}）</div></div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input type="number" step="${r.type === 'float' ? '0.1' : '1'}" class="form-input" style="width:90px" value="${standards[r.key] != null ? standards[r.key] : DEFAULT_STANDARDS[r.key]}" onchange="App.setStandard('${r.key}', this.value)">
+              <button class="btn btn-sm btn-secondary" title="恢复该项默认值" onclick="App.resetStandard('${r.key}')">↺</button>
+            </div>
+          </div>`).join('')}
+        </div>
+        <div class="settings-section">
+          <div class="settings-title">平台管理（内置 + 自定义追加）</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+            ${this.getAllPlatforms().map(p => `<span class="tag" style="display:inline-flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:${p.color};display:inline-block"></span>${escHtml(p.name)}${String(p.key).indexOf('custom_') === 0 ? `<a style="color:var(--danger);cursor:pointer;margin-left:4px;font-weight:700" title="删除该自定义平台" onclick="App.deleteCustomPlatform('${p.key}')">×</a>` : ''}</span>`).join('')}
           </div>
-          <div class="settings-row">
-            <div><div class="settings-label">5秒完播达标线</div><div class="settings-desc">百分比</div></div>
-            <input type="number" class="form-input" style="width:100px" value="${standards.fiveSecLine}" onchange="Store.data.settings.standards.fiveSecLine=parseInt(this.value);Store.save()">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input id="newPlatformName" class="form-input" style="width:130px" placeholder="平台名称">
+            <input id="newPlatformUrl" class="form-input" style="width:220px" placeholder="创作者后台地址（可选，https://…）">
+            <button class="btn btn-secondary" onclick="App.addCustomPlatform()">+ 追加平台</button>
           </div>
-          <div class="settings-row">
-            <div><div class="settings-label">收藏率达标线</div><div class="settings-desc">百分比</div></div>
-            <input type="number" step="0.1" class="form-input" style="width:100px" value="${standards.favLine}" onchange="Store.data.settings.standards.favLine=parseFloat(this.value);Store.save()">
-          </div>
+          <div class="settings-desc" style="margin-top:6px">追加后即可开号/建矩阵/参与筛选；填了后台地址的平台会在稿件弹窗出现「后台直达」按钮</div>
         </div>
         <div class="settings-section">
           <div class="settings-title">AI 接口配置</div>
@@ -1064,6 +1273,7 @@ const App = {
             <button class="btn btn-secondary" onclick="App.loadSampleData()">载入示例数据</button>
             <button class="btn btn-secondary" style="color:var(--danger)" onclick="App.clearData()">清空数据</button>
           </div>
+          <div class="text-muted" style="font-size:12px;margin-top:10px">本地存储用量：${(JSON.stringify(Store.data).length / 1024).toFixed(1)} KB（约占浏览器 5 MB 配额的 ${(JSON.stringify(Store.data).length / 1024 / 5120 * 100).toFixed(1)}%）</div>
           <input type="file" id="importFile" style="display:none" accept=".json" onchange="App.importData(event)">
         </div>
         <div class="settings-section">
@@ -1086,6 +1296,11 @@ const App = {
   // IP管理
   showIPModal(id) {
     const ip = id ? Store.getIP(id) : null;
+    // FR-01-02：IP 数量上限（可在设置调整）
+    if (!ip && Store.data.ips.length >= (Store.data.settings.standards.ipLimit || 8)) {
+      alert(`IP 数量已达上限（${Store.data.settings.standards.ipLimit || 8} 个）。可在「设置 → 数据标准线 → IP 数量上限」调整。`);
+      return;
+    }
     this.showModal(`
       <div class="modal-title">${ip ? '编辑' : '新建'} IP</div>
       <div class="form-group">
@@ -1112,7 +1327,7 @@ const App = {
         <label class="form-label">开通平台（矩阵）</label>
         <div class="text-xs text-muted" style="margin-bottom:6px">勾选后自动登记对应平台账号（账号名默认同 IP 名，可后续编辑）；编辑时只补建缺少的平台，不会删除已有账号</div>
         <div style="display:flex;flex-wrap:wrap;gap:8px">
-          ${DEFAULT_PLATFORMS.map(p => {
+          ${this.getAllPlatforms().map(p => {
             const has = ip ? Store.data.accounts.some(a => a.ipId === ip.id && a.platform === p.key) : false;
             return `<label style="display:flex;align-items:center;gap:5px;font-size:13px;padding:5px 10px;background:var(--soft);border-radius:var(--radius-sm);cursor:pointer${has ? ';opacity:.55' : ''}">
               <input type="checkbox" class="ip-plat-check" value="${p.key}" ${has ? 'checked disabled' : ''}>
@@ -1277,7 +1492,7 @@ const App = {
     const acc = id ? Store.data.accounts.find(a => a.id === id) : null;
     const ips = Store.data.ips;
     const selIp = acc?.ipId || presetIpId || ips[0]?.id || '';
-    const selPlat = acc?.platform || presetPlatform || DEFAULT_PLATFORMS[0].key;
+    const selPlat = acc?.platform || presetPlatform || this.getAllPlatforms()[0].key;
     this.showModal(`
       <div class="modal-title">${acc ? '编辑' : '新建'}账号</div>
       <div class="form-group">
@@ -1286,7 +1501,7 @@ const App = {
       </div>
       <div class="form-group">
         <label class="form-label">平台</label>
-        <select class="form-select" id="accPlatform">${DEFAULT_PLATFORMS.map(p => `<option value="${p.key}" ${selPlat === p.key ? 'selected' : ''}>${p.name}</option>`).join('')}</select>
+        <select class="form-select" id="accPlatform">${this.getAllPlatforms().map(p => `<option value="${p.key}" ${selPlat === p.key ? 'selected' : ''}>${p.name}</option>`).join('')}</select>
       </div>
       <div class="form-group">
         <label class="form-label">账号名</label>
@@ -1399,7 +1614,7 @@ const App = {
       <div class="modal-title">${bench ? '编辑' : '添加'}对标账号</div>
       <div class="form-group"><label class="form-label">账号名</label><input type="text" class="form-input" id="benchName" value="${escAttr(bench?.name || '')}" placeholder="对标账号名"></div>
       <div class="grid-2">
-        <div class="form-group"><label class="form-label">平台</label><select class="form-select" id="benchPlatform">${DEFAULT_PLATFORMS.map(p => `<option value="${p.key}" ${bench?.platform === p.key ? 'selected' : ''}>${p.name}</option>`).join('')}</select></div>
+        <div class="form-group"><label class="form-label">平台</label><select class="form-select" id="benchPlatform">${this.getAllPlatforms().map(p => `<option value="${p.key}" ${bench?.platform === p.key ? 'selected' : ''}>${p.name}</option>`).join('')}</select></div>
         <div class="form-group"><label class="form-label">级别</label><select class="form-select" id="benchLevel"><option value="同量级" ${bench?.level === '同量级' ? 'selected' : ''}>同量级</option><option value="高一级" ${bench?.level === '高一级' ? 'selected' : ''}>高一级</option><option value="头部标杆" ${bench?.level === '头部标杆' ? 'selected' : ''}>头部标杆</option></select></div>
       </div>
       <div class="form-group"><label class="form-label">所属 IP</label><select class="form-select" id="benchIp"><option value="">全部 IP 共用</option>${ips.map(ip => `<option value="${ip.id}" ${bench?.ipId === ip.id ? 'selected' : ''}>${ip.avatar} ${escHtml(ip.name)}</option>`).join('')}</select></div>
@@ -1767,8 +1982,8 @@ const App = {
         <div class="text-xs text-muted" style="margin-bottom:6px">发布仅支持手动完成：复制文案 → 打开对应平台创作者后台 → 上传发布 → 回来点「标记已发布」</div>
         <div style="display:flex;flex-wrap:wrap;gap:8px">
           ${(ipAccounts.length ? ipAccounts : []).map(a => {
-            const url = PLATFORM_CREATOR_URLS[a.platform];
-            const p = DEFAULT_PLATFORMS.find(x => x.key === a.platform);
+            const url = this.getCreatorUrl(a.platform);
+            const p = this.getAllPlatforms().find(x => x.key === a.platform);
             return url ? `<a class="btn btn-sm btn-secondary" style="text-decoration:none" href="${url}" target="_blank" rel="noopener">${p?.name || a.platform}后台 ↗</a>` : '';
           }).join('') || '<span class="text-xs text-muted">该 IP 暂无账号，先到「IP 与账号」添加</span>'}
         </div>
@@ -1784,7 +1999,7 @@ const App = {
   _renderModalAccounts(ipId, targetIds) {
     const accs = Store.getAccountsByIP(ipId);
     return accs.map(a => {
-      const p = DEFAULT_PLATFORMS.find(x => x.key === a.platform);
+      const p = this.getAllPlatforms().find(x => x.key === a.platform);
       return `<label style="display:flex;align-items:center;gap:5px;font-size:13px;padding:5px 10px;background:var(--soft);border-radius:var(--radius-sm);cursor:pointer">
         <input type="checkbox" class="sched-acc-check" value="${a.id}" ${(targetIds || []).includes(a.id) ? 'checked' : ''}>
         <span style="width:8px;height:8px;border-radius:50%;background:${p?.color || '#999'};display:inline-block"></span> ${escHtml(a.name)}
@@ -2388,7 +2603,7 @@ const App = {
       const c = Store.getContent(p.contentId);
       return {
         标题: c?.title || '', 发布: p.publishedAt ? new Date(p.publishedAt).toISOString().slice(0, 10) : '',
-        播放: p.play || 0, 点赞: p.like || 0, 收藏: p.favorite || 0, 评论: p.comment || 0, 涨粉: p.gainFans || 0
+        播放: p.play || 0, 点赞: p.likes || 0, 收藏: p.favorite || 0, 评论: p.comment || 0, 涨粉: p.gainFans || 0
       };
     }));
   },
@@ -2615,8 +2830,21 @@ ${recentContents.map(c => `- ${c.title}`).join('\n')}` : ''}
   },
   
   // 工具方法
+  // FR-01-04：全部平台 = 内置清单 + 自定义追加
+  getAllPlatforms() {
+    const s = Store.data.settings;
+    const base = (s.platforms && s.platforms.length) ? s.platforms : DEFAULT_PLATFORMS;
+    return base.concat(s.customPlatforms || []);
+  },
+
+  getCreatorUrl(platformKey) {
+    const custom = (Store.data.settings.customPlatforms || []).find(p => p.key === platformKey);
+    if (custom) return custom.creatorUrl || '';
+    return PLATFORM_CREATOR_URLS[platformKey] || '';
+  },
+
   getPlatformName(key) {
-    const plat = DEFAULT_PLATFORMS.find(p => p.key === key);
+    const plat = this.getAllPlatforms().find(p => p.key === key);
     return plat?.name || key;
   },
 

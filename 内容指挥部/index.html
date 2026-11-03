@@ -7,6 +7,10 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<!-- NFR-08：localStorage 禁用降级警告条 -->
+<div id="storageWarn" style="display:none;background:#fef3c7;color:#92400e;padding:10px 18px;font-size:13px;position:fixed;top:0;left:0;right:0;z-index:4000;box-shadow:0 2px 8px rgba(0,0,0,.12)">
+  ⚠️ 浏览器已禁用本地存储（localStorage），本次操作的数据将无法保存。请改用普通窗口打开本页、允许站点数据，或更换浏览器。
+</div>
 <div class="app">
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">

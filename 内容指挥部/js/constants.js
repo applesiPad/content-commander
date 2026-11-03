@@ -56,15 +56,20 @@ const CONTENT_STAGES = [
   { key: 'published', name: '已发布', color: '#10b981' }
 ];
 
-// 默认数据标准线
+// 默认数据标准线（FR-10-03：全部阈值可配置，D-04）
 const DEFAULT_STANDARDS = {
   wpm: 240,           // 语速：字/分钟
   fiveSecLine: 60,    // 5秒完播达标线 %
   favLine: 2.2,       // 收藏率达标线 %
   avgLine: 40,        // 均播/时长达标线 %
   commentLine: 0.5,   // 评论率达标线 %
-  hotMult: 2,         // 爆款倍数
-  favPortrait: 0.5    // 收藏型画像阈值
+  hotMult: 2,         // 爆款倍数（点赞 ≥ 账号中位数×该值）
+  favPortrait: 0.5,   // 收藏型画像阈值（收藏/点赞）
+  ratingS: 21,        // 选题评级线 S（五维总分）
+  ratingA: 17,        // 选题评级线 A
+  ratingB: 13,        // 选题评级线 B
+  coverLimit: 12,     // 封面大字上限（字）
+  ipLimit: 8          // IP 数量上限
 };
 
 // 标题公式
