@@ -971,17 +971,18 @@ const App = {
               <div style="text-align:center;padding:40px;color:var(--muted)">
                 <div style="font-size:48px;margin-bottom:16px">🤖</div>
                 <div style="font-size:14px;font-weight:600;margin-bottom:8px">AI 助手</div>
-                <div style="font-size:13px">选择模板或输入问题开始对话</div>
+                <div style="font-size:13px">点击下方模板生成完整提示词，填空后发送</div>
               </div>
-            ` : messages.map(m => `<div class="ai-message ${m.role}"><div class="ai-bubble">${renderMarkdown(m.content)}</div></div>`).join('')}
+            ` : messages.map((m, mi) => `<div class="ai-message ${m.role}"><div class="ai-bubble">${renderMarkdown(m.content)}${m.role === 'assistant' && !m.content.startsWith('❌') && !m.content.startsWith('**未配置') ? `<div style="text-align:right;margin-top:8px"><button class="btn btn-sm btn-secondary" onclick="App.showAIBackfill(${mi})">↩ 回填到稿件</button></div>` : ''}</div></div>`).join('')}
           </div>
-          <div style="padding:12px 20px;border-top:1px solid var(--line)">
-            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
-              ${AI_TEMPLATES.slice(0, 8).map(t => `<button class="btn btn-sm btn-secondary" onclick="App.useAITemplate('${t.name}')">${t.name}</button>`).join('')}
+          <div style="padding:12px 20px 0;border-top:1px solid var(--line)">
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+              ${AI_TEMPLATES.map(t => `<button class="btn btn-sm btn-secondary" title="${escAttr(t.desc)}" onclick="App.useAITemplate('${t.name}')">${t.name}</button>`).join('')}
             </div>
+            ${Store.data.settings.ai.baseUrl ? `<div class="text-muted" style="font-size:11px;margin-bottom:8px">🔒 发送后内容将传给你配置的服务商（${escAttr(this._aiHost())}），API Key 仅存本机、不随备份导出</div>` : ''}
           </div>
           <div class="ai-input-area">
-            <input type="text" class="ai-input" id="aiInput" placeholder="输入消息..." onkeypress="if(event.key==='Enter')App.sendAIMessage()">
+            <input type="text" class="ai-input" id="aiInput" placeholder="输入消息或先点模板生成提示词..." onkeypress="if(event.key==='Enter')App.sendAIMessage()">
             <button class="btn btn-accent" onclick="App.sendAIMessage()">发送</button>
           </div>
         </div>
@@ -1021,16 +1022,37 @@ const App = {
         <div class="settings-section">
           <div class="settings-title">AI 接口配置</div>
           <div class="settings-row">
+            <div><div class="settings-label">服务商预设</div><div class="settings-desc">选中后自动填地址与参考模型（模型名以服务商控制台为准）</div></div>
+            <select class="form-select" style="width:250px" onchange="App.applyAIProvider(this.value)">
+              ${AI_PROVIDERS.map(p => {
+                const current = settings.ai.baseUrl || '';
+                const isCur = p.key === 'custom' ? (current && !AI_PROVIDERS.some(x => x.baseUrl && x.baseUrl === current)) : (p.key === (settings.ai.provider || 'none') || (p.baseUrl && p.baseUrl === current));
+                return `<option value="${p.key}" ${isCur ? 'selected' : ''}>${p.name}</option>`;
+              }).join('')}
+            </select>
+          </div>
+          <div class="settings-row">
             <div><div class="settings-label">API 地址</div><div class="settings-desc">OpenAI 兼容格式的 Base URL</div></div>
             <input type="text" class="form-input" style="width:250px" value="${escAttr(settings.ai.baseUrl || '')}" placeholder="https://api.openai.com/v1" onchange="Store.data.settings.ai.baseUrl=this.value;Store.save()">
           </div>
           <div class="settings-row">
-            <div><div class="settings-label">API Key</div><div class="settings-desc">仅存储在本机</div></div>
+            <div><div class="settings-label">API Key</div><div class="settings-desc">仅存储在本机，不随备份导出</div></div>
             <input type="password" class="form-input" style="width:250px" value="${escAttr(settings.ai.apiKey || '')}" onchange="Store.data.settings.ai.apiKey=this.value;Store.save()">
           </div>
           <div class="settings-row">
             <div><div class="settings-label">模型</div></div>
             <input type="text" class="form-input" style="width:200px" value="${escAttr(settings.ai.model || '')}" placeholder="gpt-4o-mini" onchange="Store.data.settings.ai.model=this.value;Store.save()">
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">温度</div><div class="settings-desc">0 稳定 / 0.7 均衡 / 1+ 更有创意（0~2）</div></div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="range" min="0" max="2" step="0.1" style="width:140px" value="${Number(settings.ai.temperature != null ? settings.ai.temperature : 0.7)}" onchange="Store.data.settings.ai.temperature=parseFloat(this.value);Store.save();App.renderPage('settings')">
+              <span class="font-mono text-sm">${Number(settings.ai.temperature != null ? settings.ai.temperature : 0.7)}</span>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">连接测试</div><div class="settings-desc">发送一条最小请求验证地址/Key/模型</div></div>
+            <button class="btn btn-secondary" onclick="App.testAIConnection()">测试连接</button>
           </div>
         </div>
         <div class="settings-section">
@@ -2137,9 +2159,167 @@ const App = {
     this.renderPage('ai');
   },
   
+  // FR-09-04：模板生成完整提示词（填空后发送），need 字段做必选参数校验
   useAITemplate(templateName) {
+    const tpl = AI_TEMPLATES.find(t => t.name === templateName);
+    if (!tpl) return;
+    if (tpl.need === 'posts' && Store.data.posts.length === 0) {
+      this.toast('该模板需要回填数据：请先到「数据复盘」回填发布记录');
+      return;
+    }
+    if (tpl.need === 'bench' && Store.data.benchmarks.length === 0) {
+      this.toast('该模板需要对标账号：请先到「对标拆解」添加');
+      return;
+    }
     const input = document.getElementById('aiInput');
-    if (input) input.value = `请使用「${templateName}」模板帮我创作`;
+    if (!input) return;
+    input.value = this.buildAIPrompt(tpl);
+    input.focus();
+  },
+
+  buildAIPrompt(tpl) {
+    const ip = this.currentIp ? Store.getIP(this.currentIp) : null;
+    const ipInfo = ip
+      ? `名称「${ip.name}」，赛道「${ip.track || '未设置'}」，人设「${ip.persona || '未设置'}」，观众「${ip.audience || '未设置'}」`
+      : '（未选择 IP，请在提示词中补充你的定位）';
+    const recent = Store.getContentsByIP(this.currentIp).slice(0, 5).map(c => `《${c.title || '未命名'}》`).join('、') || '（暂无）';
+    let out = tpl.prompt.replace(/\{IP_INFO\}/g, ipInfo).replace(/\{RECENT\}/g, recent);
+    if (tpl.need === 'posts') out = out.replace(/\{DATA\}/g, this.getPostsSummary());
+    return out;
+  },
+
+  // 回填数据摘要（30 天内，供周复盘/账号对比模板注入）
+  getPostsSummary() {
+    const monthAgo = Date.now() - 30 * 86400000;
+    const posts = Store.data.posts.filter(p => (p.publishedAt || 0) >= monthAgo);
+    if (!posts.length) return '（30 天内无发布记录）';
+    return JSON.stringify(posts.slice(-40).map(p => {
+      const c = Store.getContent(p.contentId);
+      return {
+        标题: c?.title || '', 发布: p.publishedAt ? new Date(p.publishedAt).toISOString().slice(0, 10) : '',
+        播放: p.play || 0, 点赞: p.like || 0, 收藏: p.favorite || 0, 评论: p.comment || 0, 涨粉: p.gainFans || 0
+      };
+    }));
+  },
+
+  _aiHost() {
+    try { return new URL(Store.data.settings.ai.baseUrl).host; } catch (e) { return '未配置地址'; }
+  },
+
+  // FR-09-05：AI 结果回填到稿件字段
+  showAIBackfill(msgIdx) {
+    const chats = Store.data.settings.ai.chats || [];
+    const chat = chats.find(c => c.id === (this.currentChatId || chats[0]?.id));
+    const msg = chat?.messages?.[msgIdx];
+    if (!msg || !msg.content) return;
+    const drafts = Store.data.contents.filter(c => ['topic', 'draft', 'shoot'].includes(c.stage)).slice(0, 20);
+    if (!drafts.length) { this.toast('暂无稿件：先到选题池「立项写稿」'); return; }
+    const fieldBtn = (cid, idx, field, label) => `<button class="btn btn-sm btn-secondary" onclick="App.backfillAI('${cid}',${idx},'${field}')">${label}</button>`;
+    this.showModal(`
+      <div class="modal-title">回填 AI 结果到稿件</div>
+      <p class="text-muted text-sm" style="margin-bottom:10px">将把这条 AI 回复填入所选字段；字段已有内容时会追加在末尾，不会覆盖。</p>
+      <div style="display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow:auto">
+        ${drafts.map(c => `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;background:var(--soft);border-radius:8px;flex-wrap:wrap">
+            <span style="font-size:13px;font-weight:600">${escHtml(c.title || '未命名')}</span>
+            <span style="display:flex;gap:4px">
+              ${fieldBtn(c.id, msgIdx, 'title', '标题')}
+              ${fieldBtn(c.id, msgIdx, 'hook', '开头')}
+              ${fieldBtn(c.id, msgIdx, 'body', '正文')}
+              ${fieldBtn(c.id, msgIdx, 'cta', '结尾')}
+            </span>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top:14px;text-align:right"><button class="btn btn-secondary" onclick="App.closeModal()">关闭</button></div>
+    `);
+  },
+
+  backfillAI(contentId, msgIdx, field) {
+    const chats = Store.data.settings.ai.chats || [];
+    const chat = chats.find(c => c.id === (this.currentChatId || chats[0]?.id));
+    const text = (chat?.messages?.[msgIdx]?.content || '').trim();
+    const content = Store.getContent(contentId);
+    if (!content || !text) return;
+    const labels = { title: '标题', hook: '开头', body: '正文', cta: '结尾' };
+    const merged = content[field] ? content[field] + '\n\n' + text : text;
+    Store.updateContent(contentId, { [field]: merged });
+    this.closeModal();
+    this.toast(`已回填到「${content.title || '未命名'}」的${labels[field]}`);
+  },
+
+  // FR-09-02：服务商预设下拉
+  applyAIProvider(key) {
+    const ai = Store.data.settings.ai;
+    ai.provider = key;
+    const p = AI_PROVIDERS.find(x => x.key === key);
+    if (p && p.baseUrl) {
+      ai.baseUrl = p.baseUrl;
+      if (p.models.length && !/填入/.test(p.models[0])) ai.model = p.models[0];
+    }
+    Store.save();
+    this.renderPage('settings');
+    if (p && p.local) this.toast('Ollama 为本机服务：免 Key；若跨域报错，需以 OLLAMA_ORIGINS=* 启动');
+  },
+
+  // FR-09-01/10-04：测试连接（最小请求，非流式）
+  async testAIConnection() {
+    const ai = Store.data.settings.ai;
+    if (!ai.baseUrl || !/^https?:\/\//i.test(ai.baseUrl)) {
+      this.toast('请先填写 http(s) 开头的 API 地址');
+      return;
+    }
+    const isLocal = /localhost|127\.0\.0\.1/.test(ai.baseUrl);
+    if (!ai.apiKey && !isLocal) {
+      this.toast('请先填 API Key（Ollama 本地地址可免 Key）');
+      return;
+    }
+    this.toast('测试中…');
+    try {
+      const resp = await fetch(ai.baseUrl.replace(/\/+$/, '') + '/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(ai.apiKey ? { 'Authorization': 'Bearer ' + ai.apiKey } : {}) },
+        body: JSON.stringify({ model: ai.model || 'gpt-4o-mini', messages: [{ role: 'user', content: '只回复两个字：成功' }], max_tokens: 200, stream: false })
+      });
+      if (!resp.ok) {
+        this.showModal(this.buildAIErrorModal(resp.status, ''));
+        return;
+      }
+      const data = await resp.json();
+      const text = data.choices?.[0]?.message?.content || '';
+      this.toast(`✅ 连接成功，模型回复：${text.slice(0, 24) || '（空回复，检查模型名）'}`);
+    } catch (e) {
+      this.showModal(this.buildAIErrorModal(0, String(e && e.message || e)));
+    }
+  },
+
+  // FR-09-09：连接失败分类引导（错误可读、不暴露堆栈）
+  buildAIErrorModal(status, rawMsg) {
+    let title, reason, extra = '';
+    if (status === 401 || status === 403) {
+      title = 'Key 无效或无权限'; reason = '服务商返回 ' + status + '：API Key 填错、未生效，或没有该模型权限。';
+    } else if (status === 404) {
+      title = '地址或模型名不对'; reason = '服务商返回 404：检查 Base URL 是否带 /v1、模型 ID 是否拼写正确（豆包需填接入点 ID）。';
+    } else if (status === 429) {
+      title = '限流或额度不足'; reason = '服务商返回 429：余额不足或请求过快，稍后重试。';
+    } else if (status === 0) {
+      title = '连不上（多为浏览器跨域）'; reason = '请求没有到达服务器（浏览器拦截）。原始信息：' + escHtml(rawMsg.slice(0, 80));
+      extra = `
+        <p style="margin:8px 0"><strong>三条解决路径：</strong></p>
+        <p>① 换支持浏览器直连的服务商（或在服务商控制台开启跨域允许）；</p>
+        <p>② 用本地 Ollama：以 <code>OLLAMA_ORIGINS=*</code> 启动后选「Ollama 本地」预设；</p>
+        <p>③ 自建中转：把 Base URL 指向你自己的转发服务（产品不捆绑任何代理）。</p>`;
+    } else {
+      title = '连接失败'; reason = 'HTTP ' + status + (rawMsg ? '：' + escHtml(rawMsg.slice(0, 80)) : '');
+    }
+    return `
+      <div class="modal-title">❌ 测试连接失败：${title}</div>
+      <div style="font-size:13.5px;line-height:1.9">
+        <p>${reason}</p>
+        ${extra}
+        <p style="margin-top:10px;color:var(--muted)">排查顺序：地址 → Key → 模型名 → 网络/跨域。</p>
+      </div>
+      <div style="margin-top:14px;text-align:right"><button class="btn btn-secondary" onclick="App.closeModal()">知道了</button></div>
+    `;
   },
   
   async sendAIMessage() {
@@ -2158,12 +2338,26 @@ const App = {
     
     if (settings.apiKey && settings.baseUrl) {
       try {
-        const response = await fetch(settings.baseUrl + '/chat/completions', {
+        const ip = this.currentIp ? Store.getIP(this.currentIp) : null;
+        const sys = '你是短视频口播创作专家，回答要具体、可执行、口语化。' +
+          (ip ? `当前IP：「${ip.name}」，赛道「${ip.track || '未设置'}」，人设「${ip.persona || '未设置'}」，观众「${ip.audience || '未设置'}」。` : '');
+        const response = await fetch(settings.baseUrl.replace(/\/+$/, '') + '/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${settings.apiKey}` },
-          body: JSON.stringify({ model: settings.model || 'gpt-4o-mini', messages: chat.messages.map(m => ({ role: m.role, content: m.content })), stream: true })
+          body: JSON.stringify({
+            model: settings.model || 'gpt-4o-mini',
+            messages: [{ role: 'system', content: sys }, ...chat.messages.map(m => ({ role: m.role, content: m.content }))],
+            stream: true,
+            temperature: Number(settings.temperature != null ? settings.temperature : 0.7)
+          })
         });
-        if (!response.ok) throw new Error('API request failed');
+        if (!response.ok) {
+          const guide = (response.status === 401 || response.status === 403) ? 'Key 无效或无权限（HTTP ' + response.status + '）'
+            : response.status === 404 ? '地址或模型名不对（HTTP 404，检查 /v1 与模型 ID）'
+            : response.status === 429 ? '限流或额度不足（HTTP 429）'
+            : 'HTTP ' + response.status;
+          throw new Error(guide);
+        }
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let assistantMessage = '';
@@ -2187,7 +2381,12 @@ const App = {
         }
         Store.save();
       } catch (e) {
-        chat.messages.push({ role: 'assistant', content: `❌ 请求失败：${e.message}`, timestamp: Date.now() });
+        const msg = String(e && e.message || e);
+        const isNet = /Failed to fetch|NetworkError|Load failed/i.test(msg);
+        const text = isNet
+          ? '❌ 连接失败：请求没有到达服务器，多为浏览器跨域（CORS）限制。\n\n三条解决路径：\n① 换支持浏览器直连的服务商；\n② 本地 Ollama（以 OLLAMA_ORIGINS=* 启动）；\n③ 自建中转。\n\n到 设置 → AI 接口配置 → 「测试连接」可查看详细分类引导。'
+          : `❌ 请求失败：${msg}`;
+        chat.messages.push({ role: 'assistant', content: text, timestamp: Date.now() });
         Store.save();
         this.renderPage('ai');
       }

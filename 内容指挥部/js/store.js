@@ -45,6 +45,8 @@ const Store = {
         teleprompter: { speed: 3, fontSize: 48, mirror: false },
         ai: {
           protocol: 'openai',
+          provider: 'none',
+          temperature: 0.7,
           baseUrl: '',
           apiKey: '',
           model: '',

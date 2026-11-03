@@ -143,15 +143,15 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <h2>M9 AI 助手（FR-09）</h2>
 <table>
 <tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
-<tr><td><span class="fr">FR-09-01</span></td><td>双协议 + 测试连接 + 温度</td><td class="p0">P0</td><td class="part">🟡</td><td>OpenAI 兼容 SSE 流式可用；Anthropic 协议/测试连接/温度 v1.1</td></tr>
-<tr><td><span class="fr">FR-09-02</span></td><td>预设服务商下拉（8 家）</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1：仅手填 Base URL</td></tr>
+<tr><td><span class="fr">FR-09-01</span></td><td>双协议 + 测试连接 + 温度</td><td class="p0">P0</td><td class="part">🟡</td><td>OpenAI 兼容 SSE 流式可用；<b>本轮补全</b>：测试连接+温度滑条已加；Anthropic 协议仍未做（v1.2 视需求）</td></tr>
+<tr><td><span class="fr">FR-09-02</span></td><td>预设服务商下拉（8 家）</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮实现</b>：下拉 9 项（未配置默认/DeepSeek/通义百炼/智谱GLM/豆包方舟/Kimi/硅基流动/Ollama 本地/自定义），选中自动填地址与参考模型（标注以服务商控制台为准），Ollama 免 Key 并提示本地跨域注意事项</td></tr>
 <tr><td><span class="fr">FR-09-03</span></td><td>上下文勾选 + 发送前预览</td><td class="p0">P0</td><td class="part">🟡</td><td>自动带 IP+近5条内容；勾选/预览 v1.1</td></tr>
-<tr><td><span class="fr">FR-09-04</span></td><td>16 个任务模板（完整提示词）</td><td class="p0">P0</td><td class="part">🟡</td><td>16 模板名齐备，但点击仅填一句"请使用模板X"；<b>原创完整提示词 v1.1 重点</b></td></tr>
-<tr><td><span class="fr">FR-09-05</span></td><td>结果回填（标题/开头/全文）</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
+<tr><td><span class="fr">FR-09-04</span></td><td>16 个任务模板（完整提示词）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮实现</b>：16 模板全部原创完整提示词（constants.js AI_TEMPLATES），点击注入 IP 上下文/最近内容/数据摘要，填空后发送；need 字段必选参数校验（周复盘/账号对比需有回填数据，对标类需有对标账号）</td></tr>
+<tr><td><span class="fr">FR-09-05</span></td><td>结果回填（标题/开头/全文）</td><td class="p1">P1</td><td class="no">❌→✅</td><td><b>本轮实现</b>：AI 回复气泡「↩ 回填到稿件」→ 选目标稿件 → 标题/开头/正文/结尾四字段（已有内容追加不覆盖）</td></tr>
 <tr><td><span class="fr">FR-09-06</span></td><td>无 Key 模式（提示词生成+复制）</td><td class="p0">P0</td><td class="ok">✅</td><td>带 IP 上下文生成提示词</td></tr>
 <tr><td><span class="fr">FR-09-07</span></td><td>对话管理（重命名/删除/停止）</td><td class="p1">P1</td><td class="part">🟡</td><td>新建/切换有；重命名/删除 v1.1</td></tr>
 <tr><td><span class="fr">FR-09-08</span></td><td>Key 不入备份</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮修复</b>：导出剥离 ai.apiKey（NFR-05）</td></tr>
-<tr><td><span class="fr">FR-09-09</span></td><td>CORS 失败分类引导</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
+<tr><td><span class="fr">FR-09-09</span></td><td>CORS 失败分类引导</td><td class="p1">P1</td><td class="no">❌→✅</td><td><b>本轮实现</b>：错误分类可读（401 Key/404 地址模型/429 限流/网络跨域）；跨域弹窗给三条路径（换直连服务商/本地 Ollama OLLAMA_ORIGINS=*/自建中转），聊天内网络错误同样引导；不暴露堆栈</td></tr>
 </table>
 
 <h2>M10 设置 / 备份 / 引导（FR-10）</h2>
@@ -160,7 +160,7 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <tr><td><span class="fr">FR-10-01</span></td><td>欢迎向导</td><td class="p0">P0</td><td class="part">🟡</td><td>三选一向导有；形象/称呼步骤 v1.1</td></tr>
 <tr><td><span class="fr">FR-10-02</span></td><td>工作室设置（名称/形象/IP上限）</td><td class="p0">P0</td><td class="part">🟡</td><td>主理人名称+主题有；工作室名/形象/IP上限 v1.1</td></tr>
 <tr><td><span class="fr">FR-10-03</span></td><td>数据标准（11 项阈值 + 恢复默认）</td><td class="p0">P0</td><td class="part">🟡</td><td>3 项可调（wpm/fiveSecLine/favLine）；其余 8 项 v1.1</td></tr>
-<tr><td><span class="fr">FR-10-04</span></td><td>AI 设置（服务商/温度/测试连接）</td><td class="p0">P0</td><td class="part">🟡</td><td>地址/Key/模型有；服务商下拉/温度/测试 v1.1</td></tr>
+<tr><td><span class="fr">FR-10-04</span></td><td>AI 设置（服务商/温度/测试连接）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮补全</b>：服务商预设下拉 + 温度滑条（0~2 默认 0.7）+ 测试连接按钮，随请求生效</td></tr>
 <tr><td><span class="fr">FR-10-05</span></td><td>备份导出（剥离 Key）</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮修复</b>：导出文件剥离 ai.apiKey，附导出时间</td></tr>
 <tr><td><span class="fr">FR-10-06</span></td><td>备份恢复（校验+数量核对）</td><td class="p0">P0</td><td class="part">🟡</td><td>导入可用；schema 校验/数量核对弹窗 v1.1</td></tr>
 <tr><td><span class="fr">FR-10-07</span></td><td>示例与清空（清空保留设置）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：清空保留主题/数据标准/AI 设置/主理人，明示 Key 需单独清除</td></tr>
