@@ -42,6 +42,11 @@ const App = {
         this.closeModal();
         this.closeTeleprompter();
       }
+      // FR-06-05：空格 暂停/继续（仅提词器打开时拦截默认滚动）
+      if (e.code === 'Space' && document.getElementById('teleprompter')?.classList.contains('active')) {
+        e.preventDefault();
+        this.tpTogglePause();
+      }
     });
   },
   
@@ -703,6 +708,7 @@ const App = {
                   <div style="font-size:12px;color:var(--muted);margin-top:4px">${shots.length} 个分镜 · 已完成 ${completedShots}/${shots.length}</div>
                 </div>
                 <div style="display:flex;gap:8px">
+                  ${shots.length > 0 ? `<button class="btn btn-sm btn-secondary" onclick="App.rebuildShots('${c.id}')">重建分镜</button>` : ''}
                   <button class="btn btn-sm btn-secondary" onclick="App.editShots('${c.id}')">编辑分镜</button>
                   <button class="btn btn-sm btn-accent" onclick="App.openTeleprompter('${c.id}')">提词器</button>
                 </div>
@@ -718,12 +724,20 @@ const App = {
                       <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(s.lines || '')}</div>
                       <div style="display:flex;justify-content:space-between;margin-top:6px">
                         <span class="text-muted">${s.duration}秒</span>
-                        <input type="checkbox" ${s.done ? 'checked' : ''} onchange="App.toggleShot('${c.id}', ${i})">
+                        <input type="checkbox" ${s.done ? 'checked' : ''} title="${s.doneAt ? '打勾于 ' + new Date(s.doneAt).toLocaleString() : '未拍'}" onchange="App.toggleShot('${c.id}', ${i})">
                       </div>
                     </div>
                   `).join('')}
                 </div>
               ` : '<div style="text-align:center;padding:16px;color:var(--muted);font-size:13px">暂无分镜，点击"编辑分镜"自动生成</div>'}
+              ${shots.length > 0 && completedShots === shots.length && c.stage === 'shoot' ? `
+                <div style="margin-top:14px;padding:12px;background:var(--soft);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+                  <span style="font-size:13px">🎬 全部镜头已拍完${c.editDone ? '，剪辑中' : ''}</span>
+                  ${c.editDone
+                    ? `<button class="btn btn-sm btn-accent" onclick="App.finishEditing('${c.id}')">✂️ 剪辑完成，去排发布</button>`
+                    : `<button class="btn btn-sm btn-accent" onclick="App.finishShooting('${c.id}')">拍完了，进入剪辑</button>`}
+                </div>
+              ` : ''}
             </div>
           `;
         }).join('')}
@@ -1703,17 +1717,229 @@ const App = {
   toggleShot(contentId, shotIndex) {
     const content = Store.getContent(contentId);
     if (!content || !content.shots) return;
-    content.shots[shotIndex].done = !content.shots[shotIndex].done;
+    const shot = content.shots[shotIndex];
+    shot.done = !shot.done;
+    shot.doneAt = shot.done ? Date.now() : null; // FR-06-06：记录打勾时间
     Store.updateContent(contentId, { shots: content.shots });
+    if (content.shots.length > 0 && content.shots.every(s => s.done)) {
+      this.toast('全部镜头已拍完，可以「进入剪辑」了');
+    }
     this.renderPage('shoot');
   },
-  
+
+  // FR-06-02：按文案重建分镜（确认覆盖，手动编辑会丢失）
+  rebuildShots(contentId) {
+    const content = Store.getContent(contentId);
+    if (!content) return;
+    const n = (content.shots || []).length;
+    if (!confirm(`将按当前文案重新生成分镜，现有 ${n} 个分镜（含手动编辑与打勾记录）会被覆盖。确定重建？`)) return;
+    const shots = autoStoryboard(content, Store.data.settings.standards.wpm);
+    Store.updateContent(contentId, { shots });
+    this.toast(`已重建 ${shots.length} 个分镜`);
+    this.renderPage('shoot');
+  },
+
+  // FR-06-07：阶段流转链 拍完 → 剪辑 → 排期
+  finishShooting(contentId) {
+    Store.updateContent(contentId, { editDone: true, editDoneAt: Date.now() });
+    this.toast('已标记拍完，进入剪辑阶段');
+    this.renderPage('shoot');
+  },
+
+  finishEditing(contentId) {
+    Store.updateContent(contentId, { stage: 'schedule' });
+    this.toast('剪辑完成，已进入发布排期');
+    this.navigate('schedule');
+  },
+
+  // ═══ 全屏提词器（FR-06-05）═══
+  // 默认值（PRD 要求开发时定并记录）：速度 1~10 档（步进0.5），每档 24px/s，默认 3 档=72px/s；
+  // 滚轮每格 ±0.5 档；字号 24~80px 默认 48；镜像=左右翻转默认关；焦点线=窗口上方 35%；
+  // 设置持久化在 settings.teleprompter，退出全屏保留
   openTeleprompter(contentId) {
     const content = Store.getContent(contentId);
     if (!content) return;
-    const text = [content.hook, content.body, content.cta].filter(Boolean).join('\n\n');
-    document.getElementById('teleprompterText').textContent = text;
+    if (this._tp) cancelAnimationFrame(this._tp.raf);
+    const realShots = Array.isArray(content.shots) && content.shots.length > 0;
+    const wpm = Store.data.settings.standards.wpm || 240;
+    const durOf = txt => Math.max(1, Math.round((txt || '').length / (wpm / 60)));
+    const shots = realShots ? content.shots : [
+      { scene: '特写', lines: content.hook || '', duration: durOf(content.hook) },
+      { scene: '中景', lines: content.body || '', duration: durOf(content.body) },
+      { scene: '近景', lines: content.cta || '', duration: durOf(content.cta) }
+    ].filter(s => s.lines && s.lines.trim());
+    if (!shots.length) { this.toast('这条内容还没有可提词的文案'); return; }
+
+    const saved = Store.data.settings.teleprompter || {};
+    this._tp = {
+      contentId, shots, realShots,
+      offset: 0, playing: true, lastTs: 0, raf: 0,
+      activeIdx: -1, maxOffset: 0,
+      speed: Number(saved.speed) || 3,
+      fontSize: Number(saved.fontSize) || 48,
+      mirror: !!saved.mirror
+    };
+
+    document.getElementById('tpTitle').textContent = `提词器 · ${content.title || '未命名'}`;
+    document.getElementById('teleprompterText').innerHTML = shots.map((s, i) => `
+      <div class="tp-shot${s.done ? ' done' : ''}" id="tpShot_${i}">
+        <div class="tp-shot-tag">
+          <span>#${i + 1} · ${escHtml(s.scene || '')} · ${s.duration || 1}s</span>
+          ${realShots ? `<span class="tp-shot-check" onclick="App.tpToggleShot(${i})">${s.done ? '✓ 已拍' : '○ 拍完打勾'}</span>` : ''}
+        </div>
+        <div class="tp-shot-lines">${escHtml(s.lines || '')}</div>
+      </div>
+    `).join('');
+    document.getElementById('tpSpeed').value = this._tp.speed;
+    document.getElementById('tpSpeedVal').textContent = this._tp.speed;
+    document.getElementById('tpFont').value = this._tp.fontSize;
+    document.getElementById('tpFontVal').textContent = this._tp.fontSize;
+    document.getElementById('tpMirrorBtn').classList.toggle('on', this._tp.mirror);
+    document.getElementById('teleprompter').classList.toggle('tp-mirror', this._tp.mirror);
     document.getElementById('teleprompter').classList.add('active');
+
+    const box = document.getElementById('tpContent');
+    box.removeEventListener('wheel', this._tpWheelHandler);
+    box.addEventListener('wheel', this._tpWheelHandler, { passive: false });
+    this._tpApplyFont();
+    this._tpMeasure();
+    this._tpApplyOffset();
+    this._tpUpdatePlayBtn();
+    this._tp.raf = requestAnimationFrame(ts => this._tpTick(ts));
+  },
+
+  _tpTick(ts) {
+    const t = this._tp;
+    if (!t) return;
+    if (!t.lastTs) t.lastTs = ts;
+    const dt = Math.max(0, Math.min((ts - t.lastTs) / 1000, 0.1));
+    t.lastTs = ts;
+    if (t.playing) {
+      t.offset = Math.min(t.offset + t.speed * 24 * dt, t.maxOffset);
+      if (t.maxOffset > 0 && t.offset >= t.maxOffset) {
+        t.playing = false; // 滚到结尾自动停
+        this._tpUpdatePlayBtn();
+      }
+      this._tpApplyOffset();
+    }
+    t.raf = requestAnimationFrame(next => this._tpTick(next));
+  },
+
+  _tpApplyOffset() {
+    const t = this._tp;
+    if (!t) return;
+    document.getElementById('tpScroll').style.transform = `translateY(${-t.offset}px)`;
+    // 焦点线（窗口上方 35%）所在的镜头即当前镜，高亮并更新进度
+    const box = document.getElementById('tpContent');
+    const focusY = box.getBoundingClientRect().top + box.clientHeight * 0.35;
+    let idx = -1;
+    t.shots.forEach((s, i) => {
+      const el = document.getElementById('tpShot_' + i);
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      if (r.top <= focusY && r.bottom > focusY) idx = i;
+    });
+    if (idx !== t.activeIdx) {
+      t.activeIdx = idx;
+      t.shots.forEach((s, i) => {
+        const el = document.getElementById('tpShot_' + i);
+        if (el) el.classList.toggle('active', i === idx);
+      });
+      document.getElementById('tpFooter').textContent =
+        (idx >= 0 ? `第 ${idx + 1}/${t.shots.length} 镜` : '即将开始') +
+        ' ｜ 空格 暂停/继续 · 滚轮 调速 · Esc 退出';
+    }
+  },
+
+  _tpMeasure() {
+    const t = this._tp;
+    if (!t) return;
+    const box = document.getElementById('tpContent');
+    const textH = document.getElementById('teleprompterText').offsetHeight;
+    t.maxOffset = Math.max(0, textH - box.clientHeight * 0.35);
+  },
+
+  _tpApplyFont() {
+    const t = this._tp;
+    if (!t) return;
+    document.getElementById('teleprompterText').style.fontSize = t.fontSize + 'px';
+    this._tpMeasure();
+  },
+
+  _tpPersist() {
+    const t = this._tp;
+    if (!t) return;
+    Store.data.settings.teleprompter = { speed: t.speed, fontSize: t.fontSize, mirror: t.mirror };
+    Store.save();
+  },
+
+  _tpUpdatePlayBtn() {
+    const t = this._tp;
+    if (!t) return;
+    document.getElementById('tpPlayBtn').textContent = t.playing ? '⏸ 暂停' : '▶ 继续';
+  },
+
+  _tpWheelHandler(e) {
+    if (!App._tp) return;
+    e.preventDefault();
+    App.tpSetSpeed(App._tp.speed + (e.deltaY < 0 ? 0.5 : -0.5)); // 滚轮微调速度
+  },
+
+  tpSetSpeed(v) {
+    const t = this._tp;
+    if (!t) return;
+    t.speed = Math.min(10, Math.max(1, Number(v) || 3));
+    document.getElementById('tpSpeed').value = t.speed;
+    document.getElementById('tpSpeedVal').textContent = t.speed;
+    if (!t.playing && t.offset >= t.maxOffset && t.maxOffset > 0) {
+      t.playing = true; // 结尾处调速即继续
+      this._tpUpdatePlayBtn();
+    }
+    this._tpPersist();
+  },
+
+  tpSetFont(v) {
+    const t = this._tp;
+    if (!t) return;
+    t.fontSize = Math.min(80, Math.max(24, Number(v) || 48));
+    document.getElementById('tpFontVal').textContent = t.fontSize;
+    this._tpApplyFont();
+    this._tpApplyOffset();
+    this._tpPersist();
+  },
+
+  tpToggleMirror() {
+    const t = this._tp;
+    if (!t) return;
+    t.mirror = !t.mirror;
+    document.getElementById('tpMirrorBtn').classList.toggle('on', t.mirror);
+    document.getElementById('teleprompter').classList.toggle('tp-mirror', t.mirror);
+    this._tpPersist();
+  },
+
+  tpTogglePause() {
+    const t = this._tp;
+    if (!t) return;
+    if (!t.playing && t.offset >= t.maxOffset && t.maxOffset > 0) t.offset = 0; // 结尾再按 = 从头再来
+    t.playing = !t.playing;
+    this._tpUpdatePlayBtn();
+  },
+
+  tpToggleShot(idx) {
+    const t = this._tp;
+    if (!t || !t.realShots) return;
+    const content = Store.getContent(t.contentId);
+    if (!content || !content.shots || !content.shots[idx]) return;
+    const shot = content.shots[idx];
+    shot.done = !shot.done;
+    shot.doneAt = shot.done ? Date.now() : null;
+    Store.updateContent(t.contentId, { shots: content.shots });
+    const el = document.getElementById('tpShot_' + idx);
+    if (el) {
+      el.classList.toggle('done', shot.done);
+      const check = el.querySelector('.tp-shot-check');
+      if (check) check.textContent = shot.done ? '✓ 已拍' : '○ 拍完打勾';
+    }
   },
   
   // 排期管理
@@ -2036,7 +2262,14 @@ ${recentContents.map(c => `- ${c.title}`).join('\n')}` : ''}
   },
 
   closeTeleprompter() {
-    document.getElementById('teleprompter').classList.remove('active');
+    const t = this._tp;
+    if (t) {
+      cancelAnimationFrame(t.raf);
+      document.getElementById('tpContent').removeEventListener('wheel', this._tpWheelHandler);
+      this._tp = null;
+    }
+    document.getElementById('teleprompter').classList.remove('active', 'tp-mirror');
+    if (this.currentPage === 'shoot') this.renderPage('shoot'); // 同步打勾状态
   },
 
   loadSampleData() {

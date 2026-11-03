@@ -42,6 +42,7 @@ const Store = {
         platforms: [...DEFAULT_PLATFORMS],
         customPlatforms: [],
         standards: { ...DEFAULT_STANDARDS },
+        teleprompter: { speed: 3, fontSize: 48, mirror: false },
         ai: {
           protocol: 'openai',
           baseUrl: '',

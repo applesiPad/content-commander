@@ -103,12 +103,12 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <table>
 <tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
 <tr><td><span class="fr">FR-06-01</span></td><td>自动分镜 + 逐镜可编辑</td><td class="p0">P0</td><td class="ok">✅</td><td></td></tr>
-<tr><td><span class="fr">FR-06-02</span></td><td>重建分镜（确认覆盖）</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1：仅首次自动生成，无重建按钮</td></tr>
+<tr><td><span class="fr">FR-06-02</span></td><td>重建分镜（确认覆盖）</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮实现</b>：拍摄卡新增「重建分镜」（有分镜时显示），确认覆盖后按当前文案重新生成</td></tr>
 <tr><td><span class="fr">FR-06-03</span></td><td>拍摄日程（按日期分组/改期）</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1：缺 shootDate 概念</td></tr>
 <tr><td><span class="fr">FR-06-04</span></td><td>开拍检查清单（5 固定+自定义）</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
-<tr><td><span class="fr">FR-06-05</span></td><td>全屏提词器（速度/字号/镜像/按镜）</td><td class="p0">P0</td><td class="part">🟡</td><td>有全屏文本遮罩；<b>无滚动控制/字号/镜像/按镜高亮</b>（v1.1 重点）</td></tr>
-<tr><td><span class="fr">FR-06-06</span></td><td>逐镜完成标记</td><td class="p0">P0</td><td class="ok">✅</td><td>打勾时间未记录（小项）</td></tr>
-<tr><td><span class="fr">FR-06-07</span></td><td>阶段流转（拍完→剪辑→排期）</td><td class="p0">P0</td><td class="part">🟡</td><td>通过稿件弹窗改阶段；缺流转按钮链</td></tr>
+<tr><td><span class="fr">FR-06-05</span></td><td>全屏提词器（速度/字号/镜像/按镜）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮实现</b>：按镜分组滚动+当前镜高亮+进度指示；速度 1~10 档（每档 24px/s，默认 3 档，滚轮 ±0.5 微调）、字号 24~80（默认 48）、左右镜像；空格暂停/继续、结尾自停；设置持久化 settings.teleprompter，退出全屏保留。无分镜时按 开头/正文/结尾 三段兜底</td></tr>
+<tr><td><span class="fr">FR-06-06</span></td><td>逐镜完成标记</td><td class="p0">P0</td><td class="ok">✅</td><td><b>本轮补强</b>：记录打勾时间 doneAt；提词器内可直接打勾；全部完成提示进入剪辑</td></tr>
+<tr><td><span class="fr">FR-06-07</span></td><td>阶段流转（拍完→剪辑→排期）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮实现</b>：全部镜头打勾 →「拍完了，进入剪辑」（editDone）→「剪辑完成，去排发布」置 stage=schedule 并跳转排期页</td></tr>
 <tr><td><span class="fr">FR-06-08</span></td><td>景别速查卡</td><td class="p2">P2</td><td class="no">❌</td><td>v1.2 候选</td></tr>
 </table>
 

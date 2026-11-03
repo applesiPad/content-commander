@@ -107,15 +107,30 @@
   <div class="modal" id="modal"></div>
 </div>
 
-<!-- Teleprompter -->
+<!-- Teleprompter (FR-06-05) -->
 <div class="teleprompter-overlay" id="teleprompter">
   <div class="teleprompter-header">
-    <span>提词器</span>
-    <button class="btn btn-secondary" onclick="App.closeTeleprompter()">关闭</button>
+    <span id="tpTitle" style="font-weight:600">提词器</span>
+    <div class="tp-controls">
+      <button type="button" class="tp-btn" id="tpPlayBtn" onclick="App.tpTogglePause();this.blur()">⏸ 暂停</button>
+      <label class="tp-ctl">速度
+        <input type="range" id="tpSpeed" min="1" max="10" step="0.5" oninput="App.tpSetSpeed(this.value)">
+        <span id="tpSpeedVal" style="min-width:26px;text-align:right">3</span>
+      </label>
+      <label class="tp-ctl">字号
+        <input type="range" id="tpFont" min="24" max="80" step="2" oninput="App.tpSetFont(this.value)">
+        <span id="tpFontVal" style="min-width:26px;text-align:right">48</span>
+      </label>
+      <button type="button" class="tp-btn" id="tpMirrorBtn" onclick="App.tpToggleMirror();this.blur()">🪞 镜像</button>
+      <button type="button" class="btn btn-secondary" onclick="App.closeTeleprompter()">关闭</button>
+    </div>
   </div>
-  <div class="teleprompter-content">
-    <div class="teleprompter-text" id="teleprompterText"></div>
+  <div class="teleprompter-content" id="tpContent">
+    <div class="tp-scroll" id="tpScroll">
+      <div class="teleprompter-text" id="teleprompterText"></div>
+    </div>
   </div>
+  <div class="tp-footer" id="tpFooter">空格 暂停/继续 · 滚轮 调速 · Esc 退出</div>
 </div>
 
 <!-- Toast -->
