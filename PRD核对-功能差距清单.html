@@ -63,20 +63,20 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <h2>M3 对标拆解（FR-03）</h2>
 <table>
 <tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
-<tr><td><span class="fr">FR-03-01</span></td><td>对标账号 CRUD + 6 条标准勾选</td><td class="p0">P0</td><td class="part">🟡</td><td>CRUD 有；缺 6 标准勾选与「好对标」徽章</td></tr>
-<tr><td><span class="fr">FR-03-02</span></td><td>作品录入 + 数字解析失败标红</td><td class="p0">P0</td><td class="part">🟡</td><td>录入有；失败标红未做</td></tr>
-<tr><td><span class="fr">FR-03-03</span></td><td>自动分段（开头/正文/结尾）</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1：启发式分段规则（PRD §3.1）</td></tr>
-<tr><td><span class="fr">FR-03-04</span></td><td>结构识别 4 类标签</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1：依赖 FR-03-03 分段</td></tr>
-<tr><td><span class="fr">FR-03-05</span></td><td>爆款判定 + 收藏型画像</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1：hotMult/favPortrait 阈值已在常量区</td></tr>
-<tr><td><span class="fr">FR-03-06</span></td><td>规律小结卡</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
-<tr><td><span class="fr">FR-03-07</span></td><td>借选题</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1</td></tr>
-<tr><td><span class="fr">FR-03-08</span></td><td>套结构写稿</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1：可复用文案工坊 useStructure</td></tr>
+<tr><td><span class="fr">FR-03-01</span></td><td>对标账号 CRUD + 6 条标准勾选</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮实现</b>：对标弹窗 6 条选择标准勾选（BENCH_CRITERIA），≥4 条卡片显示「好对标」徽章</td></tr>
+<tr><td><span class="fr">FR-03-02</span></td><td>作品录入 + 数字解析失败标红</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮实现</b>：点赞/评论/收藏/转发输入即时解析，非空且解析为 0 → 红框提示手改；支持「1.2万」缩写</td></tr>
+<tr><td><span class="fr">FR-03-03</span></td><td>自动分段（开头/正文/结尾）</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮实现</b>：segmentScript 启发式分段（PRD-03 §3.1，钩子词表/互动词表），首次打开拆解弹窗自动执行；三段 textarea 可手改保存，持久化；空稿不可拆；「重新自动分段」确认覆盖</td></tr>
+<tr><td><span class="fr">FR-03-04</span></td><td>结构识别 4 类标签</td><td class="p1">P1</td><td class="no">❌→✅</td><td><b>本轮实现</b>：classifyBenchLabels 按 BENCH_LABEL_RULES 词表识别 角度/钩子/结构/结尾 四类；识别不出留空提示手动归类；手动改过存 labelsManual 不再自动覆盖</td></tr>
+<tr><td><span class="fr">FR-03-05</span></td><td>爆款判定 + 收藏型画像</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮实现</b>：作品列表按 中位数点赞×hotMult 判爆款（🔥徽章，<2 条不判定并注明）；收藏/点赞≥favPortrait 打收藏型标签（⭐）；阈值读设置数据标准</td></tr>
+<tr><td><span class="fr">FR-03-06</span></td><td>规律小结卡</td><td class="p1">P1</td><td class="no">❌→✅</td><td><b>本轮实现</b>：录满 2 条已拆解作品后，作品弹窗顶部小结卡：最常用 钩子→结构→结尾 组合、角度分布、平均点赞，随录入自动更新</td></tr>
+<tr><td><span class="fr">FR-03-07</span></td><td>借选题</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮实现</b>：拆解弹窗「借选题」→ 预填标题（【借】前缀）+ 按角度标签映射五维默认分（ANGLE_SCORE_PRESET）→ 选题卡「🎯来自对标」回链可跳回作品拆解</td></tr>
+<tr><td><span class="fr">FR-03-08</span></td><td>套结构写稿</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮实现</b>：按正文结构标签生成全新占位草稿（STRUCTURE_DRAFTS 7 套原创占位），进文案工坊可编辑；未识别结构时用总分总兜底并提示</td></tr>
 </table>
 
 <h2>M4 选题池（FR-04）</h2>
 <table>
 <tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
-<tr><td><span class="fr">FR-04-01</span></td><td>选题 CRUD + 来源徽章回链</td><td class="p0">P0</td><td class="part">🟡</td><td>CRUD 有；表单缺来源选择，回链跳转未做</td></tr>
+<tr><td><span class="fr">FR-04-01</span></td><td>选题 CRUD + 来源徽章回链</td><td class="p0">P0</td><td class="part">🟡</td><td>CRUD 有；<b>本轮补</b>：热点/对标来源的选题卡显示徽章并可回链跳转；表单手动选来源仍未做（小项）</td></tr>
 <tr><td><span class="fr">FR-04-02</span></td><td>五维打分</td><td class="p0">P0</td><td class="ok">✅</td><td></td></tr>
 <tr><td><span class="fr">FR-04-03</span></td><td>评级 S/A/B/C（阈值可调）</td><td class="p0">P0</td><td class="part">🟡</td><td>评级有；阈值 21/17/13 硬编码，设置不可调（v1.1）</td></tr>
 <tr><td><span class="fr">FR-04-04</span></td><td>题型判断</td><td class="p1">P1</td><td class="ok">✅</td><td>calcTopicType</td></tr>

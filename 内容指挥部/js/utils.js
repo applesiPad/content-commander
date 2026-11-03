@@ -306,6 +306,79 @@ function autoStoryboard(script, wpm = 240) {
   return shots;
 }
 
+// ═══ 对标拆解（FR-03-03/04，PRD-03 §3.1/3.2 启发式，原创转写）═══
+
+// FR-03-03：口播稿自动分段 → { opening, body, ending }；空稿返回 null
+function segmentScript(text) {
+  const t = (text || '').trim();
+  if (!t) return null;
+  // 切句：按中英文句末标点/换行切，保留标点
+  const sentences = t.split(/\n+/).flatMap(para => para.split(/(?<=[。！？!?])/)).map(s => s.trim()).filter(Boolean);
+  if (!sentences.length) return null;
+  const HOOK_WORDS = /[0-9一二两三四五六七八九十百千万]+|为什么|怎么|如何|千万别|不要|还在|竟然|居然|没想到|结果|真相|秘密|其实|告诉你|建议|后悔|一定|你有没有|如果你|普通人|打工人|姐妹|兄弟|[？?]/;
+  const CTA_WORDS = /关注|点赞|收藏|评论|转发|留言|私信|评论区|主页|下期|你觉得|你会|告诉我|聊聊|说说|扣[个一1]|双击|记得/;
+  // 开头段：前 1–2 句中命中钩子词表的句子；未命中默认首句
+  let openingIdx = 0;
+  for (let i = 0; i < Math.min(2, sentences.length); i++) {
+    if (HOOK_WORDS.test(sentences[i])) { openingIdx = i; break; }
+  }
+  // 结尾段：末 1–2 句中命中互动引导词表的句子；未命中默认末句
+  let endingIdx = -1;
+  for (let i = sentences.length - 1; i >= Math.max(0, sentences.length - 2); i--) {
+    if (CTA_WORDS.test(sentences[i])) { endingIdx = i; break; }
+  }
+  if (endingIdx < 0) endingIdx = sentences.length - 1;
+  // 单句/双句防重叠：开头优先，结尾让位
+  if (sentences.length === 1) endingIdx = -1;
+  if (sentences.length === 2 && endingIdx === openingIdx) endingIdx = -1;
+  const join = (from, to) => sentences.slice(from, to + 1).join('');
+  const bodyFrom = sentences.length === 1 ? -1 : openingIdx + 1;
+  const bodyTo = (endingIdx > openingIdx ? endingIdx : openingIdx) - (endingIdx > openingIdx ? 0 : 0);
+  return {
+    opening: join(openingIdx, openingIdx),
+    body: sentences.length > 1 ? join(openingIdx + 1, Math.max(openingIdx + 1, (endingIdx > openingIdx ? endingIdx : sentences.length - 1) - 1)) : '',
+    ending: endingIdx > openingIdx ? join(endingIdx, endingIdx) : ''
+  };
+}
+
+// FR-03-04：三段 → 4 类结构标签；识别不出返回 ''（提示手动归类）
+function classifyBenchLabels(parts) {
+  const opening = parts.opening || '';
+  const body = parts.body || '';
+  const ending = parts.ending || '';
+  const pick = (text, cat) => {
+    const rules = BENCH_LABEL_RULES[cat] || [];
+    for (let i = 0; i < rules.length; i++) {
+      if (rules[i].test(text)) return BENCH_LABELS[cat][i];
+    }
+    return '';
+  };
+  // 正文结构：按特征计数判定（清单/问答/故事/时间线/对比/递进，兜底总分总）
+  let structure = '';
+  if (body) {
+    const enumHits = (body.match(/第[一二三四五六七八九十0-9]+|首先|其次|再次|最后[，,一]/g) || []).length
+      + (body.match(/(?:^|[。！？!?；;\n])\s*[0-9]+[.、)]/g) || []).length;
+    const qHits = (body.match(/[？?]/g) || []).length;
+    const iCount = (body.match(/我/g) || []).length;
+    if (enumHits >= 2) structure = '清单式';
+    else if (qHits >= 2) structure = '问答式';
+    else if (iCount >= 3) structure = '故事式';
+    else if (/以前|当时|后来|现在|第一天|第二|那个月|这一年|之后/.test(body)) structure = '时间线';
+    else if (/对比|而是|反而|区别|VS|vs|换成了/.test(body)) structure = '对比式';
+    else if (/更|甚至|进一步|关键|最重要的是|而且|更何况/.test(body)) structure = '递进式';
+    else {
+      const sents = body.split(/[。！？!?]/).filter(s => s.trim()).length;
+      structure = sents >= 3 ? '总分总' : '';
+    }
+  }
+  return {
+    angle: pick(opening + body.slice(0, 120), 'angle'),
+    hook: pick(opening, 'hook'),
+    structure,
+    ending: pick(ending, 'ending')
+  };
+}
+
 // HTML转义
 function escHtml(str) {
   if (!str) return '';

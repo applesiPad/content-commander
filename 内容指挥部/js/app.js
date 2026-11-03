@@ -458,7 +458,7 @@ const App = {
               <div class="card">
                 <div class="card-header">
                   <div>
-                    <div style="font-weight:700">${escHtml(b.name)}</div>
+                    <div style="font-weight:700">${escHtml(b.name)}${(b.criteria || []).filter(Boolean).length >= 4 ? ' <span class="tag tag-success" title="勾选标准 ≥4 条">好对标</span>' : ''}</div>
                     <div style="font-size:12px;color:var(--muted)">${this.getPlatformName(b.platform)} · ${b.level || '未分类'}</div>
                   </div>
                   <div style="display:flex;gap:4px">
@@ -532,6 +532,7 @@ const App = {
                   ${FIVE_DIMS.map(d => `<span class="topic-score"><span>${d.icon}</span><span class="font-mono">${t.scores?.[d.key] || 0}</span></span>`).join('')}
                   <span style="margin-left:auto;color:var(--muted)">总分 <span class="font-mono font-bold">${total}</span></span>
                   <span class="tag">${topicType}</span>
+                  ${t.source === 'hot' ? `<span class="tag" style="cursor:pointer" title="查看来源热点" onclick="App.navigate('hot')">🔥来自热点</span>` : t.source === 'bench' && t.srcRef ? `<span class="tag" style="cursor:pointer" title="查看来源作品拆解" onclick="App.showWorkDetail('${t.srcRef}')">🎯来自对标</span>` : ''}
                   <span class="tag tag-${t.status === 'doing' ? 'accent' : t.status === 'done' ? 'success' : ''}">${t.status === 'pool' ? '候选' : t.status === 'doing' ? '进行中' : '已完成'}</span>
                 </div>
               </div>
@@ -1403,6 +1404,11 @@ const App = {
       </div>
       <div class="form-group"><label class="form-label">所属 IP</label><select class="form-select" id="benchIp"><option value="">全部 IP 共用</option>${ips.map(ip => `<option value="${ip.id}" ${bench?.ipId === ip.id ? 'selected' : ''}>${ip.avatar} ${escHtml(ip.name)}</option>`).join('')}</select></div>
       <div class="form-group"><label class="form-label">粉丝量</label><input type="text" class="form-input" id="benchFollowers" value="${bench?.followers || ''}" placeholder="如：5.2万"></div>
+      <div class="form-group"><label class="form-label">选择标准（勾满 4 条显示「好对标」徽章）</label>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+          ${BENCH_CRITERIA.map((c, i) => `<label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="benchCrit_${i}" ${(bench?.criteria || [])[i] ? 'checked' : ''}>${c}</label>`).join('')}
+        </div>
+      </div>
       <div style="display:flex;gap:8px;margin-top:20px">
         <button class="btn btn-primary" onclick="App.saveBench('${id || ''}')">${bench ? '保存' : '添加'}</button>
         <button class="btn btn-secondary" onclick="App.closeModal()">取消</button>
@@ -1416,7 +1422,8 @@ const App = {
       platform: document.getElementById('benchPlatform').value,
       level: document.getElementById('benchLevel').value,
       ipId: document.getElementById('benchIp').value || null,
-      followers: parseNumber(document.getElementById('benchFollowers').value)
+      followers: parseNumber(document.getElementById('benchFollowers').value),
+      criteria: BENCH_CRITERIA.map((c, i) => !!(document.getElementById('benchCrit_' + i) || {}).checked)
     };
     if (!data.name) { alert('请输入账号名'); return; }
     if (id) Store.updateBenchmark(id, data);
@@ -1434,16 +1441,199 @@ const App = {
   showBenchWorks(benchId) {
     const bench = Store.data.benchmarks.find(b => b.id === benchId);
     const works = Store.data.benchWorks.filter(w => w.benchId === benchId);
+    // FR-03-05：爆款判定（中位数×hotMult）与收藏型画像；作品 <2 条不判定
+    const std = Store.data.settings.standards;
+    const sorted = works.map(w => w.likes || 0).sort((a, b) => a - b);
+    const median = sorted.length ? (sorted.length % 2 ? sorted[(sorted.length - 1) / 2] : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2) : 0;
+    const hotLine = median * (std.hotMult || 2);
+    const isHot = w => works.length >= 2 && (w.likes || 0) > 0 && (w.likes || 0) >= hotLine;
+    const isFav = w => (w.likes || 0) > 0 && (w.favorite || 0) / (w.likes || 0) >= (std.favPortrait || 0.5);
+    // FR-03-06：规律小结（录满 2 条有标签的作品后自动统计）
+    const labeled = works.filter(w => w.labels);
+    let summary = '';
+    if (labeled.length >= 2) {
+      const combos = {};
+      const angles = {};
+      labeled.forEach(w => {
+        const l = w.labels;
+        const combo = `${l.hook || '—'} → ${l.structure || '—'} → ${l.ending || '—'}`;
+        combos[combo] = (combos[combo] || 0) + 1;
+        if (l.angle) angles[l.angle] = (angles[l.angle] || 0) + 1;
+      });
+      const topCombo = Object.entries(combos).sort((a, b) => b[1] - a[1])[0];
+      const angleStr = Object.entries(angles).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k}×${n}`).join('、');
+      const avgLikes = Math.round(labeled.reduce((s, w) => s + (w.likes || 0), 0) / labeled.length);
+      summary = `
+        <div style="background:var(--soft);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:12.5px;line-height:1.9">
+          <strong>📐 规律小结（${labeled.length} 条已拆解）</strong><br>
+          最常用组合：<strong>${escHtml(topCombo[0])}</strong>（${topCombo[1]}/${labeled.length} 条）<br>
+          ${angleStr ? `角度分布：${escHtml(angleStr)}<br>` : ''}已拆作品平均点赞：${formatNumber(avgLikes)}
+        </div>`;
+    }
     this.showModal(`
-      <div class="modal-title">${escHtml(bench?.name || '')} 的作品</div>
+      <div class="modal-title">${escHtml(bench?.name || '')} 的作品（爆款线：${works.length >= 2 ? formatNumber(hotLine) + ' 赞' : '样本不足 2 条不判定'}）</div>
+      ${summary}
       <div style="max-height:400px;overflow-y:auto">
-        ${works.length === 0 ? '<div class="text-muted text-sm">暂无作品</div>' : works.map(w => `<div style="padding:12px;border-bottom:1px solid var(--line)"><div style="font-weight:600;margin-bottom:4px">${escHtml(w.title || '无标题')}</div><div style="font-size:12px;color:var(--muted);display:flex;gap:12px"><span>👍 ${formatNumber(w.likes || 0)}</span><span>💬 ${formatNumber(w.comment || 0)}</span><span>⭐ ${formatNumber(w.favorite || 0)}</span></div></div>`).join('')}
+        ${works.length === 0 ? '<div class="text-muted text-sm">暂无作品，点下方添加并粘贴完整文案</div>' : works.map(w => `
+          <div style="padding:12px;border-bottom:1px solid var(--line)">
+            <div style="font-weight:600;margin-bottom:4px;cursor:pointer" onclick="App.showWorkDetail('${w.id}')">${escHtml(w.title || '无标题')}
+              ${isHot(w) ? '<span class="tag tag-accent" style="margin-left:6px">🔥 爆款</span>' : ''}
+              ${isFav(w) ? '<span class="tag tag-success" style="margin-left:6px">⭐ 收藏型</span>' : ''}
+              ${w.labels && (w.labels.hook || w.labels.structure) ? '<span class="tag" style="margin-left:6px">已拆解</span>' : ''}
+            </div>
+            <div style="font-size:12px;color:var(--muted);display:flex;gap:12px;align-items:center">
+              <span>👍 ${formatNumber(w.likes || 0)}</span><span>💬 ${formatNumber(w.comment || 0)}</span><span>⭐ ${formatNumber(w.favorite || 0)}</span><span>🔁 ${formatNumber(w.share || 0)}</span>
+              <span style="margin-left:auto;color:var(--accent);cursor:pointer" onclick="App.showWorkDetail('${w.id}')">拆解 ›</span>
+            </div>
+          </div>`).join('')}
       </div>
-      <div style="margin-top:16px">
+      <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-secondary" onclick="App.showBenchWorkModal('${benchId}')">+ 添加作品</button>
         <button class="btn btn-secondary" onclick="App.closeModal()">关闭</button>
       </div>
     `);
+  },
+
+  // FR-03-02：数字解析失败标红（支持 1.2万，解析不出且非空 → 标红提示手改）
+  checkNumParse(inputId) {
+    const el = document.getElementById(inputId);
+    if (!el) return;
+    const v = el.value.trim();
+    const bad = v !== '' && parseNumber(v) === 0;
+    el.style.borderColor = bad ? 'var(--danger)' : '';
+    el.style.background = bad ? 'rgba(239,68,68,.07)' : '';
+  },
+
+  // ═══ 作品拆解详情（FR-03-03/04/07/08）═══
+  showWorkDetail(workId) {
+    const work = Store.data.benchWorks.find(w => w.id === workId);
+    if (!work) return;
+    // 首次打开自动分段+识别（空稿不拆）；手动改过的字段不会被自动覆盖
+    if (!work.segments) {
+      const seg = segmentScript(work.content || '');
+      if (seg) {
+        work.segments = seg;
+        work.labels = classifyBenchLabels(seg);
+        work.labelsManual = {};
+        Store.save();
+      }
+    }
+    const seg = work.segments;
+    const labels = work.labels || {};
+    const manual = work.labelsManual || {};
+    const labelSelect = (cat, name) => `
+      <select class="form-select" style="width:100%" onchange="App.saveWorkLabel('${workId}','${cat}',this.value)">
+        <option value="">${manual[cat] ? '（手动归类）' : '识别不出，手动归类'}</option>
+        ${BENCH_LABELS[cat].map(o => `<option value="${o}" ${labels[cat] === o ? 'selected' : ''}>${o}${manual[cat] && labels[cat] === o ? ' ✓' : ''}</option>`).join('')}
+      </select>`;
+    this.showModal(`
+      <div class="modal-title">拆解 · ${escHtml(work.title || '无标题')}</div>
+      ${work.content ? '' : '<p class="text-muted text-sm">⚠️ 该作品未粘贴文案，无法自动分段；可编辑作品补充完整口播稿。</p>'}
+      ${seg ? `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span class="form-label" style="margin:0">自动分段（可手动改正后保存）</span>
+          <button class="btn btn-sm btn-secondary" onclick="App.resplitWork('${workId}')">↻ 重新自动分段</button>
+        </div>
+        <div class="form-group"><label class="form-label">① 开头（钩子）</label><textarea class="form-textarea" id="segOpening" rows="2">${escHtml(seg.opening || '')}</textarea></div>
+        <div class="form-group"><label class="form-label">② 正文</label><textarea class="form-textarea" id="segBody" rows="6">${escHtml(seg.body || '')}</textarea></div>
+        <div class="form-group"><label class="form-label">③ 结尾（互动）</label><textarea class="form-textarea" id="segEnding" rows="2">${escHtml(seg.ending || '')}</textarea></div>
+        <div style="text-align:right;margin-bottom:12px"><button class="btn btn-sm btn-primary" onclick="App.saveSegments('${workId}')">保存分段</button></div>
+        <div class="form-label" style="margin-bottom:6px">结构识别（单击改为正确值，改过的不被自动覆盖）</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><div style="font-size:11px;color:var(--muted);margin-bottom:3px">选题角度</div>${labelSelect('angle')}</div>
+          <div><div style="font-size:11px;color:var(--muted);margin-bottom:3px">开头钩子</div>${labelSelect('hook')}</div>
+          <div><div style="font-size:11px;color:var(--muted);margin-bottom:3px">正文结构</div>${labelSelect('structure')}</div>
+          <div><div style="font-size:11px;color:var(--muted);margin-bottom:3px">结尾方式</div>${labelSelect('ending')}</div>
+        </div>
+      ` : '<p class="text-muted text-sm">暂无分段（文案为空或未录入）。</p>'}
+      <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap">
+        <button class="btn btn-accent" onclick="App.borrowWorkTopic('${workId}')">💡 借选题</button>
+        <button class="btn btn-primary" onclick="App.useWorkStructure('${workId}')">🧱 套结构写稿</button>
+        <button class="btn btn-secondary" onclick="App.closeModal()">关闭</button>
+      </div>
+    `);
+  },
+
+  resplitWork(workId) {
+    const work = Store.data.benchWorks.find(w => w.id === workId);
+    if (!work) return;
+    if (!confirm('重新自动分段将覆盖三段的手动修改；标签里手动改过的会保留。继续？')) return;
+    const seg = segmentScript(work.content || '');
+    if (!seg) { this.toast('文案为空，无法拆分'); return; }
+    work.segments = seg;
+    work.labels = work.labels || {};
+    work.labelsManual = work.labelsManual || {};
+    const auto = classifyBenchLabels(seg);
+    ['angle', 'hook', 'structure', 'ending'].forEach(cat => {
+      if (!work.labelsManual[cat]) work.labels[cat] = auto[cat];
+    });
+    Store.save();
+    this.showWorkDetail(workId);
+    this.toast('已重新分段与识别');
+  },
+
+  saveSegments(workId) {
+    const work = Store.data.benchWorks.find(w => w.id === workId);
+    if (!work) return;
+    work.segments = {
+      opening: (document.getElementById('segOpening')?.value || '').trim(),
+      body: (document.getElementById('segBody')?.value || '').trim(),
+      ending: (document.getElementById('segEnding')?.value || '').trim()
+    };
+    Store.save();
+    this.toast('分段已保存，重开不丢');
+  },
+
+  saveWorkLabel(workId, cat, value) {
+    const work = Store.data.benchWorks.find(w => w.id === workId);
+    if (!work) return;
+    work.labels = work.labels || {};
+    work.labelsManual = work.labelsManual || {};
+    work.labels[cat] = value;
+    work.labelsManual[cat] = true; // FR-03-04：改过的标签不再被自动覆盖
+    Store.save();
+    this.toast(`已记录${{ angle: '选题角度', hook: '开头钩子', structure: '正文结构', ending: '结尾方式' }[cat]}：${value || '手动归类'}`);
+  },
+
+  // FR-03-07：借选题 → 预填标题与按角度标签映射的五维默认分
+  borrowWorkTopic(workId) {
+    const work = Store.data.benchWorks.find(w => w.id === workId);
+    if (!work) return;
+    const angle = work.labels?.angle;
+    const preset = {
+      title: work.title ? `【借】${work.title}` : '【借】对标同款选题',
+      source: 'bench',
+      srcRef: work.id
+    };
+    if (angle && ANGLE_SCORE_PRESET[angle]) {
+      preset.scores = Object.assign({ pain: 3, useful: 3, debate: 3, suspense: 3, track: 3 }, ANGLE_SCORE_PRESET[angle]);
+    }
+    this.closeModal();
+    this.showTopicModal(null, preset);
+  },
+
+  // FR-03-08：套结构写稿 → 按正文结构标签生成全新占位草稿（不复制对标原句）
+  useWorkStructure(workId) {
+    const work = Store.data.benchWorks.find(w => w.id === workId);
+    if (!work) return;
+    const bench = Store.data.benchmarks.find(b => b.id === work.benchId);
+    const structure = work.labels?.structure;
+    const draft = STRUCTURE_DRAFTS[structure] || STRUCTURE_DRAFTS['总分总'];
+    if (!structure) this.toast('该作品未识别出正文结构，已用「总分总」占位，可在拆解中手动归类');
+    const ipId = bench?.ipId || this.currentIp || Store.data.ips[0]?.id || null;
+    const content = Store.addContent({
+      ipId,
+      title: `【套结构·${structure || '总分总'}】${work.title || '新稿件'}`,
+      hook: draft.hook,
+      body: draft.body,
+      cta: draft.cta,
+      stage: 'draft',
+      srcRef: work.id
+    });
+    this.closeModal();
+    this.editingId = content.id;
+    this.navigate('script');
+    this.toast('结构草稿已生成，把 ____ 换成你的内容即可');
   },
   
   showBenchWorkModal(benchId, workId) {
@@ -1452,17 +1642,18 @@ const App = {
       <div class="modal-title">${work ? '编辑' : '添加'}作品</div>
       <div class="form-group"><label class="form-label">标题</label><input type="text" class="form-input" id="workTitle" value="${escAttr(work?.title || '')}" placeholder="作品标题"></div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-        <div class="form-group"><label class="form-label">点赞</label><input type="text" class="form-input" id="workLikes" value="${work?.likes || ''}" placeholder="1.2万"></div>
-        <div class="form-group"><label class="form-label">评论</label><input type="text" class="form-input" id="workComment" value="${work?.comment || ''}" placeholder="500"></div>
-        <div class="form-group"><label class="form-label">收藏</label><input type="text" class="form-input" id="workFavorite" value="${work?.favorite || ''}" placeholder="800"></div>
-        <div class="form-group"><label class="form-label">转发</label><input type="text" class="form-input" id="workShare" value="${work?.share || ''}" placeholder="200"></div>
+        <div class="form-group"><label class="form-label">点赞</label><input type="text" class="form-input" id="workLikes" value="${work?.likes || ''}" placeholder="1.2万" oninput="App.checkNumParse('workLikes')"></div>
+        <div class="form-group"><label class="form-label">评论</label><input type="text" class="form-input" id="workComment" value="${work?.comment || ''}" placeholder="500" oninput="App.checkNumParse('workComment')"></div>
+        <div class="form-group"><label class="form-label">收藏</label><input type="text" class="form-input" id="workFavorite" value="${work?.favorite || ''}" placeholder="800" oninput="App.checkNumParse('workFavorite')"></div>
+        <div class="form-group"><label class="form-label">转发</label><input type="text" class="form-input" id="workShare" value="${work?.share || ''}" placeholder="200" oninput="App.checkNumParse('workShare')"></div>
       </div>
-      <div class="form-group"><label class="form-label">完整文案</label><textarea class="form-textarea" id="workContent" rows="6" placeholder="粘贴完整文案...">${escHtml(work?.content || '')}</textarea></div>
+      <div class="form-group"><label class="form-label">完整文案</label><textarea class="form-textarea" id="workContent" rows="6" placeholder="粘贴完整口播稿，保存后点作品标题即可自动拆解...">${escHtml(work?.content || '')}</textarea></div>
       <div style="display:flex;gap:8px;margin-top:20px">
         <button class="btn btn-primary" onclick="App.saveBenchWork('${benchId}','${workId || ''}')">${work ? '保存' : '添加'}</button>
         <button class="btn btn-secondary" onclick="App.closeModal()">取消</button>
       </div>
     `);
+    ['workLikes', 'workComment', 'workFavorite', 'workShare'].forEach(id => this.checkNumParse(id));
   },
   
   saveBenchWork(benchId, workId) {
