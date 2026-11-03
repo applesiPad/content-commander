@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>PRD 核对 · 功能差距清单</title>
+<style>
+:root{--bg:#f5f6f8;--ink:#22272e;--ink2:#5b6570;--line:#e3e7ec;--acc:#2563eb;--deep:#1e3a8a;--soft:#eff4ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.85 "Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:26px 26px 80px}
+h1{font-size:22px;margin:6px 0 4px}h2{font-size:18px;margin:30px 0 10px;padding-left:10px;border-left:4px solid var(--acc)}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13px;background:#fff}
+th,td{border:1px solid var(--line);padding:5px 9px;vertical-align:top;text-align:left}th{background:var(--soft);color:var(--deep)}
+code{font-family:Consolas,monospace;background:#f0f2f5;padding:1px 5px;border-radius:4px;font-size:.92em}
+.ok{color:#15803d;font-weight:700}.part{color:#b45309;font-weight:700}.no{color:#b91c1c;font-weight:700}
+.p0{color:#b91c1c;font-weight:700}.p1{color:#b45309;font-weight:600}.p2{color:#5b6570}
+.note{background:var(--soft);border-left:3px solid var(--acc);padding:8px 14px;border-radius:0 8px 8px 0;margin:8px 0;font-size:13.5px}
+.warn{background:#fff8ec;border-left:3px solid #f59e0b;padding:8px 14px;border-radius:0 8px 8px 0;margin:8px 0;font-size:13.5px}
+.fr{font-family:Consolas,monospace;font-size:12px;background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:4px;white-space:nowrap}
+summary{cursor:pointer;font-weight:600;margin:6px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>PRD 核对 · 功能差距清单</h1>
+<p style="color:var(--ink2)">核对基线：PRD-00 ~ PRD-12（v0.9）｜ 核对对象：模块化版 <code>内容指挥部/</code>｜ 核对日期：2026-11-04</p>
+<p>图例：<span class="ok">✅ 达标</span> ｜ <span class="part">🟡 部分达标</span> ｜ <span class="no">❌ 未实现</span> ｜ 优先级沿用 PRD（<span class="p0">P0</span>/<span class="p1">P1</span>/<span class="p2">P2</span>）</p>
+
+<div class="note"><b>总览</b>：78 条 FR 中 — ✅ 达标 27 条 ｜ 🟡 部分达标 25 条 ｜ ❌ 未实现 26 条。P0 缺口 9 条（下表加粗标注处置轮次）。本轮（2026-11-04）已修复 P0 缺口 8 条 + 高价值 P1 4 条，其余列入 v1.1 排期建议。</div>
+
+<h2>M0 指挥板（FR-00）</h2>
+<table>
+<tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
+<tr><td><span class="fr">FR-00-01</span></td><td>顶部四卡 + 点击跳转</td><td class="p0">P0</td><td class="ok">✅</td><td>待拍/待发/待回填/近7天发布，可点击跳转</td></tr>
+<tr><td><span class="fr">FR-00-02</span></td><td>本周排期时间轴（行=账号 列=7天）</td><td class="p0">P0</td><td class="ok">✅</td><td>按 IP 着色</td></tr>
+<tr><td><span class="fr">FR-00-03</span></td><td>右栏：热点Top3 / 30天节点 / 产量对比</td><td class="p1">P1</td><td class="ok">✅</td><td>三项齐备</td></tr>
+</table>
+
+<h2>M1 IP 与账号（FR-01）</h2>
+<table>
+<tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
+<tr><td><span class="fr">FR-01-01</span></td><td>IP 新建/编辑/删除（7 字段）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：补每周更新目标 weeklyGoal（默认3）</td></tr>
+<tr><td><span class="fr">FR-01-02</span></td><td>IP 数量上限 ipLimit 可配置</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1：设置项 + 新建按钮禁用</td></tr>
+<tr><td><span class="fr">FR-01-03</span></td><td>账号登记/编辑/删除</td><td class="p0">P0</td><td class="part">🟡</td><td>缺主页链接 link（可选项，v1.1）</td></tr>
+<tr><td><span class="fr">FR-01-04</span></td><td>平台清单 8 个 + 自定义追加</td><td class="p0">P0</td><td class="part">🟡</td><td>内置 8 平台（含微博，PRD 原文为百家号，差异待定夺）；<b>自定义追加未做</b>（v1.1）</td></tr>
+<tr><td><span class="fr">FR-01-05</span></td><td>矩阵覆盖表（行=IP 列=平台 空格+开号）</td><td class="p1">P1</td><td class="part">🟡→✅</td><td><b>本轮实现</b>（用户点名）：新建/编辑 IP 可勾选开通平台自动建号；IP 页新增矩阵覆盖表，空格「+开号」预填弹窗</td></tr>
+<tr><td><span class="fr">FR-01-06</span></td><td>全局 IP 切换器，刷新记忆</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：刷新后恢复上次选择的 IP</td></tr>
+<tr><td><span class="fr">FR-01-07</span></td><td>删除级联 + 数量提示</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：删账号级联删其发布记录；删 IP 级联删账号；确认框列出涉及数量</td></tr>
+<tr><td><span class="fr">FR-01-08</span></td><td>IP 档案抽屉</td><td class="p2">P2</td><td class="part">🟡</td><td>有概况统计；缺内容阶段列表/涨粉汇总（v1.1）</td></tr>
+</table>
+
+<h2>M2 热点雷达（FR-02）</h2>
+<table>
+<tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
+<tr><td><span class="fr">FR-02-01</span></td><td>热点录入/编辑/删除</td><td class="p0">P0</td><td class="ok">✅</td><td>字段齐备，72h 倒计时正常</td></tr>
+<tr><td><span class="fr">FR-02-02</span></td><td>适用 IP 多选</td><td class="p0">P0</td><td class="ok">✅</td><td></td></tr>
+<tr><td><span class="fr">FR-02-03</span></td><td>72h 窗口 &lt;24h 标橙、过期折叠</td><td class="p0">P0</td><td class="ok">✅</td><td>dueAt=创建+72h；过期区折叠</td></tr>
+<tr><td><span class="fr">FR-02-04</span></td><td>按 IP 生成 3 条切入角度</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1：本地角度模板引擎（赛道×人设×热点类型）</td></tr>
+<tr><td><span class="fr">FR-02-05</span></td><td>转选题（预填+回链+converted）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：热点卡新增「转选题」，预填标题/来源/回链并记录 converted</td></tr>
+<tr><td><span class="fr">FR-02-06</span></td><td>热榜直达外链集合</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1：设置可增删的链接清单</td></tr>
+<tr><td><span class="fr">FR-02-07</span></td><td>营销节点（内置+自定义）</td><td class="p1">P1</td><td class="part">🟡</td><td>指挥板有展示；缺节点管理 UI（自定义增删/隐藏内置）</td></tr>
+</table>
+
+<h2>M3 对标拆解（FR-03）</h2>
+<table>
+<tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
+<tr><td><span class="fr">FR-03-01</span></td><td>对标账号 CRUD + 6 条标准勾选</td><td class="p0">P0</td><td class="part">🟡</td><td>CRUD 有；缺 6 标准勾选与「好对标」徽章</td></tr>
+<tr><td><span class="fr">FR-03-02</span></td><td>作品录入 + 数字解析失败标红</td><td class="p0">P0</td><td class="part">🟡</td><td>录入有；失败标红未做</td></tr>
+<tr><td><span class="fr">FR-03-03</span></td><td>自动分段（开头/正文/结尾）</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1：启发式分段规则（PRD §3.1）</td></tr>
+<tr><td><span class="fr">FR-03-04</span></td><td>结构识别 4 类标签</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1：依赖 FR-03-03 分段</td></tr>
+<tr><td><span class="fr">FR-03-05</span></td><td>爆款判定 + 收藏型画像</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1：hotMult/favPortrait 阈值已在常量区</td></tr>
+<tr><td><span class="fr">FR-03-06</span></td><td>规律小结卡</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
+<tr><td><span class="fr">FR-03-07</span></td><td>借选题</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1</td></tr>
+<tr><td><span class="fr">FR-03-08</span></td><td>套结构写稿</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1：可复用文案工坊 useStructure</td></tr>
+</table>
+
+<h2>M4 选题池（FR-04）</h2>
+<table>
+<tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
+<tr><td><span class="fr">FR-04-01</span></td><td>选题 CRUD + 来源徽章回链</td><td class="p0">P0</td><td class="part">🟡</td><td>CRUD 有；表单缺来源选择，回链跳转未做</td></tr>
+<tr><td><span class="fr">FR-04-02</span></td><td>五维打分</td><td class="p0">P0</td><td class="ok">✅</td><td></td></tr>
+<tr><td><span class="fr">FR-04-03</span></td><td>评级 S/A/B/C（阈值可调）</td><td class="p0">P0</td><td class="part">🟡</td><td>评级有；阈值 21/17/13 硬编码，设置不可调（v1.1）</td></tr>
+<tr><td><span class="fr">FR-04-04</span></td><td>题型判断</td><td class="p1">P1</td><td class="ok">✅</td><td>calcTopicType</td></tr>
+<tr><td><span class="fr">FR-04-05</span></td><td>五维雷达图 + 平均画像叠加</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1：SVG 五边形</td></tr>
+<tr><td><span class="fr">FR-04-06</span></td><td>标题工坊（关键词生成 10 候选）</td><td class="p1">P1</td><td class="part">🟡</td><td>20 条公式在常量区并展示于文案工坊；选题池无工坊入口与关键词生成</td></tr>
+<tr><td><span class="fr">FR-04-07</span></td><td>立项写稿</td><td class="p0">P0</td><td class="ok">✅</td><td>重复立项提示未做（v1.1 小项）</td></tr>
+<tr><td><span class="fr">FR-04-08</span></td><td>看板视图（两种分组+拖拽）</td><td class="p2">P2</td><td class="no">❌</td><td>v1.2 候选</td></tr>
+</table>
+
+<h2>M5 文案工坊（FR-05）</h2>
+<table>
+<tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
+<tr><td><span class="fr">FR-05-01</span></td><td>五段式内容记录</td><td class="p0">P0</td><td class="ok">✅</td><td></td></tr>
+<tr><td><span class="fr">FR-05-02</span></td><td>时长估算</td><td class="p0">P0</td><td class="ok">✅</td><td>侧栏字数+秒数</td></tr>
+<tr><td><span class="fr">FR-05-03</span></td><td>10 项体检 + 逐项建议</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：体检结果逐项显示改法建议（tip 原本已算未展示）；环形进度 v1.1</td></tr>
+<tr><td><span class="fr">FR-05-04</span></td><td>极限词检测 + 词库可增删</td><td class="p0">P0</td><td class="part">🟡</td><td>体检含极限词项；设置中词库增删未做（v1.1）</td></tr>
+<tr><td><span class="fr">FR-05-05</span></td><td>模板插入（各 15+ 条）</td><td class="p1">P1</td><td class="part">🟡</td><td>插入机制有；模板量 钩子10/标题20/结构7，钩子结构数量不足 15+</td></tr>
+<tr><td><span class="fr">FR-05-06</span></td><td>套结构草稿（占位提示）</td><td class="p1">P1</td><td class="part">🟡</td><td>useStructure 为近似实现（插入结构句式）</td></tr>
+<tr><td><span class="fr">FR-05-07</span></td><td>存稿快照（对比+回滚）</td><td class="p1">P1</td><td class="part">🟡</td><td>快照+回滚有；对比视图未做</td></tr>
+<tr><td><span class="fr">FR-05-08</span></td><td>进入拍摄→自动分镜</td><td class="p0">P0</td><td class="ok">✅</td><td>moveToShoot + autoStoryboard</td></tr>
+</table>
+
+<h2>M6 拍摄与提词器（FR-06）</h2>
+<table>
+<tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
+<tr><td><span class="fr">FR-06-01</span></td><td>自动分镜 + 逐镜可编辑</td><td class="p0">P0</td><td class="ok">✅</td><td></td></tr>
+<tr><td><span class="fr">FR-06-02</span></td><td>重建分镜（确认覆盖）</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1：仅首次自动生成，无重建按钮</td></tr>
+<tr><td><span class="fr">FR-06-03</span></td><td>拍摄日程（按日期分组/改期）</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1：缺 shootDate 概念</td></tr>
+<tr><td><span class="fr">FR-06-04</span></td><td>开拍检查清单（5 固定+自定义）</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
+<tr><td><span class="fr">FR-06-05</span></td><td>全屏提词器（速度/字号/镜像/按镜）</td><td class="p0">P0</td><td class="part">🟡</td><td>有全屏文本遮罩；<b>无滚动控制/字号/镜像/按镜高亮</b>（v1.1 重点）</td></tr>
+<tr><td><span class="fr">FR-06-06</span></td><td>逐镜完成标记</td><td class="p0">P0</td><td class="ok">✅</td><td>打勾时间未记录（小项）</td></tr>
+<tr><td><span class="fr">FR-06-07</span></td><td>阶段流转（拍完→剪辑→排期）</td><td class="p0">P0</td><td class="part">🟡</td><td>通过稿件弹窗改阶段；缺流转按钮链</td></tr>
+<tr><td><span class="fr">FR-06-08</span></td><td>景别速查卡</td><td class="p2">P2</td><td class="no">❌</td><td>v1.2 候选</td></tr>
+</table>
+
+<h2>M7 发布排期（FR-07）</h2>
+<table>
+<tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
+<tr><td><span class="fr">FR-07-01</span></td><td>7 日排期视图</td><td class="p0">P0</td><td class="ok">✅</td><td>本轮补回排期时间显示</td></tr>
+<tr><td><span class="fr">FR-07-02</span></td><td>排期编辑（时间+目标账号多选）</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮实现（P0 大缺口）</b>：稿件弹窗新增排期区——日期/时间/目标账号多选，持久化 scheduledAt/scheduledTime/targetAccounts</td></tr>
+<tr><td><span class="fr">FR-07-03</span></td><td>封面预览（画幅模拟）</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
+<tr><td><span class="fr">FR-07-04</span></td><td>发布确认清单（4 项勾选）</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
+<tr><td><span class="fr">FR-07-05</span></td><td>复制标题/标签/全文</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮实现</b>：稿件弹窗三键复制（标题/标签/全文拼接），toast 提示</td></tr>
+<tr><td><span class="fr">FR-07-06</span></td><td>标记已发布（幂等建 posts）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：幂等（已有记录不重建）+ 数量确认；默认 19:30 随排期编辑落地</td></tr>
+<tr><td><span class="fr">FR-07-07</span></td><td>待回填提醒（48h 标记）</td><td class="p1">P1</td><td class="part">🟡</td><td>指挥板计数有；48h 超时标记未做</td></tr>
+</table>
+<div class="warn"><b>发布辅助（用户关切的"自动发布"替代方案）</b>：本轮在稿件弹窗内置各平台创作者后台直达链接（用户点击跳转，符合 NFR-02 出网点清单），配合复制三连 + 排期 + 标记已发布，形成"一键准备、手动发布、回来标记"的半自动闭环。<b>全自动发布受平台 API 限制与合规约束，不做</b>（PRD-00 §4 Out of Scope / D-06），详见文末方案说明。</div>
+
+<h2>M8 数据复盘（FR-08）</h2>
+<table>
+<tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
+<tr><td><span class="fr">FR-08-01</span></td><td>回填表格（9 字段）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：回填弹窗补 5秒完播/转发/涨粉（原有播放/点赞/收藏/评论）</td></tr>
+<tr><td><span class="fr">FR-08-02</span></td><td>粘贴回填（预览确认）</td><td class="p1">P1</td><td class="part">🟡</td><td>粘贴解析可用（含"1.2万"）；逐行填充与预览确认 v1.1</td></tr>
+<tr><td><span class="fr">FR-08-03</span></td><td>五项总览卡</td><td class="p0">P0</td><td class="ok">✅</td><td>字段口径与 PRD 略异（总点赞 vs 总涨粉）</td></tr>
+<tr><td><span class="fr">FR-08-04</span></td><td>单条诊断（结论+逐指标解读）</td><td class="p0">P0</td><td class="ok">✅</td><td>diagnosePost</td></tr>
+<tr><td><span class="fr">FR-08-05</span></td><td>象限散点图（点大小=播放 可点击）</td><td class="p1">P1</td><td class="part">🟡</td><td>SVG 有；点大小/点击看诊断 v1.1</td></tr>
+<tr><td><span class="fr">FR-08-06</span></td><td>趋势折线（30 天双轴）</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
+<tr><td><span class="fr">FR-08-07</span></td><td>对比视图（按 IP/账号条形）</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
+<tr><td><span class="fr">FR-08-08</span></td><td>筛选器（日期/平台/账号）</td><td class="p0">P0</td><td class="part">🟡</td><td>仅 IP 过滤；日期/平台/账号筛选 v1.1</td></tr>
+<tr><td><span class="fr">FR-08-09</span></td><td>自动周报（vs 上周期 + Word）</td><td class="p0">P0</td><td class="part">🟡</td><td>Markdown 周报有；环比对比/最佳最差/Word 导出 v1.1</td></tr>
+<tr><td><span class="fr">FR-08-10</span></td><td>删除发布记录</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮修复</b>：回填弹窗每行新增删除按钮（二次确认）</td></tr>
+</table>
+
+<h2>M9 AI 助手（FR-09）</h2>
+<table>
+<tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
+<tr><td><span class="fr">FR-09-01</span></td><td>双协议 + 测试连接 + 温度</td><td class="p0">P0</td><td class="part">🟡</td><td>OpenAI 兼容 SSE 流式可用；Anthropic 协议/测试连接/温度 v1.1</td></tr>
+<tr><td><span class="fr">FR-09-02</span></td><td>预设服务商下拉（8 家）</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1：仅手填 Base URL</td></tr>
+<tr><td><span class="fr">FR-09-03</span></td><td>上下文勾选 + 发送前预览</td><td class="p0">P0</td><td class="part">🟡</td><td>自动带 IP+近5条内容；勾选/预览 v1.1</td></tr>
+<tr><td><span class="fr">FR-09-04</span></td><td>16 个任务模板（完整提示词）</td><td class="p0">P0</td><td class="part">🟡</td><td>16 模板名齐备，但点击仅填一句"请使用模板X"；<b>原创完整提示词 v1.1 重点</b></td></tr>
+<tr><td><span class="fr">FR-09-05</span></td><td>结果回填（标题/开头/全文）</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
+<tr><td><span class="fr">FR-09-06</span></td><td>无 Key 模式（提示词生成+复制）</td><td class="p0">P0</td><td class="ok">✅</td><td>带 IP 上下文生成提示词</td></tr>
+<tr><td><span class="fr">FR-09-07</span></td><td>对话管理（重命名/删除/停止）</td><td class="p1">P1</td><td class="part">🟡</td><td>新建/切换有；重命名/删除 v1.1</td></tr>
+<tr><td><span class="fr">FR-09-08</span></td><td>Key 不入备份</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮修复</b>：导出剥离 ai.apiKey（NFR-05）</td></tr>
+<tr><td><span class="fr">FR-09-09</span></td><td>CORS 失败分类引导</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
+</table>
+
+<h2>M10 设置 / 备份 / 引导（FR-10）</h2>
+<table>
+<tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
+<tr><td><span class="fr">FR-10-01</span></td><td>欢迎向导</td><td class="p0">P0</td><td class="part">🟡</td><td>三选一向导有；形象/称呼步骤 v1.1</td></tr>
+<tr><td><span class="fr">FR-10-02</span></td><td>工作室设置（名称/形象/IP上限）</td><td class="p0">P0</td><td class="part">🟡</td><td>主理人名称+主题有；工作室名/形象/IP上限 v1.1</td></tr>
+<tr><td><span class="fr">FR-10-03</span></td><td>数据标准（11 项阈值 + 恢复默认）</td><td class="p0">P0</td><td class="part">🟡</td><td>3 项可调（wpm/fiveSecLine/favLine）；其余 8 项 v1.1</td></tr>
+<tr><td><span class="fr">FR-10-04</span></td><td>AI 设置（服务商/温度/测试连接）</td><td class="p0">P0</td><td class="part">🟡</td><td>地址/Key/模型有；服务商下拉/温度/测试 v1.1</td></tr>
+<tr><td><span class="fr">FR-10-05</span></td><td>备份导出（剥离 Key）</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮修复</b>：导出文件剥离 ai.apiKey，附导出时间</td></tr>
+<tr><td><span class="fr">FR-10-06</span></td><td>备份恢复（校验+数量核对）</td><td class="p0">P0</td><td class="part">🟡</td><td>导入可用；schema 校验/数量核对弹窗 v1.1</td></tr>
+<tr><td><span class="fr">FR-10-07</span></td><td>示例与清空（清空保留设置）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：清空保留主题/数据标准/AI 设置/主理人，明示 Key 需单独清除</td></tr>
+</table>
+
+<h2>非功能需求（NFR）</h2>
+<table>
+<tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
+<tr><td><span class="fr">NFR-01</span></td><td>零依赖零外链，离线可用</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮修复</b>：移除 Google Fonts CDN 外链，改系统字体栈</td></tr>
+<tr><td><span class="fr">NFR-02</span></td><td>出网点清单（外链+AI 请求）</td><td class="p0">P0</td><td class="ok">✅</td><td>本轮新增的创作者后台链接属"用户点击外链"，合规</td></tr>
+<tr><td><span class="fr">NFR-03</span></td><td>性能 500 内容/2000 posts + 用量显示</td><td class="p1">P1</td><td class="part">🟡</td><td>架构满足；localStorage 用量显示未做</td></tr>
+<tr><td><span class="fr">NFR-04</span></td><td>写操作即存 + 版本迁移链</td><td class="p0">P0</td><td class="ok">✅</td><td>migrate() 存在</td></tr>
+<tr><td><span class="fr">NFR-05</span></td><td>Key 不入备份不明文回显</td><td class="p0">P0</td><td class="part">🟡→✅</td><td>密码框本就有；导出剥离本轮修复</td></tr>
+<tr><td><span class="fr">NFR-06</span></td><td>合规边界（不登录不代发不抓取）</td><td class="p0">P0</td><td class="ok">✅</td><td>代码无平台域名请求</td></tr>
+<tr><td><span class="fr">NFR-07</span></td><td>判定依据可查看</td><td class="p0">P0</td><td class="part">🟡</td><td>体检逐项 tip 本轮可见；诊断建议已有</td></tr>
+<tr><td><span class="fr">NFR-08</span></td><td>localStorage 禁用降级警告</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1：try/catch + 警告条</td></tr>
+<tr><td><span class="fr">NFR-09</span></td><td>关于页免责声明</td><td class="p0">P0</td><td class="part">🟡</td><td><b>本轮补充</b>：关于页加合规边界与"创作参考不保证效果"声明</td></tr>
+<tr><td><span class="fr">NFR-10</span></td><td>词表/阈值集中常量区</td><td class="p1">P1</td><td class="ok">✅</td><td>constants.js</td></tr>
+</table>
+
+<h2>关于"接入账号自动发布"的可行性结论</h2>
+<div class="warn">
+<b>结论：全自动发布不可行也不建议做；已用"发布辅助闭环"替代。</b><br><br>
+1. <b>官方 API 路线</b>：抖音/小红书/视频号的视频发布能力仅对企业资质开放且需平台审核，个人创作者拿不到授权；B站虽有个 人投稿 API 但需 OAuth 接入与密钥管理，超出本地 HTML 工具的安全边界。各家接口还会随版本频繁变动。<br>
+2. <b>浏览器自动化路线</b>（模拟点击上传页）：违反各平台用户协议，触发风控会导致限流甚至封号——用的是你自己的真实账号，风险不可逆。<br>
+3. <b>PRD 既定边界</b>：PRD-00 §4 明确"向平台自动发布"为 Out of Scope，D-06 决策「标记已发布只写本地状态，绝不调用平台」，NFR-06 为合规红线。<br><br>
+<b>已实现的替代闭环（本轮）</b>：排期定时间定账号 → 一键复制标题/标签/全文 → 直达对应平台创作者后台 → 手动发布 → 回来一键标记（自动生成各账号待回填记录）。把每次发布的手工操作压缩到 1 分钟内，且零封号风险。<br>
+<b>未来可选</b>：若你后续有企业资质，可在设置里加"开放平台适配器"预留位（填自己的 API 凭证），属于 v2.0 议题。
+</div>
+
+<h2>v1.1 排期建议（按价值排序）</h2>
+<ol style="font-size:13.5px">
+<li><b>全屏提词器完善</b>（FR-06-05：滚动速度/字号/镜像/按镜高亮）——拍摄时天天用</li>
+<li><b>AI 16 模板完整提示词</b>（FR-09-04）+ 服务商预设下拉（FR-09-02）——AI 模块实质可用</li>
+<li><b>对标自动分段 + 结构识别 + 借选题/套结构</b>（FR-03-03/04/07/08）——方法论闭环</li>
+<li><b>复盘趋势折线 + 对比视图 + 筛选器</b>（FR-08-06/07/08）</li>
+<li><b>设置补全</b>（FR-10-03 其余 8 项阈值 + 恢复默认；平台自定义追加 FR-01-04）</li>
+<li>选题雷达图 / 五维叠加（FR-04-05）、重建分镜（FR-06-02）、拍摄日程（FR-06-03）、开拍清单（FR-06-04）</li>
+<li>localStorage 降级警告（NFR-08）、IP 上限（FR-01-02）、热榜直达（FR-02-06）、节点管理（FR-02-07）</li>
+</ol>
+</div>
+</body>
+</html>

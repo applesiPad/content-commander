@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>原型 · 多号创作台（待核对）</title>
+<style>
+:root{--bg:#f2f4f8;--card:#fff;--ink:#1f2430;--ink2:#67707d;--line:#e2e6ee;--acc:#2563eb;--deep:#1e3a8a;--soft:#eef3ff;--ok:#0c8a5b;--warn:#c07a08;--bad:#c23434;--grid:#eef1f6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.7 "Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}
+.app{display:flex;min-height:100vh}
+aside{width:196px;background:#1b2340;color:#c6d0f5;padding:16px 0 26px;flex-shrink:0}
+aside .logo{font-size:16.5px;font-weight:800;color:#fff;padding:8px 18px 2px}
+aside .logo i{color:#7ea2ff;font-style:normal}
+aside .sub{font-size:11px;color:#8792c4;padding:0 18px 12px;border-bottom:1px solid #2c3560}
+aside nav{padding:10px 10px}
+aside nav a{display:flex;align-items:center;gap:8px;color:#c6d0f5;text-decoration:none;padding:8px 10px;border-radius:8px;font-size:13.5px;margin:2px 0}
+aside nav a:hover{background:#252e56;color:#fff}
+aside nav a.on{background:var(--acc);color:#fff;font-weight:600}
+aside nav .ico{width:20px;text-align:center;opacity:.9}
+aside .foot{font-size:11px;color:#7781b4;padding:14px 18px 0;border-top:1px solid #2c3560;margin-top:10px;line-height:1.8}
+main{flex:1;min-width:0;display:flex;flex-direction:column}
+header.top{background:var(--card);border-bottom:1px solid var(--line);padding:10px 22px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:5}
+header.top .ipsw{display:flex;gap:6px;flex-wrap:wrap}
+.ipchip{padding:4px 12px;border-radius:999px;border:1.5px solid var(--line);font-size:12.5px;cursor:pointer;background:#fff;color:var(--ink2)}
+.ipchip.on{border-color:var(--acc);color:var(--acc);background:var(--soft);font-weight:600}
+header.top .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.crumb{font-size:12.5px;color:var(--ink2)}
+.crumb a{color:var(--acc);text-decoration:none;font-weight:600}
+.badge{font-size:11px;background:#fff3e0;color:#b45309;border:1px solid #f1dcba;padding:2px 10px;border-radius:999px}
+main .body{padding:20px 22px 60px;flex:1}
+.page{display:none}.page.on{display:block;animation:fade .18s ease}
+@keyframes fade{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+h2.pt{font-size:19px;margin:2px 0 2px}p.pd{margin:2px 0 16px;color:var(--ink2);font-size:13px}
+.row{display:flex;gap:14px;flex-wrap:wrap}.col{flex:1;min-width:280px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+.card h3{margin:0 0 10px;font-size:14.5px;color:var(--deep);display:flex;align-items:center;gap:8px}
+.card h3 .hint{font-weight:400;font-size:11.5px;color:var(--ink2)}
+.stat4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;cursor:pointer}
+.stat:hover{border-color:var(--acc)}
+.stat b{font-size:24px;display:block;color:var(--deep)}
+.stat span{font-size:12px;color:var(--ink2)}
+.stat .sub{font-size:11px;color:var(--warn)}
+table.tb{border-collapse:collapse;width:100%;font-size:12.8px;background:#fff}
+.tb th,.tb td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:middle}
+.tb th{background:var(--soft);color:var(--deep);white-space:nowrap;font-weight:600}
+.tb tr:nth-child(even) td{background:#fafbfe}
+.btn{display:inline-block;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:12.5px;cursor:pointer;color:var(--ink)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.sm{padding:3px 10px;font-size:11.5px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;border:1px solid;margin:0 2px}
+.tg-hot{background:#fdeaea;color:#b91c1c;border-color:#f3c4c4}.tg-a{background:#fdf1e0;color:#b45309;border-color:#f3ddba}
+.tg-b{background:var(--soft);color:var(--acc);border-color:#c9d8fb}.tg-c{background:#eef0f3;color:#67707d;border-color:#d8dde5}
+.tg-ok{background:#e2f6ee;color:#0c8a5b;border-color:#bce6d4}.tg-warn{background:#fff3e0;color:#b45309;border-color:#f1dcba}
+.tg-ip{background:#eef3ff;color:#1e3a8a;border-color:#c9d8fb}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
+.pill{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11.5px;color:#fff;margin:2px}
+input[type=text],select,textarea{border:1px solid var(--line);border-radius:8px;padding:7px 10px;font:inherit;font-size:13px;width:100%;background:#fbfcfe}
+label.f{display:block;font-size:12px;color:var(--ink2);margin:8px 0 3px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.check{display:flex;align-items:center;gap:8px;font-size:13px;margin:5px 0}
+.check .box{width:15px;height:15px;border:1.5px solid #b8c2d4;border-radius:4px;flex-shrink:0}
+.check.done .box{background:var(--ok);border-color:var(--ok)}
+.check.done .box::after{content:"✓";color:#fff;font-size:11px;display:block;text-align:center;margin-top:-1px}
+.note{background:var(--soft);border-left:3px solid var(--acc);padding:8px 14px;border-radius:0 8px 8px 0;margin:10px 0;font-size:12.8px}
+.warnbar{background:#fff8e6;border:1px solid #f1dcba;color:#8a5a0a;padding:8px 16px;border-radius:10px;font-size:12.5px;margin-bottom:14px;display:none}
+.tl{display:grid;grid-template-columns:120px repeat(7,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;font-size:12px}
+.tl>div{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:6px 7px;min-height:40px}
+.tl .h{background:var(--soft);font-weight:600;color:var(--deep);text-align:center;min-height:28px}
+.tl .rh{background:#f7f9fc;font-weight:600;color:var(--ink2)}
+.caps{display:flex;flex-direction:column;gap:4px}
+.cap{padding:3px 9px;border-radius:7px;color:#fff;font-size:11.5px;cursor:default;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.radar{display:flex;gap:18px;align-items:center}
+.shot{display:grid;grid-template-columns:44px 74px 1fr 60px 60px 90px;gap:8px;align-items:center;padding:7px 4px;border-bottom:1px dashed var(--line);font-size:12.8px}
+.shot .no{font-weight:700;color:var(--deep)}
+.tele{background:#101522;color:#e8ecff;border-radius:12px;padding:22px 26px;font-size:20px;line-height:2;letter-spacing:1px}
+.tele .cur{background:#2c5fd8;border-radius:6px;padding:2px 6px}
+.tele .dim{color:#5e688c}
+.range{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink2);margin:6px 0}
+.range input{flex:1;accent-color:var(--acc)}
+.chart{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px}
+.leg{font-size:11.5px;color:var(--ink2);display:flex;gap:14px;margin-top:6px;justify-content:center}
+.msgs{max-height:260px;overflow:auto;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:82%;padding:9px 13px;border-radius:12px;font-size:13px}
+.msg.u{align-self:flex-end;background:var(--acc);color:#fff;border-bottom-right-radius:4px}
+.msg.a{align-self:flex-start;background:#f1f4fa;border:1px solid var(--line);border-bottom-left-radius:4px}
+.tplgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tpl{border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:12px;cursor:pointer;background:#fff}
+.tpl:hover{border-color:var(--acc);background:var(--soft)}
+.welcome{max-width:560px;margin:30px auto;text-align:center}
+.welcome .wcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:34px 30px}
+.avatar{width:66px;height:66px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:26px;color:#fff;margin:4px}
+footer.pfoot{margin-top:26px;padding-top:14px;border-top:1px dashed var(--line);font-size:12px;color:var(--ink2);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+a{color:var(--acc)}
+@media (max-width:900px){.stat4{grid-template-columns:1fr 1fr}.tplgrid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="logo">多号<i>创作台</i></div>
+  <div class="sub">原型 v0.9 · 待核对</div>
+  <nav id="nav">
+    <a data-p="studio" class="on"><span class="ico">🏠</span>指挥板</a>
+    <a data-p="ip"><span class="ico">👥</span>IP 与账号</a>
+    <a data-p="hot"><span class="ico">📡</span>热点雷达</a>
+    <a data-p="bench"><span class="ico">🔍</span>对标拆解</a>
+    <a data-p="topic"><span class="ico">💡</span>选题池</a>
+    <a data-p="script"><span class="ico">✍️</span>文案工坊</a>
+    <a data-p="shoot"><span class="ico">🎬</span>拍摄与提词</a>
+    <a data-p="schedule"><span class="ico">📅</span>发布排期</a>
+    <a data-p="review"><span class="ico">📊</span>数据复盘</a>
+    <a data-p="ai"><span class="ico">🤖</span>AI 助手</a>
+    <a data-p="settings"><span class="ico">⚙️</span>设置与备份</a>
+    <a data-p="welcome"><span class="ico">🚪</span>欢迎向导（示意）</a>
+  </nav>
+  <div class="foot">中保真原型：结构与字段为准<br>视觉细节开发阶段微调<br>每页右上角链回对应 PRD</div>
+</aside>
+<main>
+<header class="top">
+  <span class="crumb">当前范围：</span>
+  <div class="ipsw">
+    <span class="ipchip on">全部 IP</span>
+    <span class="ipchip"><span class="dot" style="background:#2563eb"></span>阿哲聊效率</span>
+    <span class="ipchip"><span class="dot" style="background:#0f9d76"></span>哲嫂小厨房</span>
+    <span class="ipchip"><span class="dot" style="background:#c07a08"></span>哲叔读书会</span>
+  </div>
+  <div class="right">
+    <span class="badge">⚠ 原型数据均为虚构</span>
+    <a class="btn sm" href="PRD-00-主文档.html">↩ 回 PRD 树</a>
+  </div>
+</header>
+<div class="body">
+
+<!-- ============ 指挥板 ============ -->
+<section class="page on" id="p-studio">
+  <div class="crumb" style="margin-bottom:6px">页面 PRD：<a href="PRD-00-主文档.html">PRD-00 §5.1 指挥板（FR-00）</a></div>
+  <h2 class="pt">指挥板</h2>
+  <p class="pd">今天该干什么 —— 待办计数、本周排期时间轴、热点与节点速览（替代仿真场景插画，决策 D-02）</p>
+  <div class="stat4">
+    <div class="stat" onclick="go('shoot')"><b>2</b><span>待拍摄</span><div class="sub">最早明天 09:00</div></div>
+    <div class="stat" onclick="go('schedule')"><b>3</b><span>待发布（已排期）</span><div class="sub">今晚 19:30 ×1</div></div>
+    <div class="stat" onclick="go('review')"><b>4</b><span>待回填数据</span><div class="sub">2 条超过 48h</div></div>
+    <div class="stat" onclick="go('review')"><b>7 / 目标 9</b><span>近 7 天发布</span><div class="sub">达成 78%</div></div>
+  </div>
+  <div class="row">
+    <div class="col" style="flex:2.2">
+      <div class="card">
+        <h3>本周排期时间轴 <span class="hint">行=账号 · 列=今天起 7 天 · 胶囊=内容（按 IP 着色）</span></h3>
+        <div class="tl">
+          <div class="h"></div><div class="h">今天 周日</div><div class="h">周一</div><div class="h">周二</div><div class="h">周三</div><div class="h">周四</div><div class="h">周五</div><div class="h">周六</div>
+          <div class="rh">@阿哲·抖音</div><div><div class="caps"><span class="cap" style="background:#2563eb">19:30 三款笔记App实测</span></div></div><div></div><div><div class="caps"><span class="cap" style="background:#2563eb">19:30 通勤备份方案</span></div></div><div></div><div></div><div></div><div></div>
+          <div class="rh">@阿哲·小红书</div><div><div class="caps"><span class="cap" style="background:#2563eb;opacity:.75">19:30 三款笔记App实测</span></div></div><div></div><div></div><div></div><div></div><div><div class="caps"><span class="cap" style="background:#2563eb">18:00 打工人周报模板</span></div></div><div></div>
+          <div class="rh">@哲嫂·抖音</div><div></div><div><div class="caps"><span class="cap" style="background:#0f9d76">17:00 一锅出焖面</span></div></div><div></div><div><div class="caps"><span class="cap" style="background:#0f9d76">17:00 电饭煲蛋糕</span></div></div><div></div><div></div><div></div>
+          <div class="rh">@哲叔·视频号</div><div></div><div></div><div><div class="caps"><span class="cap" style="background:#c07a08">20:00 翻篇力</span></div></div><div></div><div></div><div></div><div><div class="caps"><span class="cap" style="background:#c07a08">20:00 早睡实验室</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <h3>未过期热点 Top3 <span class="hint">→ 热点雷达</span></h3>
+        <table class="tb"><tr><th>热点</th><th>剩余</th><th>标记 IP</th></tr>
+        <tr><td>某新系统发布</td><td><span class="tag tg-hot">18h</span></td><td>🔵🟢</td></tr>
+        <tr><td>双 11 预热开启</td><td><span class="tag tg-a">2 天</span></td><td>🔵🟢🟠</td></tr>
+        <tr><td>"数字排毒"话题升温</td><td><span class="tag tg-b">41h</span></td><td>🟠</td></tr></table>
+        <button class="btn sm" onclick="go('hot')">去热点雷达 →</button>
+      </div>
+      <div class="card">
+        <h3>近期节点 <span class="hint">30 天内</span></h3>
+        <table class="tb"><tr><td>双 11</td><td style="text-align:right"><b>12 天</b></td></tr><tr><td>立冬</td><td style="text-align:right"><b>8 天</b></td></tr><tr><td>感恩节</td><td style="text-align:right"><b>25 天</b></td></tr></table>
+      </div>
+      <div class="card">
+        <h3>近 7 天产量</h3>
+        <svg width="100%" height="70" viewBox="0 0 280 70">
+          <rect x="10" y="30" width="36" height="30" rx="4" fill="#2563eb"/><rect x="56" y="18" width="36" height="42" rx="4" fill="#2563eb"/><rect x="102" y="40" width="36" height="20" rx="4" fill="#0f9d76"/><rect x="148" y="26" width="36" height="34" rx="4" fill="#0f9d76"/><rect x="194" y="12" width="36" height="48" rx="4" fill="#c07a08"/><rect x="240" y="34" width="36" height="26" rx="4" fill="#8896c9"/>
+          <text x="28" y="66" font-size="9" fill="#67707d" text-anchor="middle">周二</text><text x="74" y="66" font-size="9" fill="#67707d" text-anchor="middle">周三</text><text x="120" y="66" font-size="9" fill="#67707d" text-anchor="middle">周四</text><text x="166" y="66" font-size="9" fill="#67707d" text-anchor="middle">周五</text><text x="212" y="66" font-size="9" fill="#67707d" text-anchor="middle">周六</text><text x="258" y="66" font-size="9" fill="#67707d" text-anchor="middle">今天</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ IP 与账号 ============ -->
+<section class="page" id="p-ip">
+  <div class="crumb" style="margin-bottom:6px">页面 PRD：<a href="PRD-01-IP与账号.html">PRD-01 IP 与账号（FR-01-01~08）</a></div>
+  <h2 class="pt">IP 与账号</h2>
+  <p class="pd">人设层 + 账号层 + 矩阵覆盖表（空位=没开号的平台，可一键补开）</p>
+  <div class="row">
+    <div class="col card">
+      <h3><span class="dot" style="background:#2563eb"></span>阿哲聊效率 <span class="tag tg-ip">数码效率</span></h3>
+      <p style="font-size:12.8px;margin:2px 0">人设：陪打工人把日子过顺的效率研究员 ｜ 观众：25–35 岁职场人</p>
+      <p style="font-size:12.8px;margin:2px 0;color:var(--ink2)">本周 3 / 3 ✅ ｜ 账号 3 个 ｜ 累计发布 42 条</p>
+      <button class="btn sm">编辑</button> <button class="btn sm">档案抽屉（P2）</button>
+    </div>
+    <div class="col card">
+      <h3><span class="dot" style="background:#0f9d76"></span>哲嫂小厨房 <span class="tag tg-ip">家常美食</span></h3>
+      <p style="font-size:12.8px;margin:2px 0">人设：下班 30 分钟搞定一顿饭的上班族 ｜ 观众：做饭新手</p>
+      <p style="font-size:12.8px;margin:2px 0;color:var(--ink2)">本周 2 / 4 ⚠ ｜ 账号 2 个 ｜ 累计发布 27 条</p>
+      <button class="btn sm">编辑</button> <button class="btn sm">档案抽屉（P2）</button>
+    </div>
+    <div class="col card" style="border-style:dashed">
+      <h3>+ 新建 IP</h3>
+      <p style="font-size:12.5px;color:var(--ink2)">上限 8 个（可配置 FR-01-02），当前 3/8</p>
+    </div>
+  </div>
+  <div class="card">
+    <h3>矩阵覆盖表 <span class="hint">FR-01-05</span></h3>
+    <table class="tb">
+      <tr><th>IP \ 平台</th><th>抖音</th><th>小红书</th><th>视频号</th><th>B站</th><th>快手</th><th>公众号</th></tr>
+      <tr><td><span class="dot" style="background:#2563eb"></span>阿哲聊效率</td><td>12,400</td><td>8,200</td><td>3,100</td><td><span class="tag tg-b" style="cursor:pointer">+ 开号</span></td><td><span class="tag tg-b" style="cursor:pointer">+ 开号</span></td><td>1,050</td></tr>
+      <tr><td><span class="dot" style="background:#0f9d76"></span>哲嫂小厨房</td><td>23,800</td><td>15,600</td><td><span class="tag tg-b" style="cursor:pointer">+ 开号</span></td><td><span class="tag tg-b" style="cursor:pointer">+ 开号</span></td><td>9,300</td><td><span class="tag tg-b" style="cursor:pointer">+ 开号</span></td></tr>
+      <tr><td><span class="dot" style="background:#c07a08"></span>哲叔读书会</td><td>5,600</td><td><span class="tag tg-b" style="cursor:pointer">+ 开号</span></td><td>2,400</td><td><span class="tag tg-b" style="cursor:pointer">+ 开号</span></td><td><span class="tag tg-b" style="cursor:pointer">+ 开号</span></td><td>4,200</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3>账号列表 <span class="hint">FR-01-03 · 删除账号将级联删除其发布记录（FR-01-07）</span></h3>
+    <table class="tb"><tr><th>账号</th><th>IP</th><th>平台</th><th>粉丝</th><th>近7日涨粉</th><th>操作</th></tr>
+    <tr><td>@阿哲聊效率</td><td>🔵 效率</td><td>抖音</td><td>12,400</td><td style="color:var(--ok)">+312</td><td><button class="btn sm">编辑</button> <button class="btn sm">删除</button></td></tr>
+    <tr><td>@阿哲聊效率</td><td>🔵 效率</td><td>小红书</td><td>8,200</td><td style="color:var(--ok)">+158</td><td><button class="btn sm">编辑</button> <button class="btn sm">删除</button></td></tr>
+    <tr><td>@哲嫂小厨房</td><td>🟢 美食</td><td>抖音</td><td>23,800</td><td style="color:var(--ok)">+890</td><td><button class="btn sm">编辑</button> <button class="btn sm">删除</button></td></tr>
+    </table>
+    <button class="btn pri">＋ 添加账号</button>
+  </div>
+</section>
+
+<!-- ============ 热点雷达 ============ -->
+<section class="page" id="p-hot">
+  <div class="crumb" style="margin-bottom:6px">页面 PRD：<a href="PRD-02-热点雷达.html">PRD-02 热点雷达（FR-02-01~07）</a></div>
+  <h2 class="pt">热点雷达</h2>
+  <p class="pd">手动录入 · 72 小时窗口 · 按 IP 出角度 · 转选题（不做自动抓榜，NFR-02）</p>
+  <div class="note">蹭热点前先问三句：这和我的赛道有关吗？我的人设适合说吗？72 小时内出得来吗？</div>
+  <div class="row">
+    <div class="col" style="flex:2">
+      <div class="card">
+        <h3>进行中 <span class="hint">按剩余时间排序，&lt;24h 标橙</span></h3>
+        <table class="tb">
+          <tr><th>热点</th><th>热度/趋势</th><th>剩余</th><th>适用 IP</th><th>操作</th></tr>
+          <tr><td><b>某新系统发布</b><br><span style="font-size:11px;color:var(--ink2)">来源：科技媒体</span></td><td>高 ↑</td><td><span class="tag tg-hot">18h</span></td><td>🔵🟢</td><td><button class="btn sm">角度(3)</button> <button class="btn sm pri">转选题</button> <button class="btn sm">编辑</button></td></tr>
+          <tr><td><b>双 11 预热开启</b><br><span style="font-size:11px;color:var(--ink2)">来源：电商</span></td><td>高 ↑</td><td><span class="tag tg-a">2 天</span></td><td>🔵🟢🟠</td><td><button class="btn sm">角度(3)</button> <button class="btn sm pri">转选题</button> <button class="btn sm">编辑</button></td></tr>
+          <tr><td><b>"数字排毒"话题升温</b></td><td>中 →</td><td><span class="tag tg-b">41h</span></td><td>🟠</td><td><button class="btn sm">角度(3)</button> <button class="btn sm pri">转选题</button> <button class="btn sm">编辑</button></td></tr>
+        </table>
+        <p style="font-size:12px;color:var(--ink2)">已过期（3）▸ 折叠显示 · 不自动删除</p>
+      </div>
+      <div class="card">
+        <h3>切入角度示例 <span class="hint">FR-02-04 · 本地模板生成，配 AI 后可增强</span></h3>
+        <p style="font-size:12.8px;margin:2px 0"><b>热点：</b>某新系统发布 → <b>给 🔵 阿哲聊效率：</b></p>
+        <ol style="font-size:12.8px;margin:4px 0"><li>升级前后 3 个真实体验差异（对比角度）</li><li>别急着升：先看这 2 个坑（避坑角度）</li><li>用新功能重做我的旧流程，省了 X 分钟（实测角度）</li></ol>
+        <button class="btn sm pri">把 1 转成选题</button> <button class="btn sm">让 AI 再出 3 条</button>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <h3>录入热点</h3>
+        <label class="f">热点标题 *</label><input type="text" value="双 11 预热开启">
+        <div class="grid2"><div><label class="f">来源</label><input type="text" value="电商大促"></div>
+        <div><label class="f">热度 / 趋势</label><select><option>高</option><option selected>中</option><option>低</option></select></div></div>
+        <label class="f">适用 IP（多选）</label>
+        <div><span class="tag tg-ip">🔵 效率</span><span class="tag tg-ip">🟢 美食</span><span class="tag tg-ip">🟠 读书</span><span class="tag tg-c">+ 全部共用</span></div>
+        <label class="f">备注</label><textarea rows="2">今年主打"官方立减"，凑单玩法变了</textarea>
+        <p style="margin:8px 0 0"><button class="btn pri">保存（72h 窗口开始计时）</button></p>
+      </div>
+      <div class="card">
+        <h3>热榜直达 <span class="hint">FR-02-06 · 外链，不抓取</span></h3>
+        <p style="font-size:12.8px;line-height:2.2">抖音热榜 · 微博热搜 · 百度热点 · 知乎热榜 · B站热门 · 小红书热点 · 巨量算数 · 新榜<br><button class="btn sm">设置中自定义</button></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 对标拆解 ============ -->
+<section class="page" id="p-bench">
+  <div class="crumb" style="margin-bottom:6px">页面 PRD：<a href="PRD-03-对标拆解.html">PRD-03 对标拆解（FR-03-01~08）</a></div>
+  <h2 class="pt">对标拆解</h2>
+  <p class="pd">录入对标账号与爆款作品 → 自动分段 + 结构识别 → 规律小结 → 借选题 / 套结构</p>
+  <div class="row">
+    <div class="col" style="flex:1.1">
+      <div class="card">
+        <h3>对标账号（2）</h3>
+        <table class="tb"><tr><th>账号</th><th>定位</th><th>标准</th><th>作品</th></tr>
+        <tr><td><b>@ efficiency老王</b><br><span style="font-size:11px;color:var(--ink2)">抖音 · 8.9万粉 · 共用</span></td><td><span class="tag tg-a">高一级</span></td><td>5/6 ✓</td><td>4 条</td></tr>
+        <tr><td><b>@ 好好吃饭研究所</b><br><span style="font-size:11px;color:var(--ink2)">抖音 · 15.2万粉 · 🟢美食</span></td><td><span class="tag tg-hot">头部标杆</span></td><td>4/6 ✓</td><td>4 条</td></tr></table>
+        <button class="btn pri">＋ 添加对标账号</button>
+        <p style="font-size:12px;color:var(--ink2)">≥4 条标准 = 好对标徽章（FR-03-01）</p>
+      </div>
+      <div class="card">
+        <h3>规律小结 <span class="hint">FR-03-06 · 录满 2 条自动生成</span></h3>
+        <p style="font-size:12.8px">「efficiency老王」4 条作品：</p>
+        <ul style="font-size:12.8px">
+          <li>开头：数字式 3 次、反常识 1 次 → <b>数字开头最稳</b></li>
+          <li>结构：清单式 3 次、对比式 1 次 → <b>主用清单</b></li>
+          <li>结尾：引导互动 4 次 → <b>必带互动</b></li>
+          <li>常用组合：<b>数字开头 → 清单式 → 提问收尾</b>，平均点赞 2.1 万</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col" style="flex:1.6">
+      <div class="card">
+        <h3>作品拆解 · 「我删掉了手机里 23 个 App」 <span class="hint">FR-03-02~05</span></h3>
+        <p style="font-size:12.5px;margin:2px 0"><span class="tag tg-hot">🔥 爆款（≥中位×2）</span> 赞 4.6万 · 评 1,203 · 藏 2.8万 · 转 890 <span class="tag tg-ok">收藏型（藏/赞=0.61 ≥ 0.5）</span></p>
+        <table class="tb">
+          <tr><th style="width:70px">段落</th><th>内容（自动拆分，可点改）</th><th style="width:96px">识别</th></tr>
+          <tr><td><b>开头</b></td><td>我上周干了一件狠事：把手机里 23 个 App 全删了，就剩 12 个，结果第二天就有人问我是不是换手机了。</td><td><span class="tag tg-a">数字式</span><br><span class="tag tg-c">改 ▾</span></td></tr>
+          <tr><td><b>正文</b></td><td>第一，通知少了，一天少看 40 次手机…（清单式正文，中段埋"第三步最多人做错"）<br>第二，屏幕使用时间从 6 小时掉到 2 小时…<br>第三，最关键的不是删，而是这 3 条去留标准…</td><td><span class="tag tg-b">清单式</span><br><span class="tag tg-c">改 ▾</span></td></tr>
+          <tr><td><b>结尾</b></td><td>你的手机里最该删的是哪个？评论区告诉我，我出二期。</td><td><span class="tag tg-b">引导互动</span><br><span class="tag tg-c">改 ▾</span></td></tr>
+        </table>
+        <p style="margin:10px 0 0">
+          <button class="btn pri">借选题 → 进选题池（按标签预填五维）</button>
+          <button class="btn ok">套结构写稿 → 生成占位草稿</button>
+        </p>
+        <div class="note" style="margin-bottom:0">借鉴角度与结构；内容必须换成自己的真实经历与观点。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 选题池 ============ -->
+<section class="page" id="p-topic">
+  <div class="crumb" style="margin-bottom:6px">页面 PRD：<a href="PRD-04-选题池.html">PRD-04 选题池（FR-04-01~08）</a></div>
+  <h2 class="pt">选题池</h2>
+  <p class="pd">五维打分（各1–5）→ 总分 → S/A/B/C 评级 → 立项写稿。评分是决策辅助，不预测播放量。</p>
+  <div class="row">
+    <div class="col" style="flex:1.7">
+      <div class="card">
+        <h3>选题列表 <span class="hint">按评级排序 · 来源徽章可回链热点/对标</span></h3>
+        <table class="tb">
+          <tr><th>选题</th><th>五维（痛/实/争/悬/道）</th><th>总分</th><th>评级/题型</th><th>操作</th></tr>
+          <tr><td><b>三款笔记 App 深度实测</b><br><span style="font-size:11px;color:var(--ink2)"><span class="tag tg-b">来源·手动</span> 🔵效率</span></td><td>4/5/2/3/5</td><td>19</td><td><span class="tag tg-a">A</span> <span class="tag tg-ok">收藏型</span></td><td><button class="btn sm pri">立项写稿</button></td></tr>
+          <tr><td><b>新系统先别急着升</b><br><span style="font-size:11px;color:var(--ink2)"><span class="tag tg-warn">来源·热点</span> 🔵效率 🟢美食</span></td><td>4/3/3/4/4</td><td>18</td><td><span class="tag tg-a">A</span> <span class="tag tg-ok">完播型</span></td><td><button class="btn sm pri">立项写稿</button></td></tr>
+          <tr><td><b>我删掉了 23 个 App（借爆款）</b><br><span style="font-size:11px;color:var(--ink2)"><span class="tag tg-ip">来源·对标</span> 🔵效率</span></td><td>5/4/2/4/4</td><td>19</td><td><span class="tag tg-a">A</span> <span class="tag tg-ok">收藏型</span></td><td><button class="btn sm pri">立项写稿</button></td></tr>
+          <tr><td><b>一锅出的焖面公式</b></td><td>3/5/1/2/5</td><td>16</td><td><span class="tag tg-b">B</span> <span class="tag tg-ok">收藏型</span></td><td><button class="btn sm pri">立项写稿</button></td></tr>
+          <tr><td><b>早睡一周身体的变化</b></td><td>3/3/2/4/3</td><td>15</td><td><span class="tag tg-b">B</span> <span class="tag tg-ok">完播型</span></td><td><button class="btn sm pri">立项写稿</button></td></tr>
+        </table>
+        <p style="margin:8px 0 0"><button class="btn pri">＋ 手动新增选题</button> <button class="btn">标题工坊：按赛道关键词出 10 个候选</button></p>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <h3>五维雷达 <span class="hint">FR-04-05</span></h3>
+        <div class="radar">
+          <svg width="190" height="170" viewBox="0 0 190 170">
+            <polygon points="95,20 165,70 140,150 50,150 25,70" fill="none" stroke="#d5dcea"/>
+            <polygon points="95,45 140,78 126,132 64,132 50,78" fill="none" stroke="#d5dcea"/>
+            <polygon points="95,32 152,74 133,140 57,138 38,74" fill="rgba(37,99,235,.25)" stroke="#2563eb" stroke-width="2"/>
+            <text x="95" y="14" font-size="10" fill="#67707d" text-anchor="middle">痛点</text>
+            <text x="172" y="68" font-size="10" fill="#67707d">实用</text>
+            <text x="146" y="163" font-size="10" fill="#67707d">争议</text>
+            <text x="46" y="163" font-size="10" fill="#67707d">悬念</text>
+            <text x="8" y="68" font-size="10" fill="#67707d">赛道</text>
+          </svg>
+          <div style="font-size:12.3px;color:var(--ink2)">当前：三款笔记 App 深度实测<br>总分 <b style="color:var(--deep)">19 · A</b><br><br>可叠加该 IP 已发布内容的平均画像（虚线）</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>评级阈值 <span class="hint">Q-05 · 设置可调</span></h3>
+        <table class="tb"><tr><td><b>S ≥21</b></td><td>立刻做</td></tr><tr><td><b>A ≥17</b></td><td>排期做</td></tr><tr><td><b>B ≥13</b></td><td>备选</td></tr><tr><td><b>C &lt;13</b></td><td>暂缓</td></tr></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 文案工坊 ============ -->
+<section class="page" id="p-script">
+  <div class="crumb" style="margin-bottom:6px">页面 PRD：<a href="PRD-05-文案工坊.html">PRD-05 文案工坊（FR-05-01~08 · 10 项体检）</a></div>
+  <h2 class="pt">文案工坊</h2>
+  <p class="pd">五段式写作 · 时长估算 · 10 项体检 · 快照（Q-04）· 写完进入拍摄</p>
+  <div class="row">
+    <div class="col" style="flex:1.55">
+      <div class="card">
+        <h3>「三款笔记 App 深度实测」 <span class="hint">🔵阿哲聊效率 · 阶段：写稿 · 距离体检上次通过 92 分</span></h3>
+        <label class="f">标题</label><input type="text" value="打工人别乱装笔记 App：3 款主流实测，第 1 名我用到第 2 年">
+        <label class="f">开头钩子（约 4.1 秒 ✅）</label>
+        <textarea rows="2">别再瞎装笔记 App 了，我一年试了 9 款，留下来的只有这 3 个。</textarea>
+        <label class="f">正文（约 52 秒 · 信息点 4 ✅）</label>
+        <textarea rows="5">第一，要能三秒开一条：实测从锁屏到新建笔记…
+第二，要能跨设备同步：三款里只有一款免费…
+第三，搜索必须能搜到拍照里的字，这条最多人忽略…
+第四，导出别锁死：数据是你自己的，不是软件的。</textarea>
+        <label class="f">结尾引导（约 6 秒 ✅）</label>
+        <textarea rows="2">这三款我放在评论区置顶了。你现在的笔记 App 用了多久？评论区报个数。</textarea>
+        <div class="grid2">
+          <div><label class="f">封面大字（8 字 ✅ ≤12）</label><input type="text" value="3 款笔记App实测"></div>
+          <div><label class="f">标签（4 个 ✅ 3–5 且含赛道词）</label><input type="text" value="效率工具, 数码测评, 打工人, 职场效率"></div>
+        </div>
+        <p style="margin:12px 0 4px">
+          <button class="btn">钩子模板 ▾</button> <button class="btn">结构模板 ▾</button>
+          <button class="btn">快照回滚（20 版）</button>
+          <button class="btn ok" style="float:right" onclick="go('shoot')">写完了，进入拍摄 →</button>
+        </p>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <h3>发布前体检 <span class="hint">9/10 · 92 分</span></h3>
+        <svg width="100%" height="10" viewBox="0 0 300 10"><rect width="300" height="10" rx="5" fill="#eef1f6"/><rect width="276" height="10" rx="5" fill="#0c8a5b"/></svg>
+        <table class="tb" style="margin-top:10px">
+          <tr><td>✅</td><td>开头 5 秒内说完 <span style="color:var(--ink2)">4.1s / 5.5s</span></td><td style="font-size:11px">完播</td></tr>
+          <tr><td>✅</td><td>开头给结果或冲突</td><td style="font-size:11px">推流</td></tr>
+          <tr><td>✅</td><td>标题埋痛点</td><td style="font-size:11px">点击</td></tr>
+          <tr><td>✅</td><td>实用信息点 ≥3 <span style="color:var(--ink2)">4 个</span></td><td style="font-size:11px">收藏</td></tr>
+          <tr><td>✅</td><td>中段埋悬念 <span style="color:var(--ink2)">"最多人忽略"</span></td><td style="font-size:11px">均播</td></tr>
+          <tr><td>✅</td><td>带真实情绪经历</td><td style="font-size:11px">共鸣</td></tr>
+          <tr><td>✅</td><td>结尾引导互动</td><td style="font-size:11px">评论</td></tr>
+          <tr><td>✅</td><td>封面 ≤12 字 <span style="color:var(--ink2)">8 字</span></td><td style="font-size:11px">点击</td></tr>
+          <tr><td>✅</td><td>标签 3–5 个 <span style="color:var(--ink2)">4 个</span></td><td style="font-size:11px">推流</td></tr>
+          <tr><td style="color:var(--bad)">❌</td><td>无极限词 <span style="color:var(--bad)">命中：「最」×1（正文第三点）</span></td><td style="font-size:11px">限流</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>时长估算 <span class="hint">语速 240 字/分</span></h3>
+        <p style="font-size:13px;margin:2px 0">开头 4.1s ｜ 正文 52s ｜ 结尾 6s</p>
+        <p style="font-size:16px;margin:2px 0"><b>全片约 1 分 02 秒</b></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 拍摄与提词 ============ -->
+<section class="page" id="p-shoot">
+  <div class="crumb" style="margin-bottom:6px">页面 PRD：<a href="PRD-06-拍摄与提词器.html">PRD-06 拍摄与提词器（FR-06-01~08）</a></div>
+  <h2 class="pt">拍摄与提词</h2>
+  <p class="pd">拍摄日程 · 自动分镜（可重建，覆盖需确认）· 开拍检查 · 全屏提词器 · 本模块不录制不剪辑</p>
+  <div class="row">
+    <div class="col" style="flex:1.7">
+      <div class="card">
+        <h3>分镜 · 「三款笔记 App 深度实测」 <span class="hint">自动拆分 · 共 8 镜 · 已完成 3</span></h3>
+        <div class="shot" style="color:var(--ink2);font-weight:600;border-bottom:1px solid var(--line)"><span>#</span><span>景别</span><span>台词</span><span>秒数</span><span>画面</span><span>完成</span></div>
+        <div class="shot"><span class="no">1</span><span><span class="tag tg-hot">特写</span></span><span>别再瞎装笔记 App 了，我一年试了 9 款…</span><span>4s</span><span>正对镜头抛冲突</span><span><span class="check done" style="transform:scale(.85)"><span class="box"></span></span></span></div>
+        <div class="shot"><span class="no">2</span><span><span class="tag tg-b">近景</span></span><span>第一，要能三秒开一条：实测从锁屏到新建笔记，最快的一款只要 1.8 秒…</span><span>9s</span><span>口播+手机演示</span><span><span class="check done" style="transform:scale(.85)"><span class="box"></span></span></span></div>
+        <div class="shot"><span class="no">3</span><span><span class="tag tg-ip">中景</span></span><span>第二，要能跨设备同步：三款里只有一款免费…</span><span>8s</span><span>口播</span><span><span class="check done" style="transform:scale(.85)"><span class="box"></span></span></span></div>
+        <div class="shot"><span class="no">4</span><span><span class="tag tg-b">近景</span></span><span>第三，搜索必须能搜到拍照里的字，这条最多人忽略…</span><span>10s</span><span>插入画面演示</span><span><span class="check"><span class="box"></span></span></span></div>
+        <div class="shot"><span class="no">5</span><span><span class="tag tg-ip">中景</span></span><span>第四，导出别锁死…</span><span>7s</span><span>口播</span><span><span class="check"><span class="box"></span></span></span></div>
+        <div class="shot" style="border-bottom:none"><span class="no">6</span><span><span class="tag tg-b">近景</span></span><span>这三款我放在评论区置顶了。你现在用的笔记 App…</span><span>6s</span><span>指向评论区</span><span><span class="check"><span class="box"></span></span></span></div>
+        <p style="margin:10px 0 0">
+          <button class="btn">＋ 手动加镜头</button>
+          <button class="btn">按文案重建（确认覆盖）</button>
+          <button class="btn pri" style="float:right">进入全屏提词器 ▶</button>
+        </p>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <h3>本周拍摄日程</h3>
+        <table class="tb"><tr><td><b>今天</b></td><td>—</td></tr><tr><td><b>明天 09:00</b></td><td>三款笔记 App 实测</td></tr><tr><td><b>周三 09:00</b></td><td>一锅出的焖面公式 <span class="tag tg-warn">已过期未拍</span></td></tr></table>
+      </div>
+      <div class="card">
+        <h3>开拍检查 <span class="hint">当天清零</span></h3>
+        <div class="check done"><span class="box"></span>手机电量 ≥ 80%</div>
+        <div class="check done"><span class="box"></span>支架机位调好</div>
+        <div class="check"><span class="box"></span>灯光检查</div>
+        <div class="check"><span class="box"></span>收音测试</div>
+        <div class="check"><span class="box"></span>背景收拾</div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <h3 style="padding:12px 16px 0">提词器（内嵌示意）</h3>
+        <div class="tele" style="margin:12px 16px 16px;border-radius:10px">
+          <div class="dim">▲ 上一镜</div>
+          <div class="cur">第二，要能跨设备同步：三款里只有一款免费…</div>
+          <div class="dim">▼ 下一镜：第三，搜索必须能搜到…</div>
+          <div style="font-size:12px;margin-top:10px;color:#8b94bd">速度 ────●── ｜ 字号 ──●── ｜ 镜像 [开]<br>空格暂停 · 滚轮调速 · 逐镜完成后自动跳下一镜</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 发布排期 ============ -->
+<section class="page" id="p-schedule">
+  <div class="crumb" style="margin-bottom:6px">页面 PRD：<a href="PRD-07-发布排期.html">PRD-07 发布排期（FR-07-01~07）</a></div>
+  <h2 class="pt">发布排期</h2>
+  <p class="pd">7 日排期 · 选账号 · 逐平台微调 · 确认清单 · 复制文案 · 标记已发布（只写本地，绝不代发）</p>
+  <div class="card">
+    <h3>排期编辑 · 「三款笔记 App 深度实测」 <span class="hint">阶段：拍摄完成 → 排期</span></h3>
+    <div class="row">
+      <div class="col">
+        <div class="grid2">
+          <div><label class="f">发布时间</label><input type="text" value="今晚 19:30"></div>
+          <div><label class="f">默认标题</label><input type="text" value="打工人别乱装笔记 App…"></div>
+        </div>
+        <label class="f">目标账号（多选，限本 IP）</label>
+        <div><span class="tag tg-ip">✓ @阿哲·抖音</span> <span class="tag tg-ip">✓ @阿哲·小红书</span> <span class="tag tg-c">＋ @阿哲·视频号</span> <span class="tag tg-c">＋ @阿哲·公众号</span></div>
+        <label class="f">按平台微调标题</label>
+        <table class="tb"><tr><td>抖音</td><td><input type="text" value="（同默认）"></td></tr>
+        <tr><td>小红书</td><td><input type="text" value="3款笔记App实测｜第1个我用满2年✅"></td></tr></table>
+        <label class="f">发布前确认清单</label>
+        <div class="check done"><span class="box"></span>封面无他方水印</div>
+        <div class="check done"><span class="box"></span>标题通读无错别字</div>
+        <div class="check done"><span class="box"></span>标签含赛道词</div>
+        <div class="check"><span class="box"></span>发布时间合适</div>
+      </div>
+      <div class="col" style="max-width:280px">
+        <h3 style="font-size:13.5px">封面预览 <span class="hint">9:16</span></h3>
+        <div style="aspect-ratio:9/14;background:linear-gradient(160deg,#2563eb,#1e3a8a);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff">
+          <div style="font-size:22px;font-weight:800;line-height:1.5;text-align:center">3 款笔记<br>App 实测</div>
+          <div style="font-size:10px;opacity:.7;margin-top:10px">@阿哲聊效率</div>
+        </div>
+        <p style="margin-top:10px">
+          <button class="btn sm">复制标题</button> <button class="btn sm">复制标签</button> <button class="btn sm">复制全文</button>
+        </p>
+        <p><button class="btn ok" style="width:100%" onclick="alert('原型示意：\n\n将为 2 个目标账号各创建 1 条发布记录（待回填）。\n本产品不会向任何平台发布内容。')">✓ 标记已发布（平台发布由你自己完成）</button></p>
+        <div class="note" style="margin:0">标记后：每账号 1 条记录 → 进入复盘「待回填」（FR-07-06，幂等）</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 数据复盘 ============ -->
+<section class="page" id="p-review">
+  <div class="crumb" style="margin-bottom:6px">页面 PRD：<a href="PRD-08-数据复盘.html">PRD-08 数据复盘（FR-08-01~10 · 象限诊断）</a></div>
+  <h2 class="pt">数据复盘</h2>
+  <p class="pd">一行 = 内容 × 账号 · 手动回填（支持粘贴，Q-04）· 象限诊断 · 趋势对比 · 周报</p>
+  <div class="stat4">
+    <div class="stat"><b>9</b><span>近 7 天发布</span></div>
+    <div class="stat"><b>18.6 万</b><span>总播放</span></div>
+    <div class="stat"><b>1.9 万</b><span>平均播放</span></div>
+    <div class="stat"><b>+1,244</b><span>总涨粉</span></div>
+  </div>
+  <div class="row">
+    <div class="col" style="flex:1.8">
+      <div class="card">
+        <h3>数据回填 <span class="hint">筛选：全部 IP · 近 7 天 · 支持粘贴列回填（预览后写入）</span></h3>
+        <table class="tb">
+          <tr><th>内容 × 账号</th><th>播放</th><th>5秒完播</th><th>均播</th><th>赞</th><th>评</th><th>藏</th><th>涨粉</th><th>诊断</th></tr>
+          <tr><td>笔记App实测 × @阿哲·抖音</td><td>4.6万</td><td>68%</td><td>31s</td><td>2,104</td><td>312</td><td>1,530</td><td>+402</td><td><span class="tag tg-ok">爆款潜质</span></td></tr>
+          <tr><td>笔记App实测 × @阿哲·小红书</td><td>1.2万</td><td><span style="color:var(--ink2)">—</span></td><td><span style="color:var(--ink2)">—</span></td><td>540</td><td>88</td><td>920</td><td>+156</td><td><span class="tag tg-ok">收藏达标</span></td></tr>
+          <tr><td>焖面公式 × @哲嫂·抖音</td><td>2.3万</td><td>52%</td><td>18s</td><td>980</td><td>210</td><td>310</td><td>+118</td><td><span class="tag tg-warn">内容好·开头弱</span></td></tr>
+          <tr><td>翻篇力 × @哲叔·视频号</td><td>4,200</td><td>44%</td><td>22s</td><td>150</td><td>12</td><td>45</td><td>+30</td><td><span class="tag tg-c">需要重做</span></td></tr>
+          <tr><td style="color:var(--warn)">删掉的23个App × @阿哲·抖音</td><td colspan="7" style="color:var(--warn);font-size:12px">已发布 51h，待回填 ⏰</td><td></td></tr>
+        </table>
+        <p style="margin:8px 0 0"><button class="btn">📋 粘贴回填（选区）</button> <button class="btn">导出 CSV</button> <button class="btn pri" style="float:right">生成周报</button></p>
+      </div>
+      <div class="card">
+        <h3>单条诊断 · 焖面公式 × 抖音 <span class="hint">NFR-07：每项给依据</span></h3>
+        <p><span class="tag tg-warn">内容好 · 开头弱</span>（5 秒完播 52% &lt; 60%；收藏率 1.35% &lt; 2.2%）</p>
+        <ul style="font-size:12.8px">
+          <li style="color:var(--bad)">5 秒完播 52%，低于 60% 线 → 结果前置，删"今天教大家"</li>
+          <li style="color:var(--bad)">均播 18s = 时长 26%（&lt;40%）→ 中段加"第三步很多人翻车"</li>
+          <li style="color:var(--bad)">收藏率 1.35% → 把步骤写成"可抄公式"</li>
+          <li style="color:var(--ok)">评论率 0.91% ≥ 0.5% → 互动不错，回复前排评论</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <h3>象限散点 <span class="hint">x=完播 y=收藏率 · 参考线 60% / 2.2%</span></h3>
+        <div class="chart">
+        <svg width="100%" height="180" viewBox="0 0 300 180">
+          <rect x="30" y="10" width="260" height="160" fill="#fbfcfe"/>
+          <line x1="30" y1="90" x2="290" y2="90" stroke="#c9d3e8" stroke-dasharray="4 3"/>
+          <line x1="140" y1="10" x2="140" y2="170" stroke="#c9d3e8" stroke-dasharray="4 3"/>
+          <text x="146" y="24" font-size="10" fill="#0c8a5b">爆款潜质</text>
+          <text x="36" y="24" font-size="10" fill="#b45309">开头弱</text>
+          <text x="146" y="163" font-size="10" fill="#b45309">干货弱</text>
+          <text x="36" y="163" font-size="10" fill="#c23434">重做</text>
+          <circle cx="216" cy="46" r="7" fill="#2563eb" opacity=".85"/>
+          <circle cx="166" cy="72" r="5" fill="#2563eb" opacity=".85"/>
+          <circle cx="120" cy="98" r="6" fill="#0f9d76" opacity=".85"/>
+          <circle cx="88" cy="128" r="5" fill="#c07a08" opacity=".85"/>
+          <circle cx="185" cy="58" r="4" fill="#0f9d76" opacity=".7"/>
+          <text x="150" y="178" font-size="10" fill="#67707d">5 秒完播 →</text>
+          <text x="8" y="90" font-size="10" fill="#67707d" transform="rotate(-90 14 90)">收藏率 →</text>
+        </svg>
+        <div class="leg"><span><span class="dot" style="background:#2563eb"></span>阿哲</span><span><span class="dot" style="background:#0f9d76"></span>哲嫂</span><span><span class="dot" style="background:#c07a08"></span>哲叔</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>自动周报 <span class="hint">FR-08-09 · Word / Markdown 导出</span></h3>
+        <div style="font-size:12.8px;line-height:1.9">
+          <b>本周（11.24–11.30）</b>：发布 9 条（↑3）· 播放 18.6 万（↑22%）· 涨粉 1,244（↑40%）<br>
+          <b>最佳</b>：笔记App实测（爆款潜质，可做系列）<br>
+          <b>最差</b>：翻篇力（两项均未达标，选题重估）<br>
+          <b>建议</b>：效率赛道加更；读书赛道开头重写
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AI 助手 ============ -->
+<section class="page" id="p-ai">
+  <div class="crumb" style="margin-bottom:6px">页面 PRD：<a href="PRD-09-AI助手.html">PRD-09 AI 助手（FR-09-01~09 · 16 模板）</a></div>
+  <h2 class="pt">AI 助手</h2>
+  <p class="pd">对话 + 16 模板 · 带入 IP 档案 / 稿件 / 近 14 天数据 · 无 Key 时生成提示词供复制</p>
+  <div class="row">
+    <div class="col" style="max-width:330px">
+      <div class="card">
+        <h3>任务模板（16）</h3>
+        <div class="tplgrid" style="grid-template-columns:1fr 1fr">
+          <div class="tpl">🔥 爆款标题 ×10</div><div class="tpl">🗓 节点选题</div>
+          <div class="tpl">📡 热点角度</div><div class="tpl">📚 系列规划</div>
+          <div class="tpl">🔍 对标拆解</div><div class="tpl">📈 打法总结</div>
+          <div class="tpl" style="border-color:var(--acc);background:var(--soft)">✍️ 口播初稿</div><div class="tpl">⚡ 黄金5秒开头</div>
+          <div class="tpl">🎬 分镜脚本</div><div class="tpl">🔁 多平台改写</div>
+          <div class="tpl">🖼 封面+标签</div><div class="tpl">💬 评论回复</div>
+          <div class="tpl">🎯 IP 定位</div><div class="tpl">🧩 矩阵规划</div>
+          <div class="tpl">📋 周复盘</div><div class="tpl">⚖️ 账号对比</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>带入上下文 <span class="hint">发送前完整预览</span></h3>
+        <div class="check done"><span class="box"></span>IP 档案：阿哲聊效率</div>
+        <div class="check done"><span class="box"></span>稿件：三款笔记 App（当前）</div>
+        <div class="check"><span class="box"></span>近 14 天数据汇总</div>
+      </div>
+      <div class="card">
+        <h3>接口状态</h3>
+        <p style="font-size:12.8px"><span class="tag tg-warn">未配置</span> <a href="#" onclick="go('settings');return false">去设置 →</a></p>
+        <p style="font-size:12.3px;color:var(--ink2)">未配置不影响其他功能；本模板将生成完整提示词供复制到任意 AI 网页。</p>
+        <button class="btn pri" style="width:100%">📋 生成提示词并复制</button>
+      </div>
+    </div>
+    <div class="col" style="flex:1.7">
+      <div class="card">
+        <h3>对话 · 「效率 IP · 初稿」 <span class="hint">流式渲染 · 可重试 · 随备份走</span></h3>
+        <div class="msgs">
+          <div class="msg u">用「三款笔记 App」素材写一版口播初稿，开头 5 秒给结果，清单式正文，结尾提问。</div>
+          <div class="msg a">（AI 回复占位 · 流式打字中 ▌）<br><br>开头：别再瞎装笔记 App 了，我一年试了 9 款…<br>正文：第一…第二…第三…第四…<br>结尾：你现在的笔记 App 用了多久？<br><br>
+          <button class="btn sm pri">填入稿件（预览差异）</button> <button class="btn sm">仅复制</button> <span style="font-size:11px;color:var(--ink2)">AI 生成，需人工核对事实与合规</span></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px"><input type="text" placeholder="继续对话…"><button class="btn pri">发送</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 设置与备份 ============ -->
+<section class="page" id="p-settings">
+  <div class="crumb" style="margin-bottom:6px">页面 PRD：<a href="PRD-10-设置与备份.html">PRD-10 设置与备份（FR-10-01~07）</a> ｜ 数据：<a href="PRD-12-数据字典.html">PRD-12</a></div>
+  <h2 class="pt">设置与备份</h2>
+  <p class="pd">数据标准全部可调（D-04）· Key 永不入备份 · 恢复=覆盖非合并</p>
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <h3>数据标准 <span class="hint">每项带"恢复默认"</span></h3>
+        <div class="grid2">
+          <div><label class="f">口播语速（字/分）</label><input type="text" value="240"></div>
+          <div><label class="f">5 秒完播达标线</label><input type="text" value="60 %"></div>
+          <div><label class="f">收藏率达标线</label><input type="text" value="2.2 %"></div>
+          <div><label class="f">均播/时长达标线</label><input type="text" value="40 %"></div>
+          <div><label class="f">评论率参考线</label><input type="text" value="0.5 %"></div>
+          <div><label class="f">爆款倍数（对标）</label><input type="text" value="2 ×"></div>
+          <div><label class="f">收藏型画像比</label><input type="text" value="0.5"></div>
+          <div><label class="f">选题评级线 S / A / B</label><input type="text" value="21 / 17 / 13"></div>
+          <div><label class="f">封面大字上限</label><input type="text" value="12 字"></div>
+          <div><label class="f">IP 数量上限</label><input type="text" value="8"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>外观与平台</h3>
+        <div class="grid2">
+          <div><label class="f">主题</label><select><option>浅色</option><option>深色（P1，Q-03）</option></select></div>
+          <div><label class="f">平台清单</label><input type="text" value="抖音/小红书/视频号/B站/快手/公众号/知乎/百家号 + 自定义"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <h3>AI 接口 <span class="hint">Q-07：默认「未配置」</span></h3>
+        <label class="f">服务商</label>
+        <select><option selected>未配置</option><option>DeepSeek</option><option>通义千问（百炼）</option><option>智谱 GLM</option><option>豆包（火山方舟）</option><option>Kimi</option><option>硅基流动</option><option>Ollama 本地</option><option>自定义兼容接口</option></select>
+        <div class="grid2">
+          <div><label class="f">Base URL</label><input type="text" placeholder="https://…（自动拼路径）"></div>
+          <div><label class="f">模型名（以控制台为准）</label><input type="text" placeholder="如 deepseek-chat"></div>
+        </div>
+        <label class="f">API Key（仅存本机 · 备份不含）</label><input type="password" value="············">
+        <p style="margin:10px 0 0"><button class="btn pri">测试连接</button> <span style="font-size:12px;color:var(--ink2)">请求将发送到你所填的服务商（出网提示）</span></p>
+      </div>
+      <div class="card">
+        <h3>数据与备份</h3>
+        <p><button class="btn pri">⬇ 导出备份（JSON · 剥离 Key）</button></p>
+        <p><button class="btn">⬆ 从备份恢复（覆盖前核对数量）</button></p>
+        <p><button class="btn">🎬 载入示例工作室（覆盖业务数据）</button></p>
+        <p><button class="btn" style="color:var(--bad)">🗑 清空全部数据（保留主题/标准/Key）</button></p>
+        <div class="note" style="margin-bottom:0">备份含稿件、账号资料与 AI 对话，属个人资料，请勿上传公开场合；恢复=覆盖而非合并。</div>
+      </div>
+      <div class="card">
+        <h3>关于 / 产品边界（NFR-09）</h3>
+        <p style="font-size:12.3px;color:var(--ink2)">不代发平台 · 不抓取榜单 · 不自动回填 · 无云同步与协作 · 评分体检诊断仅为创作参考，不保证平台审核结果或传播效果。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 欢迎向导 ============ -->
+<section class="page" id="p-welcome">
+  <div class="crumb" style="margin-bottom:6px">页面 PRD：<a href="PRD-10-设置与备份.html">PRD-10 FR-10-01 欢迎向导</a></div>
+  <div class="welcome">
+    <div class="wcard">
+      <p style="font-size:24px;margin:0 0 4px">🎬 欢迎使用「多号创作台」</p>
+      <p style="color:var(--ink2);font-size:13px">单文件 · 本机数据 · 可选 AI —— 先选你的形象</p>
+      <div>
+        <span class="avatar" style="background:#2563eb">👩‍💼</span>
+        <span class="avatar" style="background:#c23434;margin-left:14px">👨‍💼</span>
+      </div>
+      <div class="grid2" style="max-width:380px;margin:16px auto 0;text-align:left">
+        <div><label class="f">你的称呼</label><input type="text" placeholder="如：小哲"></div>
+        <div><label class="f">工作室名称</label><input type="text" placeholder="如：拾光内容室"></div>
+      </div>
+      <div class="row" style="max-width:440px;margin:18px auto 0">
+        <div class="col card" style="cursor:pointer;border-color:var(--acc)"><b>先看看示例工作室</b><p style="font-size:12px;color:var(--ink2);margin:4px 0 0">虚构的「拾光内容室」：3 IP / 9 账号 / 对标与内容数据，走一遍流程</p></div>
+        <div class="col card" style="cursor:pointer"><b>直接用我自己的</b><p style="font-size:12px;color:var(--ink2);margin:4px 0 0">填写第一个 IP 名称与赛道，开始建立</p></div>
+      </div>
+      <p style="margin-top:18px"><button class="btn pri" style="width:200px">开启工作台 →</button></p>
+      <p style="font-size:11.5px;color:var(--ink2)">数据保存在当前浏览器；换设备/浏览器请用 设置 → 导出备份 迁移。</p>
+    </div>
+  </div>
+</section>
+
+<footer class="pfoot">
+  <span>原型 v0.9 · 与 PRD 树配套核对 · 示例数据均为虚构</span>
+  <span>↩ <a href="PRD-00-主文档.html">返回 PRD-00 主文档</a></span>
+</footer>
+</div>
+</main>
+</div>
+<script>
+function go(p){
+  document.querySelectorAll('.page').forEach(function(e){e.classList.remove('on')});
+  var t=document.getElementById('p-'+p); if(t)t.classList.add('on');
+  document.querySelectorAll('#nav a').forEach(function(a){a.classList.toggle('on',a.dataset.p===p)});
+  document.querySelectorAll('.ipchip').forEach(function(c,i){c.classList.toggle('on',i===0)});
+  window.scrollTo(0,0);
+}
+document.getElementById('nav').addEventListener('click',function(e){
+  var a=e.target.closest('a'); if(!a)return; e.preventDefault(); go(a.dataset.p);
+});
+document.querySelectorAll('.ipchip').forEach(function(c){
+  c.addEventListener('click',function(){
+    document.querySelectorAll('.ipchip').forEach(function(x){x.classList.remove('on')});
+    c.classList.add('on');
+  });
+});
+</script>
+</body>
+</html>

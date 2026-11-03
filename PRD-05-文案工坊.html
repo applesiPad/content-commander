@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>PRD-05 · 文案工坊</title>
+<style>:root{--bg:#f5f6f8;--ink:#22272e;--ink2:#5b6570;--line:#e3e7ec;--acc:#2563eb;--deep:#1e3a8a;--soft:#eff4ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.85 "Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}.wrap{max-width:1000px;margin:0 auto;padding:26px 26px 70px}.crumbs{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px}.crumbs b{color:var(--deep)}h1{font-size:22px;margin:6px 0 4px}h2{font-size:18px;margin:30px 0 10px;padding-left:10px;border-left:4px solid var(--acc)}h3{font-size:15.5px;color:var(--deep);margin:18px 0 6px}p{margin:7px 0}ul,ol{margin:6px 0;padding-left:24px}li{margin:3px 0}table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px;background:#fff}th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top;text-align:left}th{background:var(--soft);color:var(--deep)}code{font-family:Consolas,monospace;background:#f0f2f5;padding:1px 5px;border-radius:4px;font-size:.92em}.fr{font-family:Consolas,monospace;font-size:12px;background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:4px;white-space:nowrap}.p0{color:#b91c1c;font-weight:700}.p1{color:#b45309;font-weight:600}.p2{color:#5b6570}.refs{background:#f8fafc;border:1px dashed #b8c4d4;border-radius:10px;padding:10px 16px;margin:18px 0;font-size:13.5px}.note{background:var(--soft);border-left:3px solid var(--acc);padding:8px 14px;border-radius:0 8px 8px 0;margin:8px 0;font-size:13.5px}footer.nav{display:flex;justify-content:space-between;gap:10px;margin-top:26px;font-size:13.5px}a{color:var(--acc)}@media print{body{background:#fff}}</style>
+</head>
+<body>
+<div class="wrap">
+<div class="crumbs">📄 <a href="PRD-00-主文档.html">PRD-00 主文档</a> › <b>M5 文案工坊</b> ｜ 状态：<b>待核对</b> ｜ 原型：<a href="原型.html#script">原型 #script</a></div>
+
+<h1>PRD-05 · 文案工坊</h1>
+<p>回答"稿子能不能拿去拍"。五段式分区写作、实时时长估算、10 项发布前体检、模板插入、存稿快照；写完一键进入拍摄并自动生成分镜。</p>
+
+<h2>1 · 用户故事</h2>
+<ul>
+  <li>写稿时我想知道"开头超没超 5 秒、信息点够不够、有没有踩极限词"，而不是拍完了才发现问题。</li>
+  <li>改稿改崩了想退回上一版。</li>
+</ul>
+
+<h2>2 · 功能需求</h2>
+<table>
+  <tr><th>编号</th><th>需求</th><th>验收标准</th><th>优先级</th></tr>
+  <tr><td><span class="fr">FR-05-01</span></td><td>内容记录：从选题立项（FR-04-07）或直接新建；归属 IP；五段式字段——开头钩子 / 正文（多行）/ 结尾引导 / 封面大字 / 标签（逗号或空格分隔）</td><td>标题与开头为必填检查项（允许暂存不完整稿）</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-05-02</span></td><td>时长估算：全文 = 三段字数之和 ÷ 语速（字/秒，来自设置 <code>wpm</code>）；分段显示 开头/正文/结尾 各自秒数与总秒数</td><td>输入即时重算；显示"约 X 分 X 秒"</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-05-03</span></td><td><strong>10 项发布前体检</strong>（判定规则与影响面见 §3，全部原创实现）；得分 = 通过项/10×100，环形进度展示；每项显示 通过/未过 + 一句改法建议（原创文案）</td><td>输入即时重检；未过项可展开看判定详情（如"现在 3.2 秒 / 标到 5.5 秒"）</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-05-04</span></td><td>极限词检测：全文比对自建词库（广告法禁用词类目：绝对化用语/夸大承诺/收益承诺等），命中处显示词与出现次数；词库可在设置中增删</td><td>命中的体检项 10 未通过并给出位置提示</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-05-05</span></td><td>模板插入：钩子模板库与正文结构模板库（各 15+ 条原创文案），点击插入对应分区光标处</td><td>模板可预览；插入不覆盖已有内容</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-05-06</span></td><td>套结构草稿（被 PRD-03 FR-03-08 调用）：按结构标签在五段预填原创占位提示（如"这里用数字抛结果…"）</td><td>占位文字带特殊样式，可一键清除</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-05-07</span></td><td>存稿快照：每次显式保存压入历史（保留最近 20 版），可查看任一版本并与当前对比、一键回滚 → <span class="fr">Q-04</span></td><td>快照随内容记录存储并随备份走</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-05-08</span></td><td>「写完了，进入拍摄」：保存当前稿 → 自动生成初始分镜（规则见 <a href="PRD-06-拍摄与提词器.html">PRD-06</a> §3）→ 拍摄日默认明天 → 目标账号默认该 IP 全部账号 → 跳转拍摄页</td><td>已有分镜时提示"重建将覆盖手动编辑"并要求确认</td><td class="p0">P0</td></tr>
+</table>
+
+<h2>3 · 体检规则表（10 项，原创判定）</h2>
+<table>
+  <tr><th>#</th><th>检查项</th><th>判定规则</th><th>影响指标</th></tr>
+  <tr><td>1</td><td>开头 5 秒内说完</td><td>开头字数 ÷ (wpm/60) ≤ 5.5 秒</td><td>5 秒完播</td></tr>
+  <tr><td>2</td><td>开头有结果或冲突</td><td>开头命中钩子词表（数字、疑问、反差、结果前置词）</td><td>推流速度</td></tr>
+  <tr><td>3</td><td>标题埋痛点</td><td>标题命中痛点词表（还在/焦虑/踩雷/不会/没时间/？等）</td><td>点击</td></tr>
+  <tr><td>4</td><td>实用信息点 ≥ 3</td><td>正文按行统计"序号行"（第X/1./首先/其次/最后 等）≥ 3</td><td>收藏</td></tr>
+  <tr><td>5</td><td>中段埋悬念</td><td>正文命中悬念引导词（最后/重点来了/先别划走/第三步…）</td><td>均播</td></tr>
+  <tr><td>6</td><td>带真实情绪经历</td><td>全文命中第一人称经历词（我/当时/那天/熬/后悔…）</td><td>共鸣</td></tr>
+  <tr><td>7</td><td>结尾引导互动</td><td>结尾非空且命中互动词（评论/你会/你觉得/扣/？/吗）</td><td>评论率</td></tr>
+  <tr><td>8</td><td>封面大字 ≤ 12 字</td><td>封面去空白后字数 ≤ <code>coverMax</code>(12，可调)</td><td>点击</td></tr>
+  <tr><td>9</td><td>标签 3–5 个</td><td>标签数 ∈ [3,5] 且含至少 1 个赛道词（赛道词=IP 赛道名或自定义词表）</td><td>精准推流</td></tr>
+  <tr><td>10</td><td>无极限词/收益承诺</td><td>FR-05-04 检测零命中</td><td>限流风险</td></tr>
+</table>
+<div class="note">词表在实现中集中定义（<code>RULES</code> 区），可维护、可扩充；体检为创作参考，不保证平台审核结果（NFR-09 声明）。</div>
+
+<div class="refs">
+  <b>双向引用区</b><br>
+  ▸ 上游：<a href="PRD-04-选题池.html">PRD-04</a> FR-04-07（立项）｜ <a href="PRD-03-对标拆解.html">PRD-03</a> FR-03-08（套结构）｜ <a href="PRD-01-IP与账号.html">PRD-01</a>（归属与赛道词）<br>
+  ▸ 下游：进入拍摄 → <a href="PRD-06-拍摄与提词器.html">PRD-06</a> FR-06-01 ｜ 语速设置 → <a href="PRD-10-设置与备份.html">PRD-10</a> FR-10-03 ｜ AI 初稿/开头 → <a href="PRD-09-AI助手.html">PRD-09</a> FR-09-05<br>
+  ▸ 数据：<a href="PRD-12-数据字典.html">PRD-12</a> DD-CONTENT<br>
+  ▸ 原型：<a href="原型.html#script">原型.html#script</a>
+</div>
+
+<footer class="nav"><span>PRD-05 · 待核对</span><span>← <a href="PRD-00-主文档.html">主文档</a> ｜ ← <a href="PRD-04-选题池.html">PRD-04</a> ｜ 下一篇 → <a href="PRD-06-拍摄与提词器.html">PRD-06 拍摄与提词器</a></span></footer>
+</div>
+</body>
+</html>

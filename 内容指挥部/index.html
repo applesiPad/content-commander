@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>内容指挥部</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">&gt;_</div>
+      <span class="logo-text">内容指挥部</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">概览</div>
+        <div class="nav-item active" data-page="dashboard">
+          <span class="nav-icon">📊</span>
+          <span>指挥板</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">资产</div>
+        <div class="nav-item" data-page="ip">
+          <span class="nav-icon">👤</span>
+          <span>IP 与账号</span>
+        </div>
+        <div class="nav-item" data-page="hot">
+          <span class="nav-icon">🔥</span>
+          <span>热点雷达</span>
+        </div>
+        <div class="nav-item" data-page="bench">
+          <span class="nav-icon">🎯</span>
+          <span>对标拆解</span>
+        </div>
+        <div class="nav-item" data-page="topic">
+          <span class="nav-icon">💡</span>
+          <span>选题池</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">创作</div>
+        <div class="nav-item" data-page="script">
+          <span class="nav-icon">✍️</span>
+          <span>文案工坊</span>
+        </div>
+        <div class="nav-item" data-page="shoot">
+          <span class="nav-icon">🎬</span>
+          <span>拍摄与提词</span>
+        </div>
+        <div class="nav-item" data-page="schedule">
+          <span class="nav-icon">📅</span>
+          <span>发布排期</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">分析</div>
+        <div class="nav-item" data-page="review">
+          <span class="nav-icon">📈</span>
+          <span>数据复盘</span>
+        </div>
+        <div class="nav-item" data-page="ai">
+          <span class="nav-icon">🤖</span>
+          <span>AI 助手</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">系统</div>
+        <div class="nav-item" data-page="settings">
+          <span class="nav-icon">⚙️</span>
+          <span>设置</span>
+        </div>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title" id="pageTitle">指挥板</h1>
+        <div class="ip-switcher" id="ipSwitcher">
+          <span>🌐</span>
+          <span id="currentIpName">全部 IP</span>
+          <span>▾</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" id="themeToggle" title="切换主题">🌙</button>
+        <button class="topbar-btn" title="帮助">❓</button>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content" id="content">
+      <!-- Pages will be rendered here -->
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<!-- Teleprompter -->
+<div class="teleprompter-overlay" id="teleprompter">
+  <div class="teleprompter-header">
+    <span>提词器</span>
+    <button class="btn btn-secondary" onclick="App.closeTeleprompter()">关闭</button>
+  </div>
+  <div class="teleprompter-content">
+    <div class="teleprompter-text" id="teleprompterText"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:all .25s;z-index:3000;box-shadow:0 8px 24px rgba(0,0,0,.18)"></div>
+
+<!-- Scripts -->
+<script src="js/constants.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/store.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

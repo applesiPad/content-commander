@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>PRD-02 · 热点雷达</title>
+<style>:root{--bg:#f5f6f8;--ink:#22272e;--ink2:#5b6570;--line:#e3e7ec;--acc:#2563eb;--deep:#1e3a8a;--soft:#eff4ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.85 "Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}.wrap{max-width:1000px;margin:0 auto;padding:26px 26px 70px}.crumbs{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px}.crumbs b{color:var(--deep)}h1{font-size:22px;margin:6px 0 4px}h2{font-size:18px;margin:30px 0 10px;padding-left:10px;border-left:4px solid var(--acc)}h3{font-size:15.5px;color:var(--deep);margin:18px 0 6px}p{margin:7px 0}ul,ol{margin:6px 0;padding-left:24px}li{margin:3px 0}table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px;background:#fff}th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top;text-align:left}th{background:var(--soft);color:var(--deep)}code{font-family:Consolas,monospace;background:#f0f2f5;padding:1px 5px;border-radius:4px;font-size:.92em}.fr{font-family:Consolas,monospace;font-size:12px;background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:4px;white-space:nowrap}.p0{color:#b91c1c;font-weight:700}.p1{color:#b45309;font-weight:600}.p2{color:#5b6570}.refs{background:#f8fafc;border:1px dashed #b8c4d4;border-radius:10px;padding:10px 16px;margin:18px 0;font-size:13.5px}.note{background:var(--soft);border-left:3px solid var(--acc);padding:8px 14px;border-radius:0 8px 8px 0;margin:8px 0;font-size:13.5px}footer.nav{display:flex;justify-content:space-between;gap:10px;margin-top:26px;font-size:13.5px}a{color:var(--acc)}@media print{body{background:#fff}}</style>
+</head>
+<body>
+<div class="wrap">
+<div class="crumbs">📄 <a href="PRD-00-主文档.html">PRD-00 主文档</a> › <b>M2 热点雷达</b> ｜ 状态：<b>待核对</b> ｜ 原型：<a href="原型.html#hot">原型 #hot</a></div>
+
+<h1>PRD-02 · 热点雷达</h1>
+<p>回答"现在有什么热点、适不适合我的 IP、从哪个角度蹭"。热点手动录入（不做抓取），72 小时黄金窗口提醒，按 IP 人设生成切入角度，一键转入选题池。</p>
+
+<h2>1 · 用户故事</h2>
+<ul>
+  <li>刷到热点 → 花 30 秒录入 → 系统告诉我它还剩多少小时、适合哪几个 IP、每个 IP 从什么角度切入。</li>
+  <li>角度想清楚了 → 一键变成选题池里的一道题，不丢上下文。</li>
+</ul>
+
+<h2>2 · 功能需求</h2>
+<table>
+  <tr><th>编号</th><th>需求</th><th>验收标准</th><th>优先级</th></tr>
+  <tr><td><span class="fr">FR-02-01</span></td><td>热点录入/编辑/删除：标题（必填）、来源、热度（高/中/低）、趋势（升/平/降）、备注</td><td>保存后立即出现在列表头部并开始倒计时</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-02-02</span></td><td>适用 IP 标记：多选当前可见 IP（含「全部 IP 共用」）；列表中每个热点显示 IP 头像排</td><td>未标记 IP 的热点在单 IP 视图不显示；标记即时保存</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-02-03</span></td><td>72 小时窗口：<code>dueAt = 创建时间 + 72h</code>；列表按剩余时间升序；剩余 &lt;24h 标橙；过期置灰折叠到「已过期」区</td><td>倒计时按分钟刷新；过期不自动删除</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-02-04</span></td><td>切入角度：对每个适用 IP，按其赛道与人设生成 3 条角度建议（本地模板引擎；配置 AI 后可一键用 AI 生成增强版）；建议可编辑、可补充</td><td>不同 IP 的建议互不影响；生成结果保存到热点记录</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-02-05</span></td><td>转选题：选择角度后进入选题表单（预填标题=角度句、来源=hot、关联热点 id、五维给默认中间分 3/3/3/3/3），确认后进 <a href="PRD-04-选题池.html">PRD-04</a> 选题池</td><td>转换后热点标记「已转选题」并可跳转查看生成的选题</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-02-06</span></td><td>热榜直达：各平台热榜的外部链接集合（新标签打开），纯跳转无抓取</td><td>链接清单可在设置中自定义增删</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-02-07</span></td><td>营销节点：内置一年主要节点（法定假日 + 电商大促 + 节气抽样）并支持自定义节点（名称+日期）；列表显示倒计时天数；指挥板右栏引用（<span class="fr">FR-00-03</span>）</td><td>节点数据随备份走；内置节点可隐藏</td><td class="p1">P1</td></tr>
+</table>
+
+<h2>3 · 规则说明</h2>
+<ul>
+  <li><strong>角度模板引擎</strong>（本地）：按「赛道关键词 × 人设语气 × 热点类型（事件/产品/话题/争议）」组合句式生成，输出为建议而非保证；文案模板全部自写。</li>
+  <li>蹭热点前的三问提示（固定文案，展示在录入表单顶部）：这和我的赛道有关吗 / 我的人设适合说吗 / 72 小时内出得来吗。</li>
+  <li>本模块<strong>不联网抓取</strong>任何榜单（NFR-02），外部榜单跳转是唯一出网点之一。</li>
+</ul>
+
+<div class="refs">
+  <b>双向引用区</b><br>
+  ▸ 上游：<a href="PRD-00-主文档.html">PRD-00</a> §5 ｜ IP 过滤：<a href="PRD-01-IP与账号.html">PRD-01</a> FR-01-06<br>
+  ▸ 下游：转选题 → <a href="PRD-04-选题池.html">PRD-04</a> FR-04-01（来源=hot）｜ 节点 → 指挥板 <a href="PRD-00-主文档.html">PRD-00</a> FR-00-03 ｜ 角度增强 → <a href="PRD-09-AI助手.html">PRD-09</a> FR-09-02<br>
+  ▸ 原型：<a href="原型.html#hot">原型.html#hot</a>
+</div>
+
+<footer class="nav"><span>PRD-02 · 待核对</span><span>← <a href="PRD-00-主文档.html">主文档</a> ｜ ← <a href="PRD-01-IP与账号.html">PRD-01</a> ｜ 下一篇 → <a href="PRD-03-对标拆解.html">PRD-03 对标拆解</a></span></footer>
+</div>
+</body>
+</html>

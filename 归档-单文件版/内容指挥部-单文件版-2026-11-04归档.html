@@ -1,0 +1,4331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>内容指挥部</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   CSS Variables & Reset
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --bg: #ffffff;
+  --soft: #f7f8fa;
+  --panel: #ffffff;
+  --line: #e9ebef;
+  --ink: #0f1115;
+  --muted: #69707d;
+  --accent: #0b5fff;
+  --accent-soft: rgba(11,95,255,.06);
+  --accent-hover: rgba(11,95,255,.12);
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-full: 9999px;
+  --shadow-fine: 0 1px 2px rgba(15,17,21,.04), 0 8px 24px -12px rgba(15,17,21,.08);
+  --shadow-hover: 0 4px 12px rgba(15,17,21,.08), 0 12px 32px -12px rgba(15,17,21,.12);
+  --transition: cubic-bezier(.22,1,.36,1);
+  --font-sans: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+}
+
+[data-theme="dark"] {
+  --bg: #0f1115;
+  --soft: #1a1d24;
+  --panel: #1e2128;
+  --line: #2d3139;
+  --ink: #f0f1f3;
+  --muted: #8b919d;
+  --accent: #4d8eff;
+  --accent-soft: rgba(77,142,255,.1);
+  --accent-hover: rgba(77,142,255,.18);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--ink);
+  background: var(--bg);
+  min-height: 100vh;
+  transition: background .3s, color .3s;
+}
+::selection { background: var(--accent); color: #fff; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Layout
+   ═══════════════════════════════════════════════════════════════ */
+.app { display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
+  transition: transform .3s var(--transition);
+}
+.sidebar-header {
+  padding: 20px 18px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo {
+  width: 32px;
+  height: 32px;
+  background: var(--ink);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+}
+.logo-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 10px;
+  overflow-y: auto;
+}
+.nav-section {
+  margin-bottom: 16px;
+}
+.nav-section-title {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  padding: 0 8px;
+  margin-bottom: 6px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .2s;
+  position: relative;
+}
+.nav-item:hover { background: var(--soft); color: var(--ink); }
+.nav-item.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
+/* Main content */
+.main {
+  flex: 1;
+  margin-left: 220px;
+  min-height: 100vh;
+}
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255,255,255,.75);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+[data-theme="dark"] .topbar {
+  background: rgba(15,17,21,.75);
+}
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.page-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+.ip-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--soft);
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  cursor: pointer;
+}
+.ip-switcher:hover { background: var(--line); }
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.topbar-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all .2s;
+}
+.topbar-btn:hover { background: var(--soft); color: var(--ink); }
+
+.content {
+  padding: 28px;
+  max-width: 1200px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Components
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all .2s;
+  font-family: inherit;
+}
+.btn-primary {
+  background: var(--ink);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--accent); }
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.btn-secondary:hover { border-color: var(--ink); color: var(--ink); }
+.btn-accent {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-accent:hover { background: var(--accent-hover); }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+}
+
+/* Cards */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: all .3s var(--transition);
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+  border-color: #c9d2e8;
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.card-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* Tags */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  background: var(--soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.tag-accent { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.tag-success { background: #ecfdf5; border-color: #a7f3d0; color: #059669; }
+.tag-warning { background: #fffbeb; border-color: #fde68a; color: #d97706; }
+.tag-danger { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+
+/* Forms */
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--bg);
+  transition: border-color .2s, box-shadow .2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.form-textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+
+/* Tables */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.table th, .table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+.table th {
+  background: var(--soft);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--muted);
+}
+.table tr:last-child td { border-bottom: none; }
+.table tr:hover td { background: var(--soft); }
+
+/* Stats cards */
+.stat-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.stat-value {
+  font-size: 28px;
+  font-weight: 900;
+  font-family: var(--font-mono);
+  letter-spacing: -.02em;
+}
+.stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* Grid layouts */
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+/* Flex utilities */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+
+/* Text utilities */
+.text-muted { color: var(--muted); }
+.text-accent { color: var(--accent); }
+.text-sm { font-size: 13px; }
+.text-xs { font-size: 11px; }
+.font-mono { font-family: var(--font-mono); }
+.font-bold { font-weight: 700; }
+
+/* Spacing */
+.mt-2 { margin-top: 8px; }
+.mt-4 { margin-top: 16px; }
+.mb-2 { margin-bottom: 8px; }
+.mb-4 { margin-bottom: 16px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Page-specific styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Dashboard */
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.stat-card.clickable { cursor: pointer; }
+.stat-card.clickable:hover { border-color: var(--accent); }
+
+.schedule-timeline {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 28px;
+}
+.timeline-header {
+  display: grid;
+  grid-template-columns: 100px repeat(7, 1fr);
+  gap: 1px;
+  margin-bottom: 12px;
+}
+.timeline-cell {
+  text-align: center;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--muted);
+}
+.timeline-row {
+  display: grid;
+  grid-template-columns: 100px repeat(7, 1fr);
+  gap: 1px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+.timeline-account {
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+.timeline-slot {
+  min-height: 32px;
+  border-radius: 4px;
+  padding: 2px;
+}
+.timeline-content {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* IP Cards */
+.ip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.ip-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  transition: all .3s var(--transition);
+}
+.ip-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+.ip-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+.ip-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.ip-track { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+.ip-stats { display: flex; gap: 16px; font-size: 12px; }
+.ip-stat-value { font-weight: 700; font-family: var(--font-mono); }
+
+/* Hot topics */
+.hot-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  transition: all .2s;
+}
+.hot-card:hover { border-color: var(--accent); }
+.hot-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.hot-title { font-weight: 600; font-size: 14px; }
+.hot-meta { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); }
+.hot-ips { display: flex; gap: 4px; }
+.hot-ip-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Topic pool */
+.topic-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 12px;
+}
+.topic-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.topic-title { font-weight: 600; }
+.topic-rating {
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+.rating-s { background: #fef3c7; color: #d97706; }
+.rating-a { background: #dbeafe; color: #2563eb; }
+.rating-b { background: #e0e7ff; color: #4f46e5; }
+.rating-c { background: var(--soft); color: var(--muted); }
+.topic-scores { display: flex; gap: 12px; font-size: 12px; }
+.topic-score { display: flex; align-items: center; gap: 4px; }
+
+/* Script editor */
+.script-editor {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+}
+.script-fields { display: flex; flex-direction: column; gap: 16px; }
+.script-field {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.script-field-label {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.script-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Schedule */
+.schedule-board {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+}
+.schedule-day {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px;
+  min-height: 200px;
+}
+.schedule-day-header {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.schedule-item {
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.schedule-item:hover { background: var(--accent-hover); }
+
+/* Data review */
+.review-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.review-stat {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  text-align: center;
+}
+.review-stat-value {
+  font-size: 22px;
+  font-weight: 900;
+  font-family: var(--font-mono);
+}
+.review-stat-label {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Quadrant chart */
+.quadrant-chart {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.quadrant-svg { width: 100%; height: 400px; }
+
+/* AI Chat */
+.ai-container {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 0;
+  height: calc(100vh - 140px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.ai-sessions {
+  background: var(--soft);
+  border-right: 1px solid var(--line);
+  padding: 12px;
+  overflow-y: auto;
+}
+.ai-session {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.ai-session:hover { background: var(--panel); }
+.ai-session.active { background: var(--panel); font-weight: 600; }
+.ai-chat {
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+}
+.ai-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+.ai-message {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 12px;
+}
+.ai-message.user { flex-direction: row-reverse; }
+.ai-bubble {
+  max-width: 70%;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.ai-message.user .ai-bubble {
+  background: var(--accent);
+  color: #fff;
+}
+.ai-message.assistant .ai-bubble {
+  background: var(--soft);
+}
+.ai-input-area {
+  padding: 16px 20px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 12px;
+}
+.ai-input {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-family: inherit;
+}
+.ai-input:focus { outline: none; border-color: var(--accent); }
+
+/* Settings */
+.settings-section {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.settings-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-label { font-size: 13px; }
+.settings-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all .3s;
+}
+.modal-overlay.active { opacity: 1; visibility: visible; }
+.modal {
+  background: var(--panel);
+  border-radius: var(--radius);
+  width: 90%;
+  max-width: 520px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 28px;
+  transform: translateY(20px);
+  transition: transform .3s var(--transition);
+}
+.modal-overlay.active .modal { transform: translateY(0); }
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+/* Teleprompter */
+.teleprompter-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 2000;
+  display: none;
+  flex-direction: column;
+}
+.teleprompter-overlay.active { display: flex; }
+.teleprompter-header {
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
+}
+.teleprompter-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  overflow: hidden;
+}
+.teleprompter-text {
+  font-size: 48px;
+  line-height: 1.5;
+  color: #fff;
+  text-align: center;
+  max-width: 800px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .dashboard-stats { grid-template-columns: repeat(2, 1fr); }
+  .review-stats { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .dashboard-stats { grid-template-columns: 1fr; }
+  .script-editor { grid-template-columns: 1fr; }
+  .ai-container { grid-template-columns: 1fr; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Animations
+   ═══════════════════════════════════════════════════════════════ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+.fade-in { animation: fadeIn .4s var(--transition); }
+.pulse { animation: pulse 2s infinite; }
+
+/* Page transitions */
+.page { display: none; }
+.page.active { display: block; animation: fadeIn .3s var(--transition); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
+.empty-icon { font-size: 48px; margin-bottom: 16px; opacity: .5; }
+.empty-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--ink); }
+.empty-desc { font-size: 13px; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">&gt;_</div>
+      <span class="logo-text">内容指挥部</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">概览</div>
+        <div class="nav-item active" data-page="dashboard">
+          <span class="nav-icon">📊</span>
+          <span>指挥板</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">资产</div>
+        <div class="nav-item" data-page="ip">
+          <span class="nav-icon">👤</span>
+          <span>IP 与账号</span>
+        </div>
+        <div class="nav-item" data-page="hot">
+          <span class="nav-icon">🔥</span>
+          <span>热点雷达</span>
+        </div>
+        <div class="nav-item" data-page="bench">
+          <span class="nav-icon">🎯</span>
+          <span>对标拆解</span>
+        </div>
+        <div class="nav-item" data-page="topic">
+          <span class="nav-icon">💡</span>
+          <span>选题池</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">创作</div>
+        <div class="nav-item" data-page="script">
+          <span class="nav-icon">✍️</span>
+          <span>文案工坊</span>
+        </div>
+        <div class="nav-item" data-page="shoot">
+          <span class="nav-icon">🎬</span>
+          <span>拍摄与提词</span>
+        </div>
+        <div class="nav-item" data-page="schedule">
+          <span class="nav-icon">📅</span>
+          <span>发布排期</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">分析</div>
+        <div class="nav-item" data-page="review">
+          <span class="nav-icon">📈</span>
+          <span>数据复盘</span>
+        </div>
+        <div class="nav-item" data-page="ai">
+          <span class="nav-icon">🤖</span>
+          <span>AI 助手</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">系统</div>
+        <div class="nav-item" data-page="settings">
+          <span class="nav-icon">⚙️</span>
+          <span>设置</span>
+        </div>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title" id="pageTitle">指挥板</h1>
+        <div class="ip-switcher" id="ipSwitcher">
+          <span>🌐</span>
+          <span id="currentIpName">全部 IP</span>
+          <span>▾</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" id="themeToggle" title="切换主题">🌙</button>
+        <button class="topbar-btn" title="帮助">❓</button>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content" id="content">
+      <!-- Pages will be rendered here -->
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<!-- Teleprompter -->
+<div class="teleprompter-overlay" id="teleprompter">
+  <div class="teleprompter-header">
+    <span>提词器</span>
+    <button class="btn btn-secondary" onclick="App.closeTeleprompter()">关闭</button>
+  </div>
+  <div class="teleprompter-content">
+    <div class="teleprompter-text" id="teleprompterText"></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   内容指挥部 · 核心应用
+   ═══════════════════════════════════════════════════════════════ */
+
+// ─── Constants ────────────────────────────────────────────────
+const SCHEMA_VERSION = 1;
+const STORAGE_KEY = 'content-commander-v1';
+
+// 内置平台
+const DEFAULT_PLATFORMS = [
+  { key: 'douyin', name: '抖音', color: '#000000' },
+  { key: 'xiaohongshu', name: '小红书', color: '#ff2442' },
+  { key: 'shipinhao', name: '视频号', color: '#07c160' },
+  { key: 'bilibili', name: 'B站', color: '#00a1d6' },
+  { key: 'kuaishou', name: '快手', color: '#ff4906' },
+  { key: 'weibo', name: '微博', color: '#ff8200' },
+  { key: 'gongzhonghao', name: '公众号', color: '#07c160' },
+  { key: 'zhihu', name: '知乎', color: '#0066ff' }
+];
+
+// 8 种 IP 形象
+const IP_AVATARS = ['🎭', '🦊', '🐱', '🐻', '🐼', '🦁', '🐰', '🐶'];
+
+// 8 种主题色
+const IP_COLORS = [
+  '#ef4444', '#f97316', '#eab308', '#22c55e',
+  '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'
+];
+
+// 五维评分维度
+const FIVE_DIMS = [
+  { key: 'pain', name: '痛点', icon: '💢' },
+  { key: 'useful', name: '实用', icon: '🔧' },
+  { key: 'debate', name: '争议', icon: '💬' },
+  { key: 'suspense', name: '悬念', icon: '🎭' },
+  { key: 'track', name: '赛道', icon: '🏃' }
+];
+
+// 内容阶段
+const CONTENT_STAGES = [
+  { key: 'topic', name: '选题', color: '#94a3b8' },
+  { key: 'draft', name: '稿件', color: '#f59e0b' },
+  { key: 'shoot', name: '拍摄', color: '#3b82f6' },
+  { key: 'schedule', name: '排期', color: '#8b5cf6' },
+  { key: 'published', name: '已发布', color: '#10b981' }
+];
+
+// 默认数据标准线
+const DEFAULT_STANDARDS = {
+  wpm: 240,           // 语速：字/分钟
+  fiveSecLine: 60,    // 5秒完播达标线 %
+  favLine: 2.2,       // 收藏率达标线 %
+  avgLine: 40,        // 均播/时长达标线 %
+  commentLine: 0.5,   // 评论率达标线 %
+  hotMult: 2,         // 爆款倍数
+  favPortrait: 0.5    // 收藏型画像阈值
+};
+
+// ─── Data Store ───────────────────────────────────────────────
+const Store = {
+  data: null,
+  
+  init() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        this.data = JSON.parse(saved);
+        // Migrate if needed
+        if (!this.data.version || this.data.version < SCHEMA_VERSION) {
+          this.migrate();
+        }
+      } catch (e) {
+        console.error('Failed to parse saved data:', e);
+        this.data = null;
+      }
+    }
+    if (!this.data) {
+      this.reset();
+    }
+    return this;
+  },
+  
+  reset() {
+    this.data = {
+      version: SCHEMA_VERSION,
+      ips: [],
+      accounts: [],
+      contents: [],
+      posts: [],
+      topics: [],
+      hots: [],
+      benchmarks: [],
+      benchWorks: [],
+      settings: {
+        masterName: '主理人',
+        masterAvatar: '👤',
+        theme: 'light',
+        platforms: [...DEFAULT_PLATFORMS],
+        customPlatforms: [],
+        standards: { ...DEFAULT_STANDARDS },
+        ai: {
+          protocol: 'openai',
+          baseUrl: '',
+          apiKey: '',
+          model: '',
+          chats: []
+        },
+        nodes: this.getDefaultNodes(),
+        extremeWords: this.getDefaultExtremeWords()
+      },
+      ui: {
+        currentIp: null,  // null = all IPs
+        currentPage: 'dashboard'
+      }
+    };
+    this.save();
+    return this;
+  },
+  
+  getDefaultNodes() {
+    return [
+      { date: '01-01', name: '元旦', type: 'festival' },
+      { date: '02-14', name: '情人节', type: 'festival' },
+      { date: '03-08', name: '妇女节', type: 'festival' },
+      { date: '05-01', name: '劳动节', type: 'festival' },
+      { date: '06-01', name: '儿童节', type: 'festival' },
+      { date: '10-01', name: '国庆节', type: 'festival' },
+      { date: '11-11', name: '双十一', type: 'shopping' },
+      { date: '12-12', name: '双十二', type: 'shopping' }
+    ];
+  },
+  
+  getDefaultExtremeWords() {
+    return [
+      '最', '第一', '唯一', '绝对', '100%', '永远', '全部',
+      '国家级', '世界级', '顶级', '极品', '绝无仅有',
+      '保证', '承诺', '必赚', '零风险', '躺赚', '日入过万'
+    ];
+  },
+  
+  migrate() {
+    // Future: schema migration logic
+    this.data.version = SCHEMA_VERSION;
+    this.save();
+  },
+  
+  save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+    } catch (e) {
+      console.error('Failed to save:', e);
+      if (e.name === 'QuotaExceededError') {
+        alert('存储空间不足，请导出数据后清理');
+      }
+    }
+  },
+  
+  // ─── IP ──────────────────────────────────────────────────────
+  addIP(ip) {
+    ip.id = this.genId('ip');
+    ip.createdAt = Date.now();
+    this.data.ips.push(ip);
+    this.save();
+    return ip;
+  },
+  
+  updateIP(id, updates) {
+    const ip = this.data.ips.find(i => i.id === id);
+    if (ip) Object.assign(ip, updates);
+    this.save();
+    return ip;
+  },
+  
+  deleteIP(id) {
+    const idx = this.data.ips.findIndex(i => i.id === id);
+    if (idx > -1) {
+      this.data.ips.splice(idx, 1);
+      // Orphan related data
+      this.data.accounts.forEach(a => { if (a.ipId === id) a.ipId = null; });
+      this.data.contents.forEach(c => { if (c.ipId === id) c.ipId = null; });
+      this.save();
+    }
+  },
+  
+  getIP(id) {
+    return this.data.ips.find(i => i.id === id);
+  },
+  
+  // ─── Account ─────────────────────────────────────────────────
+  addAccount(acc) {
+    acc.id = this.genId('acc');
+    acc.createdAt = Date.now();
+    this.data.accounts.push(acc);
+    this.save();
+    return acc;
+  },
+  
+  updateAccount(id, updates) {
+    const acc = this.data.accounts.find(a => a.id === id);
+    if (acc) Object.assign(acc, updates);
+    this.save();
+    return acc;
+  },
+  
+  deleteAccount(id) {
+    const idx = this.data.accounts.findIndex(a => a.id === id);
+    if (idx > -1) {
+      this.data.accounts.splice(idx, 1);
+      this.save();
+    }
+  },
+  
+  getAccountsByIP(ipId) {
+    return this.data.accounts.filter(a => a.ipId === ipId);
+  },
+  
+  // ─── Content ─────────────────────────────────────────────────
+  addContent(content) {
+    content.id = this.genId('content');
+    content.createdAt = Date.now();
+    content.updatedAt = Date.now();
+    content.stage = content.stage || 'topic';
+    this.data.contents.push(content);
+    this.save();
+    return content;
+  },
+  
+  updateContent(id, updates) {
+    const content = this.data.contents.find(c => c.id === id);
+    if (content) {
+      Object.assign(content, updates);
+      content.updatedAt = Date.now();
+    }
+    this.save();
+    return content;
+  },
+  
+  deleteContent(id) {
+    const idx = this.data.contents.findIndex(c => c.id === id);
+    if (idx > -1) {
+      this.data.contents.splice(idx, 1);
+      // Remove related posts
+      this.data.posts = this.data.posts.filter(p => p.contentId !== id);
+      this.save();
+    }
+  },
+  
+  getContent(id) {
+    return this.data.contents.find(c => c.id === id);
+  },
+  
+  getContentsByIP(ipId) {
+    if (!ipId) return this.data.contents;
+    return this.data.contents.filter(c => c.ipId === ipId);
+  },
+  
+  // ─── Post (发布记录) ─────────────────────────────────────────
+  addPost(post) {
+    post.id = this.genId('post');
+    post.createdAt = Date.now();
+    this.data.posts.push(post);
+    this.save();
+    return post;
+  },
+  
+  updatePost(id, updates) {
+    const post = this.data.posts.find(p => p.id === id);
+    if (post) Object.assign(post, updates);
+    this.save();
+    return post;
+  },
+  
+  deletePost(id) {
+    const idx = this.data.posts.findIndex(p => p.id === id);
+    if (idx > -1) {
+      this.data.posts.splice(idx, 1);
+      this.save();
+    }
+  },
+  
+  getPostsByContent(contentId) {
+    return this.data.posts.filter(p => p.contentId === contentId);
+  },
+  
+  getPostsByAccount(accountId) {
+    return this.data.posts.filter(p => p.accountId === accountId);
+  },
+  
+  // ─── Topic ───────────────────────────────────────────────────
+  addTopic(topic) {
+    topic.id = this.genId('topic');
+    topic.createdAt = Date.now();
+    topic.status = topic.status || 'pool';
+    this.data.topics.push(topic);
+    this.save();
+    return topic;
+  },
+  
+  updateTopic(id, updates) {
+    const topic = this.data.topics.find(t => t.id === id);
+    if (topic) Object.assign(topic, updates);
+    this.save();
+    return topic;
+  },
+  
+  deleteTopic(id) {
+    const idx = this.data.topics.findIndex(t => t.id === id);
+    if (idx > -1) {
+      this.data.topics.splice(idx, 1);
+      this.save();
+    }
+  },
+  
+  // ─── Hot Topic ───────────────────────────────────────────────
+  addHot(hot) {
+    hot.id = this.genId('hot');
+    hot.createdAt = Date.now();
+    hot.dueAt = hot.createdAt + 72 * 3600 * 1000; // 72h
+    this.data.hots.push(hot);
+    this.save();
+    return hot;
+  },
+  
+  updateHot(id, updates) {
+    const hot = this.data.hots.find(h => h.id === id);
+    if (hot) Object.assign(hot, updates);
+    this.save();
+    return hot;
+  },
+  
+  deleteHot(id) {
+    const idx = this.data.hots.findIndex(h => h.id === id);
+    if (idx > -1) {
+      this.data.hots.splice(idx, 1);
+      this.save();
+    }
+  },
+  
+  // ─── Benchmark ───────────────────────────────────────────────
+  addBenchmark(bench) {
+    bench.id = this.genId('bench');
+    bench.createdAt = Date.now();
+    this.data.benchmarks.push(bench);
+    this.save();
+    return bench;
+  },
+  
+  updateBenchmark(id, updates) {
+    const bench = this.data.benchmarks.find(b => b.id === id);
+    if (bench) Object.assign(bench, updates);
+    this.save();
+    return bench;
+  },
+  
+  deleteBenchmark(id) {
+    const idx = this.data.benchmarks.findIndex(b => b.id === id);
+    if (idx > -1) {
+      this.data.benchmarks.splice(idx, 1);
+      // Remove related works
+      this.data.benchWorks = this.data.benchWorks.filter(w => w.benchId !== id);
+      this.save();
+    }
+  },
+  
+  addBenchWork(work) {
+    work.id = this.genId('work');
+    work.createdAt = Date.now();
+    this.data.benchWorks.push(work);
+    this.save();
+    return work;
+  },
+  
+  updateBenchWork(id, updates) {
+    const work = this.data.benchWorks.find(w => w.id === id);
+    if (work) Object.assign(work, updates);
+    this.save();
+    return work;
+  },
+  
+  deleteBenchWork(id) {
+    const idx = this.data.benchWorks.findIndex(w => w.id === id);
+    if (idx > -1) {
+      this.data.benchWorks.splice(idx, 1);
+      this.save();
+    }
+  },
+  
+  // ─── Utilities ───────────────────────────────────────────────
+  genId(prefix) {
+    return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  },
+  
+  export() {
+    return JSON.stringify(this.data, null, 2);
+  },
+  
+  import(json) {
+    try {
+      const data = JSON.parse(json);
+      if (data.version) {
+        this.data = data;
+        this.save();
+        return true;
+      }
+    } catch (e) {
+      console.error('Import failed:', e);
+    }
+    return false;
+  },
+  
+  // ─── Computed ────────────────────────────────────────────────
+  getFilteredData(filterIp) {
+    if (!filterIp) return this.data;
+    return {
+      ...this.data,
+      accounts: this.data.accounts.filter(a => a.ipId === filterIp),
+      contents: this.data.contents.filter(c => c.ipId === filterIp),
+      topics: this.data.topics.filter(t => t.ipId === filterIp),
+      hots: this.data.hots.filter(h => !h.ipIds || h.ipIds.includes(filterIp)),
+      benchmarks: this.data.benchmarks.filter(b => !b.ipId || b.ipId === filterIp)
+    };
+  },
+  
+  getStats(filterIp) {
+    const data = filterIp ? this.getFilteredData(filterIp) : this.data;
+    const now = Date.now();
+    const sevenDaysAgo = now - 7 * 24 * 3600 * 1000;
+    
+    const postsThisWeek = data.posts.filter(p => p.publishedAt >= sevenDaysAgo);
+    const pendingShoot = data.contents.filter(c => c.stage === 'shoot').length;
+    const pendingPublish = data.contents.filter(c => c.stage === 'schedule').length;
+    const pendingBackfill = data.posts.filter(p => p.publishedAt && !p.backfilledAt).length;
+    
+    return {
+      pendingShoot,
+      pendingPublish,
+      pendingBackfill,
+      postsThisWeek: postsThisWeek.length,
+      totalContents: data.contents.length,
+      totalPosts: data.posts.length
+    };
+  }
+};
+
+// ─── Number Parser ────────────────────────────────────────────
+function parseNumber(str) {
+  if (typeof str === 'number') return str;
+  if (!str) return 0;
+  str = String(str).trim().replace(/,/g, '');
+  
+  let multiplier = 1;
+  if (str.includes('万') || str.toLowerCase().includes('w')) {
+    multiplier = 10000;
+    str = str.replace(/[万wW]/g, '');
+  } else if (str.includes('亿') || str.toLowerCase().includes('y')) {
+    multiplier = 100000000;
+    str = str.replace(/[亿yY]/g, '');
+  } else if (str.toLowerCase().includes('k')) {
+    multiplier = 1000;
+    str = str.replace(/[kK]/g, '');
+  }
+  
+  const num = parseFloat(str);
+  return isNaN(num) ? 0 : num * multiplier;
+}
+
+function formatNumber(num) {
+  if (num >= 10000) return (num / 10000).toFixed(1) + '万';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+  return String(num);
+}
+
+// ─── Rating Calculator ────────────────────────────────────────
+function calcRating(scores) {
+  const total = (scores.pain || 0) + (scores.useful || 0) + 
+                (scores.debate || 0) + (scores.suspense || 0) + (scores.track || 0);
+  let rating = 'C';
+  if (total >= 21) rating = 'S';
+  else if (total >= 17) rating = 'A';
+  else if (total >= 13) rating = 'B';
+  return { rating, total };
+}
+
+function calcTopicType(scores) {
+  const dims = [
+    { key: 'pain', val: scores.pain || 0 },
+    { key: 'useful', val: scores.useful || 0 },
+    { key: 'debate', val: scores.debate || 0 },
+    { key: 'suspense', val: scores.suspense || 0 }
+  ];
+  dims.sort((a, b) => b.val - a.val);
+  if (dims[0].val === dims[1].val) {
+    // Tie-breaker order
+    const order = ['pain', 'useful', 'debate', 'suspense'];
+    for (const key of order) {
+      if (scores[key] === dims[0].val) {
+        return key === 'pain' ? '痛点型' : key === 'useful' ? '实用型' : key === 'debate' ? '评论型' : '完播型';
+      }
+    }
+  }
+  return dims[0].key === 'pain' ? '痛点型' : dims[0].key === 'useful' ? '收藏型' : dims[0].key === 'debate' ? '评论型' : '完播型';
+}
+
+// ─── Script Check (10 items) ──────────────────────────────────
+function checkScript(script, ip, standards) {
+  const results = [];
+  const wpm = standards.wpm || 240;
+  
+  // 1. 开头有结果或冲突
+  const hookPatterns = /[0-9]+[秒天年月]|真的|竟然|竟然|千万别|还在|焦虑|踩雷|不会|没时间|？/;
+  results.push({
+    id: 'hook',
+    name: '开头有结果或冲突',
+    pass: hookPatterns.test(script.hook || ''),
+    tip: '前5秒需要给出结果、冲突或疑问'
+  });
+  
+  // 2. 标题埋痛点
+  const painPatterns = /还在|焦虑|踩雷|不会|没时间|为什么|怎么|总是|经常|难|痛|坑|错|后悔|\？/;
+  results.push({
+    id: 'titlePain',
+    name: '标题埋痛点',
+    pass: painPatterns.test(script.title || ''),
+    tip: '标题应包含目标观众的痛点关键词'
+  });
+  
+  // 3. 信息点 >= 3
+  const infoCount = (script.body || '').split(/[。！？；\n]/).filter(s => s.trim().length > 5).length;
+  results.push({
+    id: 'infoPoints',
+    name: '信息点 >= 3',
+    pass: infoCount >= 3,
+    tip: `当前约 ${infoCount} 个信息点，建议至少 3 个`
+  });
+  
+  // 4. 时长 <= 目标
+  const totalChars = (script.hook || '').length + (script.body || '').length + (script.cta || '').length;
+  const duration = totalChars / wpm * 60;
+  results.push({
+    id: 'duration',
+    name: '时长合理',
+    pass: duration <= 180,
+    tip: `预估 ${Math.round(duration)}秒，建议不超过3分钟`
+  });
+  
+  // 5. 封面大字 <= 12字
+  const coverChars = (script.cover || '').length;
+  results.push({
+    id: 'coverText',
+    name: '封面大字 <= 12字',
+    pass: coverChars <= 12,
+    tip: `当前 ${coverChars} 字，建议精简`
+  });
+  
+  // 6. 标签 3-5 个
+  const tags = (script.tags || '').split(/[,，\s]+/).filter(t => t.trim());
+  results.push({
+    id: 'tagCount',
+    name: '标签 3-5 个',
+    pass: tags.length >= 3 && tags.length <= 5,
+    tip: `当前 ${tags.length} 个，建议 3-5 个`
+  });
+  
+  // 7. 含赛道词
+  const trackWord = ip?.track || '';
+  const hasTrackWord = trackWord && tags.some(t => t.includes(trackWord));
+  results.push({
+    id: 'trackTag',
+    name: '含赛道标签',
+    pass: hasTrackWord || !trackWord,
+    tip: trackWord ? `建议包含赛道词「${trackWord}」` : '未设置IP赛道'
+  });
+  
+  // 8. 中段有悬念
+  const suspensePatterns = /但是|然而|不过|其实|没想到|结果|竟然|转折|关键|秘密/;
+  results.push({
+    id: 'midSuspense',
+    name: '中段埋悬念',
+    pass: suspensePatterns.test(script.body || ''),
+    tip: '正文中加入转折或悬念提升完播'
+  });
+  
+  // 9. 结尾引导互动
+  const ctaPatterns = /你觉得|评论区|告诉我|你|你们|大家|赞同|反对|怎么看|留言/;
+  results.push({
+    id: 'cta',
+    name: '结尾引导互动',
+    pass: ctaPatterns.test(script.cta || ''),
+    tip: '结尾引导评论提升互动率'
+  });
+  
+  // 10. 无极限词
+  const extremeWords = Store.data.settings.extremeWords || [];
+  const fullText = (script.title || '') + (script.hook || '') + (script.body || '') + (script.cta || '');
+  const foundExtreme = extremeWords.filter(w => fullText.includes(w));
+  results.push({
+    id: 'noExtreme',
+    name: '无极限词',
+    pass: foundExtreme.length === 0,
+    tip: foundExtreme.length ? `发现：${foundExtreme.join('、')}` : '通过'
+  });
+  
+  return {
+    results,
+    score: Math.round(results.filter(r => r.pass).length / results.length * 100),
+    passed: results.filter(r => r.pass).length,
+    total: results.length
+  };
+}
+
+// ─── Quadrant Diagnosis ───────────────────────────────────────
+function diagnosePost(post, standards, avgPlay) {
+  const fiveSec = post.fiveSecRate;
+  const favRate = post.play > 0 ? (post.favorite / post.play * 100) : 0;
+  const avgRate = post.duration > 0 ? (post.avgPlay / post.duration * 100) : 0;
+  const commentRate = post.play > 0 ? (post.comment / post.play * 100) : 0;
+  
+  const hasFiveSec = fiveSec !== null && fiveSec !== undefined;
+  
+  let quadrant = 'unknown';
+  let color = 'gray';
+  
+  if (hasFiveSec) {
+    const fiveOk = fiveSec >= standards.fiveSecLine;
+    const favOk = favRate >= standards.favLine;
+    
+    if (fiveOk && favOk) { quadrant = 'hit'; color = 'green'; }
+    else if (!fiveOk && favOk) { quadrant = 'goodContent'; color = 'yellow'; }
+    else if (fiveOk && !favOk) { quadrant = 'goodHook'; color = 'orange'; }
+    else { quadrant = 'redo'; color = 'red'; }
+  } else {
+    // No 5-sec data, fallback to favRate only
+    if (favRate >= standards.favLine) { quadrant = 'maybeGood'; color = 'yellow'; }
+    else { quadrant = 'unknown'; color = 'gray'; }
+  }
+  
+  const conclusions = {
+    hit: '爆款潜质',
+    goodContent: '内容好、开头弱',
+    goodHook: '开头强、干货弱',
+    redo: '需要重做',
+    maybeGood: '收藏达标（无5秒数据）',
+    unknown: '数据不足'
+  };
+  
+  const suggestions = [];
+  if (hasFiveSec && fiveSec < standards.fiveSecLine) {
+    suggestions.push('优化前5秒钩子');
+  }
+  if (favRate < standards.favLine) {
+    suggestions.push('增加实用信息点');
+  }
+  if (avgRate < standards.avgLine) {
+    suggestions.push('提升中段留存');
+  }
+  if (commentRate < standards.commentLine) {
+    suggestions.push('加强互动引导');
+  }
+  if (avgPlay > 0 && avgPlay < avgPlay * 0.6) {
+    suggestions.push('检查发布时段/标签');
+  }
+  
+  return {
+    quadrant,
+    color,
+    conclusion: conclusions[quadrant],
+    metrics: { fiveSec, favRate, avgRate, commentRate },
+    suggestions
+  };
+}
+
+// ─── Auto Storyboard ──────────────────────────────────────────
+function autoStoryboard(script, wpm = 240) {
+  const shots = [];
+  const sections = [
+    { name: 'hook', text: script.hook || '' },
+    { name: 'body', text: script.body || '' },
+    { name: 'cta', text: script.cta || '' }
+  ];
+  
+  let shotIndex = 0;
+  const charsPerShot = Math.round(wpm / 60 * 4); // ~4 seconds per shot
+  
+  sections.forEach((section, sIdx) => {
+    if (!section.text) return;
+    
+    // Hook: 1 close-up
+    if (sIdx === 0 && section.text) {
+      shots.push({
+        id: 'shot_' + (++shotIndex),
+        scene: '特写',
+        visual: '面对镜头，表情专注',
+        lines: section.text,
+        chars: section.text.length,
+        duration: Math.max(1, Math.round(section.text.length / (wpm / 60))),
+        done: false
+      });
+      return;
+    }
+    
+    // CTA: 1 medium shot
+    if (sIdx === 2 && section.text) {
+      shots.push({
+        id: 'shot_' + (++shotIndex),
+        scene: '近景',
+        visual: '面对镜头，手势引导',
+        lines: section.text,
+        chars: section.text.length,
+        duration: Math.max(1, Math.round(section.text.length / (wpm / 60))),
+        done: false
+      });
+      return;
+    }
+    
+    // Body: split by sentences, accumulate to ~28 chars
+    const sentences = section.text.split(/([。！？；\n])/).filter(s => s.trim());
+    let currentShot = { lines: '', chars: 0 };
+    
+    sentences.forEach((sentence, i) => {
+      if (currentShot.chars + sentence.length > charsPerShot && currentShot.chars > 0) {
+        // Finish current shot
+        shots.push({
+          id: 'shot_' + (++shotIndex),
+          scene: shotIndex % 2 === 0 ? '近景' : '中景',
+          visual: '',
+          lines: currentShot.lines,
+          chars: currentShot.chars,
+          duration: Math.max(1, Math.round(currentShot.chars / (wpm / 60))),
+          done: false
+        });
+        currentShot = { lines: '', chars: 0 };
+      }
+      currentShot.lines += sentence;
+      currentShot.chars += sentence.length;
+    });
+    
+    // Remaining
+    if (currentShot.chars > 0) {
+      shots.push({
+        id: 'shot_' + (++shotIndex),
+        scene: shotIndex % 2 === 0 ? '近景' : '中景',
+        visual: '',
+        lines: currentShot.lines,
+        chars: currentShot.chars,
+        duration: Math.max(1, Math.round(currentShot.chars / (wpm / 60))),
+        done: false
+      });
+    }
+  });
+  
+  return shots;
+}
+
+// ─── Title Formulas ───────────────────────────────────────────
+const TITLE_FORMULAS = [
+  { pattern: '{pain}的人，{action}试试这个', category: '痛点' },
+  { pattern: '为什么你总是{pain}？因为{reason}', category: '痛点' },
+  { pattern: '{number}个{topic}小技巧，第{highlight}个最实用', category: '实用' },
+  { pattern: '还在{pain}？这个方法帮你{result}', category: '痛点' },
+  { pattern: '{topic}避坑指南：{number}个常见错误', category: '实用' },
+  { pattern: '我花了{time}才搞懂的{topic}真相', category: '悬念' },
+  { pattern: '{topic}干货｜从{start}到{end}的完整攻略', category: '实用' },
+  { pattern: '别再{wrongAction}了！正确做法是{rightAction}', category: '争议' },
+  { pattern: '{topic}新手必看：{number}步上手指南', category: '实用' },
+  { pattern: '真相了！{topic}的底层逻辑其实是{insight}', category: '悬念' },
+  { pattern: '{audience}千万别{action}，除非你{condition}', category: '争议' },
+  { pattern: '从{start}到{end}，我做对了这{number}件事', category: '实用' },
+  { pattern: '{topic}天花板！这个{result}太绝了', category: '悬念' },
+  { pattern: '后悔没早知道的{number}个{topic}秘诀', category: '悬念' },
+  { pattern: '{topic}圈不会告诉你的{number}个秘密', category: '争议' },
+  { pattern: '一招教你解决{pain}，亲测有效', category: '痛点' },
+  { pattern: '{topic}红黑榜：这些{item}千万别碰', category: '争议' },
+  { pattern: '月省{amount}的{topic}方法，打工人狂喜', category: '实用' },
+  { pattern: '{topic}测评：{itemA} vs {itemB}，结果出乎意料', category: '悬念' },
+  { pattern: '被问爆的{topic}攻略，今天统一回复', category: '实用' }
+];
+
+// ─── Hook Templates ───────────────────────────────────────────
+const HOOK_TEMPLATES = [
+  '你还在{pain}吗？',
+  '{number}秒告诉你{topic}的真相',
+  '千万别{action}，除非你看完这个',
+  '今天讲一个{topic}的反常识',
+  '这条内容可能颠覆你对{topic}的认知',
+  '{result}的秘密，其实就这一步',
+  '为什么{percent}的人都{wrongAction}？',
+  '如果你正在{pain}，一定要看完',
+  '{topic}最大的谎言就是{lie}',
+  '花了{time}才明白的{topic}真相'
+];
+
+// ─── Body Structure Templates ─────────────────────────────────
+const BODY_STRUCTURES = [
+  { name: '问题-方案', pattern: '痛点引入 → 原因分析 → 解决方案 → 行动号召' },
+  { name: '故事弧', pattern: '场景代入 → 冲突展开 → 转折 → 收获' },
+  { name: '清单体', pattern: '第1点 → 第2点 → 第3点 → 总结' },
+  { name: '对比式', pattern: '常见做法 → 问题 → 更好方法 → 效果' },
+  { name: '时间线', pattern: '过去 → 现在 → 未来 → 行动建议' },
+  { name: '金字塔', pattern: '结论 → 论据1 → 论据2 → 论据3 → 重申' },
+  { name: 'SCQA', pattern: '情境 → 冲突 → 疑问 → 答案' }
+];
+
+// ─── App Controller ───────────────────────────────────────────
+const App = {
+  currentPage: 'dashboard',
+  currentIp: null,  // null = all
+  editingId: null,
+  
+  init() {
+    Store.init();
+    this.bindEvents();
+    this.loadTheme();
+    
+    // Show welcome wizard if first time
+    if (!Store.data.ips || Store.data.ips.length === 0) {
+      this.showWelcomeWizard();
+    } else {
+      this.navigate('dashboard');
+    }
+  },
+  
+  showWelcomeWizard() {
+    this.showModal(`
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="width:64px;height:64px;background:var(--ink);border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-mono);font-size:24px;font-weight:700;margin:0 auto 16px">&gt;_</div>
+        <div style="font-size:22px;font-weight:900;margin-bottom:8px">欢迎使用内容指挥部</div>
+        <div style="font-size:14px;color:var(--muted)">面向短视频口播创作者的多 IP / 多账号内容工作台</div>
+      </div>
+      
+      <div style="font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:20px">
+        <p>这里可以管理你的全部创作流程：</p>
+        <p style="margin-top:8px">🔥 热点雷达 → 🎯 对标拆解 → 💡 选题 → ✍️ 文案 → 🎬 拍摄 → 📅 排期 → 📈 复盘</p>
+      </div>
+      
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn-primary" style="width:100%;padding:14px" onclick="App.closeModal();App.loadSampleData()">
+          📦 载入示例工作室
+        </button>
+        <button class="btn btn-secondary" style="width:100%;padding:14px" onclick="App.closeModal();App.navigate('ip')">
+          ✨ 从空白开始
+        </button>
+        <button class="btn btn-secondary" style="width:100%;padding:14px" onclick="App.closeModal();document.getElementById('importFile').click()">
+          📂 导入已有数据
+        </button>
+      </div>
+      <input type="file" id="importFile" style="display:none" accept=".json" onchange="App.importData(event)">
+      
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);text-align:center">
+        数据存储在本地浏览器 · 离线可用 · 随时备份导出
+      </div>
+    `);
+  },
+  
+  bindEvents() {
+    // Navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        this.navigate(item.dataset.page);
+      });
+    });
+    
+    // Theme toggle
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      this.toggleTheme();
+    });
+    
+    // IP switcher
+    document.getElementById('ipSwitcher').addEventListener('click', () => {
+      this.showIPSwitcher();
+    });
+    
+    // Modal close
+    document.getElementById('modalOverlay').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) this.closeModal();
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.closeModal();
+        this.closeTeleprompter();
+      }
+    });
+  },
+  
+  navigate(page) {
+    this.currentPage = page;
+    Store.data.ui.currentPage = page;
+    Store.save();
+    
+    // Update nav
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.page === page);
+    });
+    
+    // Update title
+    const titles = {
+      dashboard: '指挥板',
+      ip: 'IP 与账号',
+      hot: '热点雷达',
+      bench: '对标拆解',
+      topic: '选题池',
+      script: '文案工坊',
+      shoot: '拍摄与提词',
+      schedule: '发布排期',
+      review: '数据复盘',
+      ai: 'AI 助手',
+      settings: '设置'
+    };
+    document.getElementById('pageTitle').textContent = titles[page] || page;
+    
+    // Render page
+    this.renderPage(page);
+  },
+  
+  renderPage(page) {
+    const content = document.getElementById('content');
+    const renderers = {
+      dashboard: () => this.renderDashboard(),
+      ip: () => this.renderIP(),
+      hot: () => this.renderHot(),
+      bench: () => this.renderBench(),
+      topic: () => this.renderTopic(),
+      script: () => this.renderScript(),
+      shoot: () => this.renderShoot(),
+      schedule: () => this.renderSchedule(),
+      review: () => this.renderReview(),
+      ai: () => this.renderAI(),
+      settings: () => this.renderSettings()
+    };
+    
+    content.innerHTML = (renderers[page] || renderers.dashboard)();
+    content.className = 'content fade-in';
+    
+    // Bind page-specific events
+    this.bindPageEvents(page);
+  },
+  
+  // ─── Dashboard ──────────────────────────────────────────────
+  renderDashboard() {
+    const stats = Store.getStats(this.currentIp);
+    const data = Store.getFilteredData(this.currentIp);
+    const today = new Date();
+    
+    // Week schedule
+    const weekDays = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() + i);
+      weekDays.push(d);
+    }
+    
+    // Get accounts for current filter
+    const accounts = this.currentIp 
+      ? data.accounts 
+      : Store.data.accounts;
+    
+    // Contents scheduled this week
+    const scheduledContents = data.contents.filter(c => 
+      c.stage === 'schedule' && c.scheduledAt
+    );
+    
+    return `
+      <div class="dashboard-stats">
+        <div class="stat-card clickable" onclick="App.navigate('shoot')">
+          <div class="stat-value">${stats.pendingShoot}</div>
+          <div class="stat-label">待拍摄</div>
+        </div>
+        <div class="stat-card clickable" onclick="App.navigate('schedule')">
+          <div class="stat-value">${stats.pendingPublish}</div>
+          <div class="stat-label">待发布</div>
+        </div>
+        <div class="stat-card clickable" onclick="App.navigate('review')">
+          <div class="stat-value">${stats.pendingBackfill}</div>
+          <div class="stat-label">待回填</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${stats.postsThisWeek}</div>
+          <div class="stat-label">近7天发布</div>
+        </div>
+      </div>
+      
+      <div class="grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">本周排期</h3>
+            <button class="btn btn-sm btn-secondary" onclick="App.navigate('schedule')">查看全部</button>
+          </div>
+          <div class="schedule-timeline">
+            <div class="timeline-header">
+              <div class="timeline-cell"></div>
+              ${weekDays.map(d => `
+                <div class="timeline-cell">
+                  ${['日','一','二','三','四','五','六'][d.getDay()]}<br>
+                  <span style="font-weight:600;color:var(--ink)">${d.getDate()}</span>
+                </div>
+              `).join('')}
+            </div>
+            ${accounts.slice(0, 5).map(acc => {
+              const ip = Store.getIP(acc.ipId);
+              return `
+                <div class="timeline-row">
+                  <div class="timeline-account">
+                    <span style="color:${ip?.color || '#999'}">${ip?.avatar || '👤'}</span>
+                    <span style="margin-left:6px;font-size:11px">${acc.name}</span>
+                  </div>
+                  ${weekDays.map(d => {
+                    const dayStr = d.toISOString().slice(0, 10);
+                    const dayContents = scheduledContents.filter(c => 
+                      c.scheduledAt && c.scheduledAt.slice(0, 10) === dayStr &&
+                      c.targetAccounts?.includes(acc.id)
+                    );
+                    return `
+                      <div class="timeline-slot">
+                        ${dayContents.slice(0, 2).map(c => `
+                          <div class="timeline-content" style="background:${ip?.color}20;color:${ip?.color}" title="${c.title}">
+                            ${c.title?.slice(0, 8) || '未命名'}
+                          </div>
+                        `).join('')}
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              `;
+            }).join('')}
+            ${accounts.length === 0 ? `
+              <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">
+                暂无账号，请先<a href="#" onclick="App.navigate('ip');return false" style="color:var(--accent)">添加IP和账号</a>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">近期热点</h3>
+            <button class="btn btn-sm btn-secondary" onclick="App.navigate('hot')">查看全部</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            ${data.hots
+              .filter(h => h.dueAt > Date.now())
+              .sort((a, b) => b.createdAt - a.createdAt)
+              .slice(0, 3)
+              .map(h => `
+                <div class="hot-card" style="margin:0">
+                  <div class="hot-header">
+                    <span class="hot-title">${this.escHtml(h.title)}</span>
+                    <span class="tag tag-${h.heat === '高' ? 'danger' : h.heat === '中' ? 'warning' : ''}">${h.heat || '中'}</span>
+                  </div>
+                  <div class="hot-meta">
+                    <span>${h.source || '未分类'}</span>
+                    <span>·</span>
+                    <span>${this.formatTimeLeft(h.dueAt)}</span>
+                  </div>
+                </div>
+              `).join('') || `
+                <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">
+                  暂无热点，去<a href="#" onclick="App.navigate('hot');return false" style="color:var(--accent)">热点雷达</a>看看
+                </div>
+              `}
+          </div>
+        </div>
+      </div>
+      
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">营销节点</h3>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${Store.data.settings.nodes
+              .filter(n => {
+                const [m, d] = n.date.split('-');
+                const now = new Date();
+                const nodeDate = new Date(now.getFullYear(), parseInt(m) - 1, parseInt(d));
+                const diff = nodeDate - now;
+                return diff >= 0 && diff < 30 * 24 * 3600 * 1000;
+              })
+              .map(n => `
+                <div class="tag tag-accent">${n.name} ${n.date}</div>
+              `).join('') || '<span class="text-muted text-sm">近30天无节点</span>'}
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">产量对比</h3>
+          </div>
+          <div style="display:flex;align-items:end;gap:4px;height:80px;padding-top:10px">
+            ${[...Array(7)].map((_, i) => {
+              const d = new Date();
+              d.setDate(d.getDate() - (6 - i));
+              const dayStr = d.toISOString().slice(0, 10);
+              const count = data.posts.filter(p => p.publishedAt && p.publishedAt.slice(0, 10) === dayStr).length;
+              const maxCount = Math.max(1, ...[...Array(7)].map((_, j) => {
+                const dd = new Date();
+                dd.setDate(dd.getDate() - (6 - j));
+                return data.posts.filter(p => p.publishedAt && p.publishedAt.slice(0, 10) === dd.toISOString().slice(0, 10)).length;
+              }));
+              const height = Math.max(4, (count / maxCount) * 60);
+              return `
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+                  <div style="width:100%;height:${height}px;background:var(--accent-soft);border-radius:4px" title="${count}条"></div>
+                  <span style="font-size:10px;color:var(--muted)">${d.getDate()}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  },
+  
+  // ─── IP & Account ───────────────────────────────────────────
+  renderIP() {
+    const ips = Store.data.ips;
+    
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <h2 style="font-size:18px;font-weight:700;margin-bottom:4px">IP 管理</h2>
+          <p class="text-muted text-sm">管理你的人设和账号</p>
+        </div>
+        <button class="btn btn-primary" onclick="App.showIPModal()">+ 新建 IP</button>
+      </div>
+      
+      ${ips.length === 0 ? `
+        <div class="empty-state">
+          <div class="empty-icon">👤</div>
+          <div class="empty-title">还没有 IP</div>
+          <div class="empty-desc">创建你的第一个 IP 人设，开始管理内容</div>
+          <button class="btn btn-primary" onclick="App.showIPModal()">创建 IP</button>
+        </div>
+      ` : `
+        <div class="ip-grid">
+          ${ips.map(ip => {
+            const accounts = Store.getAccountsByIP(ip.id);
+            const contents = Store.getContentsByIP(ip.id);
+            const weekPosts = Store.data.posts.filter(p => 
+              accounts.some(a => a.id === p.accountId) && 
+              p.publishedAt >= Date.now() - 7 * 24 * 3600 * 1000
+            ).length;
+            
+            return `
+              <div class="ip-card" onclick="App.showIPDetail('${ip.id}')">
+                <div class="ip-avatar" style="background:${ip.color}20">${ip.avatar}</div>
+                <div class="ip-name">${this.escHtml(ip.name)}</div>
+                <div class="ip-track">${this.escHtml(ip.track || '未设置赛道')}</div>
+                <div class="ip-stats">
+                  <div><span class="ip-stat-value">${accounts.length}</span> 账号</div>
+                  <div><span class="ip-stat-value">${contents.length}</span> 内容</div>
+                  <div><span class="ip-stat-value">${weekPosts}</span> 本周</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+          
+          <div class="ip-card" onclick="App.showIPModal()" style="border-style:dashed;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--muted)">
+            <div style="font-size:32px">+</div>
+            <div>新建 IP</div>
+          </div>
+        </div>
+        
+        ${ips.length > 0 ? `
+          <div style="margin-top:32px">
+            <h3 style="font-size:15px;font-weight:700;margin-bottom:16px">账号矩阵</h3>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>IP</th>
+                    <th>平台</th>
+                    <th>账号名</th>
+                    <th>粉丝</th>
+                    <th>7日涨粉</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${Store.data.accounts.map(acc => {
+                    const ip = Store.getIP(acc.ipId);
+                    return `
+                      <tr>
+                        <td>
+                          <span style="display:flex;align-items:center;gap:6px">
+                            <span style="color:${ip?.color || '#999'}">${ip?.avatar || '👤'}</span>
+                            ${ip?.name || '未归属'}
+                          </span>
+                        </td>
+                        <td><span class="tag">${this.getPlatformName(acc.platform)}</span></td>
+                        <td>${this.escHtml(acc.name)}</td>
+                        <td class="font-mono">${formatNumber(acc.followers || 0)}</td>
+                        <td class="font-mono" style="color:${(acc.weekGain || 0) >= 0 ? 'var(--success)' : 'var(--danger)'}">
+                          ${(acc.weekGain || 0) >= 0 ? '+' : ''}${formatNumber(acc.weekGain || 0)}
+                        </td>
+                        <td>
+                          <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();App.showAccountModal('${acc.id}')">编辑</button>
+                          <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();App.deleteAccount('${acc.id}')">删除</button>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('') || `
+                    <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">暂无账号</td></tr>
+                  `}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ` : ''}
+      `}
+    `;
+  },
+  
+  // ─── Hot Topics ─────────────────────────────────────────────
+  renderHot() {
+    const data = Store.getFilteredData(this.currentIp);
+    const hots = data.hots.sort((a, b) => b.createdAt - a.createdAt);
+    const activeHots = hots.filter(h => h.dueAt > Date.now());
+    const expiredHots = hots.filter(h => h.dueAt <= Date.now());
+    
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <h2 style="font-size:18px;font-weight:700;margin-bottom:4px">热点雷达</h2>
+          <p class="text-muted text-sm">发现值得蹭的热点，72小时黄金窗口</p>
+        </div>
+        <button class="btn btn-primary" onclick="App.showHotModal()">+ 录入热点</button>
+      </div>
+      
+      ${activeHots.length === 0 ? `
+        <div class="empty-state">
+          <div class="empty-icon">🔥</div>
+          <div class="empty-title">暂无活跃热点</div>
+          <div class="empty-desc">录入你发现的热点，开始蹭热点创作</div>
+          <button class="btn btn-primary" onclick="App.showHotModal()">录入热点</button>
+        </div>
+      ` : `
+        <div style="display:flex;flex-direction:column;gap:12px">
+          ${activeHots.map(h => this.renderHotCard(h)).join('')}
+        </div>
+      `}
+      
+      ${expiredHots.length > 0 ? `
+        <div style="margin-top:32px">
+          <h3 style="font-size:14px;font-weight:600;color:var(--muted);margin-bottom:12px">已过期 (${expiredHots.length})</h3>
+          <div style="display:flex;flex-direction:column;gap:8px;opacity:.6">
+            ${expiredHots.slice(0, 5).map(h => this.renderHotCard(h, true)).join('')}
+          </div>
+        </div>
+      ` : ''}
+    `;
+  },
+  
+  renderHotCard(hot, expired = false) {
+    const ips = Store.data.ips;
+    return `
+      <div class="hot-card" style="${expired ? 'opacity:.6' : ''}">
+        <div class="hot-header">
+          <span class="hot-title">${this.escHtml(hot.title)}</span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span class="tag tag-${hot.heat === '高' ? 'danger' : hot.heat === '中' ? 'warning' : ''}">${hot.heat || '中'}</span>
+            <span class="tag">${hot.trend === '升' ? '↑' : hot.trend === '降' ? '↓' : '→'} ${hot.trend || '平'}</span>
+            ${!expired ? `<button class="btn btn-sm btn-secondary" onclick="App.showHotModal('${hot.id}')">编辑</button>` : ''}
+            <button class="btn btn-sm btn-secondary" onclick="App.deleteHot('${hot.id}')">删除</button>
+          </div>
+        </div>
+        <div class="hot-meta">
+          <span>${hot.source || '未分类'}</span>
+          <span>·</span>
+          <span>${expired ? '已过期' : this.formatTimeLeft(hot.dueAt)}</span>
+          ${hot.remark ? `<span>·</span><span>${this.escHtml(hot.remark)}</span>` : ''}
+        </div>
+        ${hot.angles && hot.angles.length > 0 ? `
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px">蹭角度</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              ${hot.angles.map(a => `
+                <div style="background:var(--soft);padding:6px 12px;border-radius:var(--radius-sm);font-size:12px">
+                  <span style="color:${Store.getIP(a.ipId)?.color || 'var(--muted)'}">${Store.getIP(a.ipId)?.avatar || '🌐'}</span>
+                  ${this.escHtml(a.angle)}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  },
+  
+  // ─── Benchmark ──────────────────────────────────────────────
+  renderBench() {
+    const data = Store.getFilteredData(this.currentIp);
+    const benchmarks = data.benchmarks;
+    
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <h2 style="font-size:18px;font-weight:700;margin-bottom:4px">对标拆解</h2>
+          <p class="text-muted text-sm">学习优秀创作者的方法论</p>
+        </div>
+        <button class="btn btn-primary" onclick="App.showBenchModal()">+ 添加对标</button>
+      </div>
+      
+      ${benchmarks.length === 0 ? `
+        <div class="empty-state">
+          <div class="empty-icon">🎯</div>
+          <div class="empty-title">暂无对标账号</div>
+          <div class="empty-desc">添加同量级、高一级、头部标杆各1-2个</div>
+          <button class="btn btn-primary" onclick="App.showBenchModal()">添加对标</button>
+        </div>
+      ` : `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">
+          ${benchmarks.map(b => {
+            const ip = Store.getIP(b.ipId);
+            const works = Store.data.benchWorks.filter(w => w.benchId === b.id);
+            const avgLikes = works.length > 0 
+              ? Math.round(works.reduce((sum, w) => sum + (w.likes || 0), 0) / works.length)
+              : 0;
+            
+            return `
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <div style="font-weight:700">${this.escHtml(b.name)}</div>
+                    <div style="font-size:12px;color:var(--muted)">${this.getPlatformName(b.platform)} · ${b.level || '未分类'}</div>
+                  </div>
+                  <div style="display:flex;gap:4px">
+                    <button class="btn btn-sm btn-secondary" onclick="App.showBenchModal('${b.id}')">编辑</button>
+                    <button class="btn btn-sm btn-secondary" onclick="App.deleteBenchmark('${b.id}')">删除</button>
+                  </div>
+                </div>
+                <div style="display:flex;gap:16px;font-size:12px;margin-bottom:12px">
+                  <div><span class="font-mono font-bold">${formatNumber(b.followers || 0)}</span> 粉丝</div>
+                  <div><span class="font-mono font-bold">${works.length}</span> 作品</div>
+                  <div><span class="font-mono font-bold">${formatNumber(avgLikes)}</span> 均赞</div>
+                </div>
+                <div style="font-size:12px;color:var(--muted)">
+                  IP: <span style="color:${ip?.color || 'var(--muted)'}">${ip?.avatar || '🌐'} ${ip?.name || '共用'}</span>
+                </div>
+                <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
+                  <button class="btn btn-sm btn-secondary" onclick="App.showBenchWorks('${b.id}')">查看作品 (${works.length})</button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `}
+    `;
+  },
+  
+  // ─── Topic Pool ─────────────────────────────────────────────
+  renderTopic() {
+    const data = Store.getFilteredData(this.currentIp);
+    const topics = data.topics.sort((a, b) => {
+      const ratingOrder = { S: 0, A: 1, B: 2, C: 3 };
+      const ra = ratingOrder[calcRating(a.scores || {}).rating] ?? 4;
+      const rb = ratingOrder[calcRating(b.scores || {}).rating] ?? 4;
+      if (ra !== rb) return ra - rb;
+      return (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0);
+    });
+    
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <h2 style="font-size:18px;font-weight:700;margin-bottom:4px">选题池</h2>
+          <p class="text-muted text-sm">五维评分，S/A/B/C 评级排序</p>
+        </div>
+        <button class="btn btn-primary" onclick="App.showTopicModal()">+ 新建选题</button>
+      </div>
+      
+      ${topics.length === 0 ? `
+        <div class="empty-state">
+          <div class="empty-icon">💡</div>
+          <div class="empty-title">选题池是空的</div>
+          <div class="empty-desc">从热点、对标或灵感中新建选题</div>
+          <button class="btn btn-primary" onclick="App.showTopicModal()">新建选题</button>
+        </div>
+      ` : `
+        <div style="display:flex;flex-direction:column;gap:12px">
+          ${topics.map(t => {
+            const { rating, total } = calcRating(t.scores || {});
+            const topicType = calcTopicType(t.scores || {});
+            const ip = Store.getIP(t.ipId);
+            
+            return `
+              <div class="topic-card">
+                <div class="topic-header">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="color:${ip?.color || 'var(--muted)'}">${ip?.avatar || '💡'}</span>
+                    <span class="topic-title">${this.escHtml(t.title)}</span>
+                  </div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <span class="topic-rating rating-${rating.toLowerCase()}">${rating}</span>
+                    <button class="btn btn-sm btn-secondary" onclick="App.showTopicModal('${t.id}')">编辑</button>
+                    <button class="btn btn-sm btn-accent" onclick="App.createContentFromTopic('${t.id}')">写稿</button>
+                  </div>
+                </div>
+                <div class="topic-scores">
+                  ${FIVE_DIMS.map(d => `
+                    <span class="topic-score">
+                      <span>${d.icon}</span>
+                      <span class="font-mono">${t.scores?.[d.key] || 0}</span>
+                    </span>
+                  `).join('')}
+                  <span style="margin-left:auto;color:var(--muted)">总分 <span class="font-mono font-bold">${total}</span></span>
+                  <span class="tag">${topicType}</span>
+                  <span class="tag tag-${t.status === 'doing' ? 'accent' : t.status === 'done' ? 'success' : ''}">
+                    ${t.status === 'pool' ? '候选' : t.status === 'doing' ? '进行中' : '已完成'}
+                  </span>
+                </div>
+                ${t.remark ? `<div style="margin-top:8px;font-size:12px;color:var(--muted)">${this.escHtml(t.remark)}</div>` : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `}
+    `;
+  },
+  
+  // ─── Script Editor ──────────────────────────────────────────
+  renderScript() {
+    const data = Store.getFilteredData(this.currentIp);
+    const contents = data.contents.filter(c => c.stage === 'draft' || c.stage === 'topic');
+    const selectedId = this.editingId || contents[0]?.id;
+    const content = selectedId ? Store.getContent(selectedId) : null;
+    const ip = content ? Store.getIP(content.ipId) : null;
+    
+    return `
+      <div style="display:flex;gap:24px">
+        <div style="width:200px;flex-shrink:0">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <h3 style="font-size:13px;font-weight:600;color:var(--muted)">稿件列表</h3>
+            <button class="btn btn-sm btn-secondary" onclick="App.showContentModal()">+</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            ${contents.map(c => {
+              const cIp = Store.getIP(c.ipId);
+              return `
+                <div class="nav-item ${c.id === selectedId ? 'active' : ''}" 
+                     onclick="App.editingId='${c.id}';App.renderPage('script')"
+                     style="font-size:13px;padding:8px 12px">
+                  <span style="color:${cIp?.color || 'var(--muted)'}">${cIp?.avatar || '📝'}</span>
+                  <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${this.escHtml(c.title || '未命名')}</span>
+                </div>
+              `;
+            }).join('') || '<div class="text-muted text-sm" style="padding:8px">暂无稿件</div>'}
+          </div>
+        </div>
+        
+        <div style="flex:1">
+          ${content ? `
+            <div class="script-editor">
+              <div class="script-fields">
+                <div class="script-field">
+                  <div class="script-field-label">标题</div>
+                  <input type="text" class="form-input" id="scriptTitle" value="${this.escAttr(content.title || '')}" placeholder="输入标题...">
+                </div>
+                <div class="script-field">
+                  <div class="script-field-label">开头钩子 (前5秒)</div>
+                  <textarea class="form-textarea" id="scriptHook" rows="3" placeholder="前5秒要给出结果或冲突...">${this.escHtml(content.hook || '')}</textarea>
+                </div>
+                <div class="script-field">
+                  <div class="script-field-label">正文</div>
+                  <textarea class="form-textarea" id="scriptBody" rows="8" placeholder="正文内容...">${this.escHtml(content.body || '')}</textarea>
+                </div>
+                <div class="script-field">
+                  <div class="script-field-label">结尾引导</div>
+                  <textarea class="form-textarea" id="scriptCta" rows="2" placeholder="引导互动...">${this.escHtml(content.cta || '')}</textarea>
+                </div>
+                <div class="grid-2">
+                  <div class="script-field">
+                    <div class="script-field-label">封面大字 (<=12字)</div>
+                    <input type="text" class="form-input" id="scriptCover" value="${this.escAttr(content.cover || '')}" placeholder="封面上的大字">
+                  </div>
+                  <div class="script-field">
+                    <div class="script-field-label">标签 (逗号分隔)</div>
+                    <input type="text" class="form-input" id="scriptTags" value="${this.escAttr(content.tags || '')}" placeholder="标签1,标签2,标签3">
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px">
+                  <button class="btn btn-primary" onclick="App.saveScript('${content.id}')">保存</button>
+                  <button class="btn btn-secondary" onclick="App.runScriptCheck('${content.id}')">运行体检</button>
+                  <button class="btn btn-secondary" onclick="App.moveToShoot('${content.id}')">进入拍摄</button>
+                </div>
+              </div>
+              
+              <div class="script-sidebar">
+                <div class="card">
+                  <div class="card-title" style="margin-bottom:12px">稿件信息</div>
+                  <div style="font-size:12px;display:flex;flex-direction:column;gap:8px">
+                    <div class="flex justify-between">
+                      <span class="text-muted">IP</span>
+                      <span>${ip?.name || '未归属'}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-muted">字数</span>
+                      <span class="font-mono">${(content.hook || '').length + (content.body || '').length + (content.cta || '').length}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-muted">预估时长</span>
+                      <span class="font-mono">${Math.round(((content.hook || '').length + (content.body || '').length + (content.cta || '').length) / (Store.data.settings.standards.wpm || 240) * 60)}秒</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-muted">阶段</span>
+                      <span class="tag">${CONTENT_STAGES.find(s => s.key === content.stage)?.name || content.stage}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card" id="checkResult">
+                  <div class="card-title" style="margin-bottom:12px">体检结果</div>
+                  <div class="text-muted text-sm">点击"运行体检"查看结果</div>
+                </div>
+                
+                <div class="card">
+                  <div class="card-title" style="margin-bottom:12px">钩子模板</div>
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    ${HOOK_TEMPLATES.slice(0, 5).map(t => `
+                      <div style="font-size:12px;padding:6px 10px;background:var(--soft);border-radius:var(--radius-sm);cursor:pointer" 
+                           onclick="App.insertHook('${this.escAttr(t)}')">${t}</div>
+                    `).join('')}
+                  </div>
+                </div>
+                
+                <div class="card">
+                  <div class="card-title" style="margin-bottom:12px">标题公式</div>
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    ${TITLE_FORMULAS.slice(0, 5).map(f => `
+                      <div style="font-size:12px;padding:6px 10px;background:var(--soft);border-radius:var(--radius-sm);cursor:pointer" 
+                           onclick="App.useTitleFormula('${this.escAttr(f.pattern)}')" title="${f.category}">${f.pattern}</div>
+                    `).join('')}
+                  </div>
+                </div>
+                
+                <div class="card">
+                  <div class="card-title" style="margin-bottom:12px">正文结构</div>
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    ${BODY_STRUCTURES.slice(0, 4).map(s => `
+                      <div style="font-size:12px;padding:6px 10px;background:var(--soft);border-radius:var(--radius-sm);cursor:pointer" 
+                           onclick="App.useStructure('${this.escAttr(s.name)}')" title="${this.escAttr(s.pattern)}">
+                        <strong>${s.name}</strong>
+                        <div style="color:var(--muted);font-size:11px;margin-top:2px">${s.pattern.slice(0, 20)}...</div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+                
+                <div class="card">
+                  <div class="card-title" style="margin-bottom:12px">文案快照</div>
+                  <div id="snapshotList" style="display:flex;flex-direction:column;gap:6px">
+                    ${(content.snaps || []).slice(-5).reverse().map((s, i) => `
+                      <div style="font-size:11px;padding:6px 10px;background:var(--soft);border-radius:var(--radius-sm);display:flex;justify-content:space-between;align-items:center">
+                        <span>${new Date(s.at).toLocaleString('zh-CN', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
+                        <button class="btn btn-sm btn-secondary" onclick="App.restoreSnapshot('${content.id}', ${(content.snaps || []).length - 1 - i})">恢复</button>
+                      </div>
+                    `).join('') || '<div class="text-muted text-sm">暂无快照</div>'}
+                  </div>
+                  <button class="btn btn-sm btn-secondary" style="margin-top:8px;width:100%" onclick="App.saveSnapshot('${content.id}')">保存快照</button>
+                </div>
+              </div>
+            </div>
+          ` : `
+            <div class="empty-state">
+              <div class="empty-icon">✍️</div>
+              <div class="empty-title">选择或新建稿件</div>
+              <div class="empty-desc">从左侧选择稿件，或新建一篇开始创作</div>
+              <button class="btn btn-primary" onclick="App.showContentModal()">新建稿件</button>
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  },
+  
+  // ─── Shoot & Teleprompter ───────────────────────────────────
+  renderShoot() {
+    const data = Store.getFilteredData(this.currentIp);
+    const shootContents = data.contents.filter(c => c.stage === 'shoot' || c.stage === 'schedule');
+    
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <h2 style="font-size:18px;font-weight:700;margin-bottom:4px">拍摄与提词</h2>
+          <p class="text-muted text-sm">分镜脚本、提词器、拍摄检查</p>
+        </div>
+      </div>
+      
+      <div class="grid-4" style="margin-bottom:24px">
+        <div class="stat-card">
+          <div class="stat-value">${shootContents.filter(c => c.stage === 'shoot').length}</div>
+          <div class="stat-label">待拍摄</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${shootContents.filter(c => c.shotsDone).length}</div>
+          <div class="stat-label">已完成拍摄</div>
+        </div>
+      </div>
+      
+      <div style="display:flex;flex-direction:column;gap:12px">
+        ${shootContents.length === 0 ? `
+          <div class="empty-state">
+            <div class="empty-icon">🎬</div>
+            <div class="empty-title">暂无待拍摄内容</div>
+            <div class="empty-desc">从文案工坊进入拍摄阶段</div>
+          </div>
+        ` : shootContents.map(c => {
+          const ip = Store.getIP(c.ipId);
+          const shots = c.shots || [];
+          const completedShots = shots.filter(s => s.done).length;
+          
+          return `
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="color:${ip?.color || 'var(--muted)'}">${ip?.avatar || '🎬'}</span>
+                    <span style="font-weight:600">${this.escHtml(c.title || '未命名')}</span>
+                  </div>
+                  <div style="font-size:12px;color:var(--muted);margin-top:4px">
+                    ${shots.length} 个分镜 · 已完成 ${completedShots}/${shots.length}
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px">
+                  <button class="btn btn-sm btn-secondary" onclick="App.editShots('${c.id}')">编辑分镜</button>
+                  <button class="btn btn-sm btn-accent" onclick="App.openTeleprompter('${c.id}')">提词器</button>
+                </div>
+              </div>
+              ${shots.length > 0 ? `
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:12px">
+                  ${shots.slice(0, 6).map((s, i) => `
+                    <div style="background:var(--soft);padding:10px;border-radius:var(--radius-sm);font-size:12px;${s.done ? 'opacity:.5' : ''}">
+                      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                        <span class="font-mono text-muted">#${i + 1}</span>
+                        <span class="tag" style="font-size:10px">${s.scene}</span>
+                      </div>
+                      <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${this.escHtml(s.lines || '')}</div>
+                      <div style="display:flex;justify-content:space-between;margin-top:6px">
+                        <span class="text-muted">${s.duration}秒</span>
+                        <input type="checkbox" ${s.done ? 'checked' : ''} onchange="App.toggleShot('${c.id}', ${i})">
+                      </div>
+                    </div>
+                  `).join('')}
+                  ${shots.length > 6 ? `<div style="display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">+${shots.length - 6} 更多</div>` : ''}
+                </div>
+              ` : `
+                <div style="text-align:center;padding:16px;color:var(--muted);font-size:13px">
+                  暂无分镜，点击"编辑分镜"自动生成
+                </div>
+              `}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  },
+  
+  // ─── Schedule ───────────────────────────────────────────────
+  renderSchedule() {
+    const data = Store.getFilteredData(this.currentIp);
+    const today = new Date();
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() + i);
+      days.push(d);
+    }
+    
+    const accounts = this.currentIp 
+      ? Store.getAccountsByIP(this.currentIp)
+      : Store.data.accounts;
+    
+    const scheduledContents = data.contents.filter(c => 
+      c.stage === 'schedule' || c.stage === 'published'
+    );
+    
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <h2 style="font-size:18px;font-weight:700;margin-bottom:4px">发布排期</h2>
+          <p class="text-muted text-sm">7天排期视图，管理发布计划</p>
+        </div>
+      </div>
+      
+      <div class="schedule-board">
+        ${days.map(d => {
+          const dayStr = d.toISOString().slice(0, 10);
+          const isToday = dayStr === today.toISOString().slice(0, 10);
+          const dayContents = scheduledContents.filter(c => 
+            c.scheduledAt && c.scheduledAt.slice(0, 10) === dayStr
+          );
+          
+          return `
+            <div class="schedule-day" style="${isToday ? 'border-color:var(--accent)' : ''}">
+              <div class="schedule-day-header" style="${isToday ? 'color:var(--accent);font-weight:700' : ''}">
+                ${['日','一','二','三','四','五','六'][d.getDay()]} ${d.getDate()}
+              </div>
+              ${dayContents.map(c => {
+                const ip = Store.getIP(c.ipId);
+                return `
+                  <div class="schedule-item" style="background:${ip?.color || 'var(--accent)'}20;color:${ip?.color || 'var(--accent)'}" 
+                       onclick="App.showScheduleItem('${c.id}')">
+                    <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${this.escHtml(c.title || '未命名')}</div>
+                    <div style="font-size:10px;opacity:.8;margin-top:2px">${c.scheduledTime || ''}</div>
+                  </div>
+                `;
+              }).join('')}
+              ${dayContents.length === 0 ? '<div style="text-align:center;color:var(--muted);font-size:11px;padding:20px 0">无排期</div>' : ''}
+            </div>
+          `;
+        }).join('')}
+      </div>
+      
+      <div style="margin-top:24px">
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:12px">待发布内容</h3>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>标题</th>
+                <th>IP</th>
+                <th>计划发布</th>
+                <th>目标账号</th>
+                <th>状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${scheduledContents.map(c => {
+                const ip = Store.getIP(c.ipId);
+                const targetAccs = (c.targetAccounts || []).map(id => Store.data.accounts.find(a => a.id === id)).filter(Boolean);
+                
+                return `
+                  <tr>
+                    <td>${this.escHtml(c.title || '未命名')}</td>
+                    <td><span style="color:${ip?.color || 'var(--muted)'}">${ip?.avatar || '📝'} ${ip?.name || '未归属'}</span></td>
+                    <td class="font-mono text-sm">${c.scheduledAt || '未设定'}</td>
+                    <td>${targetAccs.length}个账号</td>
+                    <td><span class="tag tag-${c.stage === 'published' ? 'success' : 'accent'}">${c.stage === 'published' ? '已发布' : '待发布'}</span></td>
+                    <td>
+                      <button class="btn btn-sm btn-secondary" onclick="App.showContentModal('${c.id}')">编辑</button>
+                      ${c.stage === 'schedule' ? `<button class="btn btn-sm btn-accent" onclick="App.markPublished('${c.id}')">标记已发布</button>` : ''}
+                    </td>
+                  </tr>
+                `;
+              }).join('') || `
+                <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">暂无排期内容</td></tr>
+              `}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  },
+  
+  // ─── Data Review ────────────────────────────────────────────
+  renderReview() {
+    const data = Store.getFilteredData(this.currentIp);
+    const posts = data.posts.filter(p => p.publishedAt);
+    const standards = Store.data.settings.standards;
+    
+    // Calculate stats
+    const totalPlay = posts.reduce((sum, p) => sum + (p.play || 0), 0);
+    const totalLikes = posts.reduce((sum, p) => sum + (p.likes || 0), 0);
+    const totalFav = posts.reduce((sum, p) => sum + (p.favorite || 0), 0);
+    const totalComment = posts.reduce((sum, p) => sum + (p.comment || 0), 0);
+    const avgFiveSec = posts.filter(p => p.fiveSecRate).reduce((sum, p, _, arr) => sum + p.fiveSecRate / arr.length, 0);
+    
+    const avgFavRate = totalPlay > 0 ? (totalFav / totalPlay * 100) : 0;
+    const avgCommentRate = totalPlay > 0 ? (totalComment / totalPlay * 100) : 0;
+    const avgPlay = posts.length > 0 ? totalPlay / posts.length : 0;
+    
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <h2 style="font-size:18px;font-weight:700;margin-bottom:4px">数据复盘</h2>
+          <p class="text-muted text-sm">回填数据、象限诊断、趋势分析</p>
+        </div>
+        <button class="btn btn-secondary" onclick="App.showBackfillModal()">回填数据</button>
+      </div>
+      
+      <div class="review-stats">
+        <div class="review-stat">
+          <div class="review-stat-value">${posts.length}</div>
+          <div class="review-stat-label">发布数</div>
+        </div>
+        <div class="review-stat">
+          <div class="review-stat-value">${formatNumber(totalPlay)}</div>
+          <div class="review-stat-label">总播放</div>
+        </div>
+        <div class="review-stat">
+          <div class="review-stat-value">${avgFiveSec.toFixed(1)}%</div>
+          <div class="review-stat-label">均5秒完播</div>
+        </div>
+        <div class="review-stat">
+          <div class="review-stat-value">${avgFavRate.toFixed(2)}%</div>
+          <div class="review-stat-label">均收藏率</div>
+        </div>
+        <div class="review-stat">
+          <div class="review-stat-value">${formatNumber(totalLikes)}</div>
+          <div class="review-stat-label">总点赞</div>
+        </div>
+      </div>
+      
+      <div class="grid-2" style="margin-bottom:24px">
+        <div class="quadrant-chart">
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:16px">爆款象限图</h3>
+          ${this.renderQuadrantChart(posts, standards)}
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">诊断建议</h3>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            ${posts.slice(0, 5).map(p => {
+              const content = Store.getContent(p.contentId);
+              const diagnosis = diagnosePost(p, standards, avgPlay);
+              return `
+                <div style="padding:10px;background:var(--soft);border-radius:var(--radius-sm)">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                    <span style="font-size:13px;font-weight:600">${this.escHtml(content?.title || '未命名')}</span>
+                    <span class="tag tag-${diagnosis.color === 'green' ? 'success' : diagnosis.color === 'yellow' ? 'warning' : diagnosis.color === 'red' ? 'danger' : ''}">${diagnosis.conclusion}</span>
+                  </div>
+                  ${diagnosis.suggestions.length > 0 ? `
+                    <div style="font-size:12px;color:var(--muted)">
+                      ${diagnosis.suggestions.slice(0, 2).map(s => `• ${s}`).join(' ')}
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('') || '<div class="text-muted text-sm">暂无数据</div>'}
+          </div>
+        </div>
+      </div>
+      
+      <div>
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:12px">发布记录</h3>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>内容</th>
+                <th>账号</th>
+                <th>发布日期</th>
+                <th>播放</th>
+                <th>点赞</th>
+                <th>收藏</th>
+                <th>评论</th>
+                <th>5秒完播</th>
+                <th>诊断</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${posts.sort((a, b) => (b.publishedAt || 0) - (a.publishedAt || 0)).slice(0, 20).map(p => {
+                const content = Store.getContent(p.contentId);
+                const account = Store.data.accounts.find(a => a.id === p.accountId);
+                const ip = account ? Store.getIP(account.ipId) : null;
+                const diagnosis = diagnosePost(p, standards, avgPlay);
+                
+                return `
+                  <tr>
+                    <td>${this.escHtml(content?.title || '未命名')}</td>
+                    <td><span style="color:${ip?.color || 'var(--muted)'}">${ip?.avatar || '📱'} ${account?.name || '未知'}</span></td>
+                    <td class="font-mono text-sm">${p.publishedAt?.slice(0, 10) || '-'}</td>
+                    <td class="font-mono">${formatNumber(p.play || 0)}</td>
+                    <td class="font-mono">${formatNumber(p.likes || 0)}</td>
+                    <td class="font-mono">${formatNumber(p.favorite || 0)}</td>
+                    <td class="font-mono">${formatNumber(p.comment || 0)}</td>
+                    <td class="font-mono">${p.fiveSecRate ? p.fiveSecRate + '%' : '-'}</td>
+                    <td><span class="tag tag-${diagnosis.color === 'green' ? 'success' : diagnosis.color === 'yellow' ? 'warning' : diagnosis.color === 'red' ? 'danger' : ''}">${diagnosis.conclusion}</span></td>
+                  </tr>
+                `;
+              }).join('') || `
+                <tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">暂无发布记录</td></tr>
+              `}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  },
+  
+  renderQuadrantChart(posts, standards) {
+    const validPosts = posts.filter(p => p.fiveSecRate !== null && p.fiveSecRate !== undefined && p.play > 0);
+    if (validPosts.length === 0) {
+      return '<div style="text-align:center;padding:40px;color:var(--muted)">暂无足够数据绘制象限图</div>';
+    }
+    
+    const width = 400;
+    const height = 350;
+    const padding = 50;
+    const fiveLine = standards.fiveSecLine;
+    const favLine = standards.favLine;
+    
+    return `
+      <svg viewBox="0 0 ${width} ${height}" style="width:100%;height:auto">
+        <!-- Background -->
+        <rect x="${padding}" y="${padding}" width="${width - padding * 2}" height="${height - padding * 2}" fill="var(--soft)" stroke="var(--line)"/>
+        
+        <!-- Quadrant lines -->
+        <line x1="${padding + (width - padding * 2) * fiveLine / 100}" y1="${padding}" 
+              x2="${padding + (width - padding * 2) * fiveLine / 100}" y2="${height - padding}" 
+              stroke="var(--muted)" stroke-dasharray="4"/>
+        <line x1="${padding}" y1="${height - padding - (height - padding * 2) * favLine / 5}" 
+              x2="${width - padding}" y2="${height - padding - (height - padding * 2) * favLine / 5}" 
+              stroke="var(--muted)" stroke-dasharray="4"/>
+        
+        <!-- Labels -->
+        <text x="${width / 2}" y="${height - 10}" text-anchor="middle" font-size="11" fill="var(--muted)">5秒完播率 %</text>
+        <text x="15" y="${height / 2}" text-anchor="middle" font-size="11" fill="var(--muted)" transform="rotate(-90, 15, ${height / 2})">收藏率 %</text>
+        
+        <!-- Quadrant labels -->
+        <text x="${padding + 10}" y="${padding + 20}" font-size="10" fill="var(--muted)">内容好开头弱</text>
+        <text x="${width - padding - 80}" y="${padding + 20}" font-size="10" fill="var(--success)">爆款潜质</text>
+        <text x="${padding + 10}" y="${height - padding - 10}" font-size="10" fill="var(--muted)">需要重做</text>
+        <text x="${width - padding - 80}" y="${height - padding - 10}" font-size="10" fill="var(--warning)">开头强干货弱</text>
+        
+        <!-- Data points -->
+        ${validPosts.map(p => {
+          const favRate = p.play > 0 ? (p.favorite / p.play * 100) : 0;
+          const x = padding + (width - padding * 2) * (p.fiveSecRate || 0) / 100;
+          const y = height - padding - (height - padding * 2) * Math.min(favRate, 5) / 5;
+          const ip = Store.data.accounts.find(a => a.id === p.accountId);
+          const color = ip ? Store.getIP(ip.ipId)?.color || 'var(--accent)' : 'var(--accent)';
+          return `<circle cx="${x}" cy="${y}" r="5" fill="${color}" opacity="0.7"/>`;
+        }).join('')}
+      </svg>
+    `;
+  },
+  
+  // ─── AI Assistant ───────────────────────────────────────────
+  renderAI() {
+    const chats = Store.data.settings.ai.chats || [];
+    const activeChat = this.currentChatId || chats[0]?.id;
+    const chat = chats.find(c => c.id === activeChat);
+    const messages = chat?.messages || [];
+    
+    return `
+      <div class="ai-container">
+        <div class="ai-sessions">
+          <button class="btn btn-secondary" style="width:100%;margin-bottom:12px" onclick="App.newChat()">+ 新对话</button>
+          ${chats.map(c => `
+            <div class="ai-session ${c.id === activeChat ? 'active' : ''}" onclick="App.currentChatId='${c.id}';App.renderPage('ai')">
+              ${this.escHtml(c.title || '新对话')}
+            </div>
+          `).join('') || '<div class="text-muted text-sm" style="padding:8px">暂无对话</div>'}
+        </div>
+        
+        <div class="ai-chat">
+          <div class="ai-messages">
+            ${messages.length === 0 ? `
+              <div style="text-align:center;padding:40px;color:var(--muted)">
+                <div style="font-size:48px;margin-bottom:16px">🤖</div>
+                <div style="font-size:14px;font-weight:600;margin-bottom:8px">AI 助手</div>
+                <div style="font-size:13px">选择模板或输入问题开始对话</div>
+              </div>
+            ` : messages.map(m => `
+              <div class="ai-message ${m.role}">
+                <div class="ai-bubble">${this.renderMarkdown(m.content)}</div>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div style="padding:12px 20px;border-top:1px solid var(--line)">
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+              ${['爆款标题x10', '黄金5秒开头', '口播文案初稿', '分镜脚本', '多平台改写'].map(t => `
+                <button class="btn btn-sm btn-secondary" onclick="App.useAITemplate('${t}')">${t}</button>
+              `).join('')}
+            </div>
+          </div>
+          
+          <div class="ai-input-area">
+            <input type="text" class="ai-input" id="aiInput" placeholder="输入消息..." onkeypress="if(event.key==='Enter')App.sendAIMessage()">
+            <button class="btn btn-accent" onclick="App.sendAIMessage()">发送</button>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+  
+  // ─── Settings ───────────────────────────────────────────────
+  renderSettings() {
+    const settings = Store.data.settings;
+    const standards = settings.standards;
+    
+    return `
+      <div style="max-width:700px">
+        <div class="settings-section">
+          <div class="settings-title">主理人信息</div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">名称</div>
+            </div>
+            <input type="text" class="form-input" style="width:200px" value="${this.escAttr(settings.masterName || '')}" onchange="Store.data.settings.masterName=this.value;Store.save()">
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <div class="settings-title">数据标准线</div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">口播语速</div>
+              <div class="settings-desc">字/分钟，用于估算时长</div>
+            </div>
+            <input type="number" class="form-input" style="width:100px" value="${standards.wpm}" onchange="Store.data.settings.standards.wpm=parseInt(this.value);Store.save()">
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">5秒完播达标线</div>
+              <div class="settings-desc">百分比</div>
+            </div>
+            <input type="number" class="form-input" style="width:100px" value="${standards.fiveSecLine}" onchange="Store.data.settings.standards.fiveSecLine=parseInt(this.value);Store.save()">
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">收藏率达标线</div>
+              <div class="settings-desc">百分比</div>
+            </div>
+            <input type="number" step="0.1" class="form-input" style="width:100px" value="${standards.favLine}" onchange="Store.data.settings.standards.favLine=parseFloat(this.value);Store.save()">
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">均播/时长达标线</div>
+              <div class="settings-desc">百分比</div>
+            </div>
+            <input type="number" class="form-input" style="width:100px" value="${standards.avgLine}" onchange="Store.data.settings.standards.avgLine=parseInt(this.value);Store.save()">
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">评论率达标线</div>
+              <div class="settings-desc">百分比</div>
+            </div>
+            <input type="number" step="0.1" class="form-input" style="width:100px" value="${standards.commentLine}" onchange="Store.data.settings.standards.commentLine=parseFloat(this.value);Store.save()">
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">爆款倍数</div>
+              <div class="settings-desc">点赞达到中位数多少倍算爆款</div>
+            </div>
+            <input type="number" class="form-input" style="width:100px" value="${standards.hotMult}" onchange="Store.data.settings.standards.hotMult=parseInt(this.value);Store.save()">
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <div class="settings-title">AI 接口配置</div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">API 地址</div>
+              <div class="settings-desc">OpenAI 兼容格式的 Base URL</div>
+            </div>
+            <input type="text" class="form-input" style="width:250px" value="${this.escAttr(settings.ai.baseUrl || '')}" placeholder="https://api.openai.com/v1" onchange="Store.data.settings.ai.baseUrl=this.value;Store.save()">
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">API Key</div>
+              <div class="settings-desc">仅存储在本机</div>
+            </div>
+            <input type="password" class="form-input" style="width:250px" value="${this.escAttr(settings.ai.apiKey || '')}" onchange="Store.data.settings.ai.apiKey=this.value;Store.save()">
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">模型</div>
+            </div>
+            <input type="text" class="form-input" style="width:200px" value="${this.escAttr(settings.ai.model || '')}" placeholder="gpt-4o-mini" onchange="Store.data.settings.ai.model=this.value;Store.save()">
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <div class="settings-title">数据管理</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn btn-secondary" onclick="App.exportData()">导出备份</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">导入恢复</button>
+            <button class="btn btn-secondary" onclick="App.loadSampleData()">载入示例数据</button>
+            <button class="btn btn-secondary" style="color:var(--danger)" onclick="App.clearData()">清空数据</button>
+          </div>
+          <input type="file" id="importFile" style="display:none" accept=".json" onchange="App.importData(event)">
+        </div>
+        
+        <div class="settings-section">
+          <div class="settings-title">关于</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.8">
+            <p><strong>内容指挥部</strong> v1.0</p>
+            <p>面向短视频口播创作者的多 IP / 多账号内容工作台</p>
+            <p style="margin-top:12px">功能：热点 → 对标 → 选题 → 文案 → 拍摄 → 排期 → 复盘</p>
+            <p>数据存储在本机浏览器，支持备份/恢复</p>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+  
+  // ─── Helper Methods ─────────────────────────────────────────
+  escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  },
+  
+  escAttr(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  },
+  
+  formatTimeLeft(timestamp) {
+    const diff = timestamp - Date.now();
+    if (diff <= 0) return '已过期';
+    const hours = Math.floor(diff / 3600000);
+    if (hours < 1) return `${Math.floor(diff / 60000)}分钟后`;
+    if (hours < 24) return `${hours}小时后`;
+    return `${Math.floor(hours / 24)}天后`;
+  },
+  
+  getPlatformName(key) {
+    const plat = [...DEFAULT_PLATFORMS, ...(Store.data.settings.customPlatforms || [])].find(p => p.key === key);
+    return plat?.name || key;
+  },
+  
+  renderMarkdown(text) {
+    if (!text) return '';
+    return this.escHtml(text)
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n/g, '<br>');
+  },
+  
+  loadTheme() {
+    const theme = Store.data.settings.theme || 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
+  },
+  
+  toggleTheme() {
+    const current = Store.data.settings.theme || 'light';
+    const next = current === 'dark' ? 'light' : 'dark';
+    Store.data.settings.theme = next;
+    Store.save();
+    document.documentElement.setAttribute('data-theme', next);
+    document.getElementById('themeToggle').textContent = next === 'dark' ? '☀️' : '🌙';
+  },
+  
+  showIPSwitcher() {
+    const ips = Store.data.ips;
+    const options = [
+      { id: null, name: '全部 IP', avatar: '🌐' },
+      ...ips
+    ];
+    
+    this.showModal(`
+      <div class="modal-title">切换 IP</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${options.map(ip => `
+          <div class="nav-item ${this.currentIp === ip.id ? 'active' : ''}" 
+               onclick="App.currentIp=${ip.id ? `'${ip.id}'` : 'null'};Store.data.ui.currentIp=${ip.id ? `'${ip.id}'` : 'null'};Store.save();document.getElementById('currentIpName').textContent='${this.escAttr(ip.name)}';App.closeModal();App.renderPage(App.currentPage)">
+            <span style="font-size:18px">${ip.avatar || '🌐'}</span>
+            <span>${this.escHtml(ip.name)}</span>
+          </div>
+        `).join('')}
+      </div>
+    `);
+  },
+  
+  // ─── Modal ──────────────────────────────────────────────────
+  showModal(content) {
+    document.getElementById('modal').innerHTML = content;
+    document.getElementById('modalOverlay').classList.add('active');
+  },
+  
+  closeModal() {
+    document.getElementById('modalOverlay').classList.remove('active');
+  },
+  
+  // ─── IP Modal ───────────────────────────────────────────────
+  showIPModal(id) {
+    const ip = id ? Store.getIP(id) : null;
+    this.showModal(`
+      <div class="modal-title">${ip ? '编辑' : '新建'} IP</div>
+      <div class="form-group">
+        <label class="form-label">名称</label>
+        <input type="text" class="form-input" id="ipName" value="${this.escAttr(ip?.name || '')}" placeholder="IP名称">
+      </div>
+      <div class="form-group">
+        <label class="form-label">赛道</label>
+        <input type="text" class="form-input" id="ipTrack" value="${this.escAttr(ip?.track || '')}" placeholder="如：效率、美食、读书">
+      </div>
+      <div class="form-group">
+        <label class="form-label">一句话人设</label>
+        <input type="text" class="form-input" id="ipPersona" value="${this.escAttr(ip?.persona || '')}" placeholder="一句话介绍你的人设">
+      </div>
+      <div class="form-group">
+        <label class="form-label">目标观众</label>
+        <input type="text" class="form-input" id="ipAudience" value="${this.escAttr(ip?.audience || '')}" placeholder="如：25-35岁职场人">
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">形象</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${IP_AVATARS.map(a => `
+              <div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:20px;border-radius:50%;cursor:pointer;border:2px solid ${ip?.avatar === a ? 'var(--accent)' : 'var(--line)'}" 
+                   onclick="document.querySelectorAll('.avatar-opt').forEach(e=>e.style.borderColor='var(--line)');this.style.borderColor='var(--accent)';document.getElementById('ipAvatar').value='${a}'">${a}</div>
+            `).join('')}
+          </div>
+          <input type="hidden" id="ipAvatar" value="${ip?.avatar || IP_AVATARS[0]}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">主题色</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${IP_COLORS.map(c => `
+              <div style="width:32px;height:32px;background:${c};border-radius:50%;cursor:pointer;border:3px solid ${ip?.color === c ? 'var(--ink)' : 'transparent'}" 
+                   onclick="document.querySelectorAll('.color-opt').forEach(e=>e.style.border='3px solid transparent');this.style.border='3px solid var(--ink)';document.getElementById('ipColor').value='${c}'" class="color-opt"></div>
+            `).join('')}
+          </div>
+          <input type="hidden" id="ipColor" value="${ip?.color || IP_COLORS[0]}">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:20px">
+        <button class="btn btn-primary" onclick="App.saveIP('${id || ''}')">${ip ? '保存' : '创建'}</button>
+        <button class="btn btn-secondary" onclick="App.closeModal()">取消</button>
+      </div>
+    `);
+  },
+  
+  saveIP(id) {
+    const data = {
+      name: document.getElementById('ipName').value.trim(),
+      track: document.getElementById('ipTrack').value.trim(),
+      persona: document.getElementById('ipPersona').value.trim(),
+      audience: document.getElementById('ipAudience').value.trim(),
+      avatar: document.getElementById('ipAvatar').value,
+      color: document.getElementById('ipColor').value
+    };
+    
+    if (!data.name) { alert('请输入名称'); return; }
+    
+    if (id) {
+      Store.updateIP(id, data);
+    } else {
+      Store.addIP(data);
+    }
+    
+    this.closeModal();
+    this.renderPage('ip');
+  },
+  
+  deleteIP(id) {
+    const postsCount = Store.data.posts.filter(p => {
+      const acc = Store.data.accounts.find(a => a.id === p.accountId);
+      return acc?.ipId === id;
+    }).length;
+    
+    if (!confirm(`确定删除此IP？\n涉及 ${postsCount} 条发布记录，建议先备份`)) return;
+    Store.deleteIP(id);
+    this.renderPage('ip');
+  },
+  
+  showIPDetail(id) {
+    this.showIPArchive(id);
+  },
+  
+  showIPArchive(id) {
+    const ip = Store.getIP(id);
+    if (!ip) return;
+    
+    const accounts = Store.getAccountsByIP(id);
+    const contents = Store.getContentsByIP(id);
+    const accIds = accounts.map(a => a.id);
+    const posts = Store.data.posts.filter(p => accIds.includes(p.accountId));
+    
+    const totalPlay = posts.reduce((s, p) => s + (p.play || 0), 0);
+    const totalLikes = posts.reduce((s, p) => s + (p.likes || 0), 0);
+    const totalFav = posts.reduce((s, p) => s + (p.favorite || 0), 0);
+    const weekPosts = posts.filter(p => p.publishedAt >= Date.now() - 7 * 24 * 3600 * 1000).length;
+    
+    const stageCount = {};
+    CONTENT_STAGES.forEach(s => { stageCount[s.key] = contents.filter(c => c.stage === s.key).length; });
+    
+    this.showModal(`
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+        <div style="width:48px;height:48px;border-radius:50%;background:${ip.color}20;display:flex;align-items:center;justify-content:center;font-size:24px">${ip.avatar}</div>
+        <div>
+          <div class="modal-title" style="margin:0">${this.escHtml(ip.name)}</div>
+          <div style="font-size:12px;color:var(--muted)">${this.escHtml(ip.track || '未设置赛道')} · ${this.escHtml(ip.persona || '')}</div>
+        </div>
+      </div>
+      
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px">
+        <div class="stat-card" style="padding:12px">
+          <div style="font-size:20px;font-weight:900;font-family:var(--font-mono)">${accounts.length}</div>
+          <div style="font-size:11px;color:var(--muted)">账号</div>
+        </div>
+        <div class="stat-card" style="padding:12px">
+          <div style="font-size:20px;font-weight:900;font-family:var(--font-mono)">${contents.length}</div>
+          <div style="font-size:11px;color:var(--muted)">内容</div>
+        </div>
+        <div class="stat-card" style="padding:12px">
+          <div style="font-size:20px;font-weight:900;font-family:var(--font-mono)">${formatNumber(totalPlay)}</div>
+          <div style="font-size:11px;color:var(--muted)">总播放</div>
+        </div>
+        <div class="stat-card" style="padding:12px">
+          <div style="font-size:20px;font-weight:900;font-family:var(--font-mono)">${weekPosts}</div>
+          <div style="font-size:11px;color:var(--muted)">本周发布</div>
+        </div>
+      </div>
+      
+      <div style="margin-bottom:16px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">内容阶段分布</div>
+        <div style="display:flex;gap:4px;height:20px;border-radius:4px;overflow:hidden">
+          ${CONTENT_STAGES.map(s => {
+            const count = stageCount[s.key];
+            const pct = contents.length > 0 ? (count / contents.length * 100) : 0;
+            return pct > 0 ? `<div style="width:${pct}%;background:${s.color}" title="${s.name}: ${count}"></div>` : '';
+          }).join('')}
+        </div>
+        <div style="display:flex;gap:12px;margin-top:6px;font-size:11px;color:var(--muted)">
+          ${CONTENT_STAGES.map(s => `<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${s.color};margin-right:3px"></span>${s.name} ${stageCount[s.key] || 0}</span>`).join('')}
+        </div>
+      </div>
+      
+      <div style="margin-bottom:16px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">数据概览</div>
+        <div style="display:flex;gap:16px;font-size:13px">
+          <div>总点赞 <span class="font-mono font-bold">${formatNumber(totalLikes)}</span></div>
+          <div>总收藏 <span class="font-mono font-bold">${formatNumber(totalFav)}</span></div>
+          <div>收藏率 <span class="font-mono font-bold">${totalPlay > 0 ? (totalFav / totalPlay * 100).toFixed(2) : 0}%</span></div>
+        </div>
+      </div>
+      
+      <div style="margin-bottom:16px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">账号列表</div>
+        ${accounts.map(acc => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)">
+            <div>
+              <span class="tag" style="font-size:10px">${this.getPlatformName(acc.platform)}</span>
+              <span style="margin-left:6px;font-size:13px">${this.escHtml(acc.name)}</span>
+            </div>
+            <span class="font-mono text-sm">${formatNumber(acc.followers || 0)} 粉丝</span>
+          </div>
+        `).join('') || '<div class="text-muted text-sm">暂无账号</div>'}
+      </div>
+      
+      <div style="display:flex;gap:8px;margin-top:20px">
+        <button class="btn btn-primary" onclick="App.closeModal();App.showIPModal('${id}')">编辑 IP</button>
+        <button class="btn btn-secondary" onclick="App.closeModal()">关闭</button>
+      </div>
+    `);
+  },
+  
+  // ─── Account Modal ──────────────────────────────────────────
+  showAccountModal(id) {
+    const acc = id ? Store.data.accounts.find(a => a.id === id) : null;
+    const ips = Store.data.ips;
+    
+    this.showModal(`
+      <div class="modal-title">${acc ? '编辑' : '新建'}账号</div>
+      <div class="form-group">
+        <label class="form-label">所属 IP</label>
+        <select class="form-select" id="accIp">
+          ${ips.map(ip => `<option value="${ip.id}" ${acc?.ipId === ip.id ? 'selected' : ''}>${ip.avatar} ${this.escHtml(ip.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">平台</label>
+        <select class="form-select" id="accPlatform">
+          {[...DEFAULT_PLATFORMS, ...(Store.data.settings.customPlatforms || [])].map(p => 
+            `<option value="${p.key}" ${acc?.platform === p.key ? 'selected' : ''}>${p.name}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">账号名</label>
+        <input type="text" class="form-input" id="accName" value="${this.escAttr(acc?.name || '')}" placeholder="账号名称">
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">粉丝数</label>
+          <input type="text" class="form-input" id="accFollowers" value="${acc?.followers || ''}" placeholder="如：1.2万">
+        </div>
+        <div class="form-group">
+          <label class="form-label">7日涨粉</label>
+          <input type="text" class="form-input" id="accWeekGain" value="${acc?.weekGain || ''}" placeholder="如：+500">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">主页链接</label>
+        <input type="text" class="form-input" id="accUrl" value="${this.escAttr(acc?.url || '')}" placeholder="https://...">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:20px">
+        <button class="btn btn-primary" onclick="App.saveAccount('${id || ''}')">${acc ? '保存' : '创建'}</button>
+        <button class="btn btn-secondary" onclick="App.closeModal()">取消</button>
+      </div>
+    `);
+  },
+  
+  saveAccount(id) {
+    const data = {
+      ipId: document.getElementById('accIp').value,
+      platform: document.getElementById('accPlatform').value,
+      name: document.getElementById('accName').value.trim(),
+      followers: parseNumber(document.getElementById('accFollowers').value),
+      weekGain: parseNumber(document.getElementById('accWeekGain').value),
+      url: document.getElementById('accUrl').value.trim()
+    };
+    
+    if (!data.name) { alert('请输入账号名'); return; }
+    
+    if (id) {
+      Store.updateAccount(id, data);
+    } else {
+      Store.addAccount(data);
+    }
+    
+    this.closeModal();
+    this.renderPage('ip');
+  },
+  
+  deleteAccount(id) {
+    if (!confirm('确定删除此账号？')) return;
+    Store.deleteAccount(id);
+    this.renderPage('ip');
+  },
+  
+  // ─── Hot Modal ──────────────────────────────────────────────
+  showHotModal(id) {
+    const hot = id ? Store.data.hots.find(h => h.id === id) : null;
+    const ips = Store.data.ips;
+    
+    this.showModal(`
+      <div class="modal-title">${hot ? '编辑' : '录入'}热点</div>
+      <div class="form-group">
+        <label class="form-label">标题</label>
+        <input type="text" class="form-input" id="hotTitle" value="${this.escAttr(hot?.title || '')}" placeholder="热点标题">
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">来源</label>
+          <input type="text" class="form-input" id="hotSource" value="${this.escAttr(hot?.source || '')}" placeholder="如：微博热搜">
+        </div>
+        <div class="form-group">
+          <label class="form-label">热度</label>
+          <select class="form-select" id="hotHeat">
+            <option value="高" ${hot?.heat === '高' ? 'selected' : ''}>高</option>
+            <option value="中" ${!hot || hot?.heat === '中' ? 'selected' : ''}>中</option>
+            <option value="低" ${hot?.heat === '低' ? 'selected' : ''}>低</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">趋势</label>
+        <select class="form-select" id="hotTrend">
+          <option value="升" ${hot?.trend === '升' ? 'selected' : ''}>↑ 升</option>
+          <option value="平" ${!hot || hot?.trend === '平' ? 'selected' : ''}>→ 平</option>
+          <option value="降" ${hot?.trend === '降' ? 'selected' : ''}>↓ 降</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">适合 IP（可多选）</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          ${ips.map(ip => `
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px">
+              <input type="checkbox" value="${ip.id}" ${hot?.ipIds?.includes(ip.id) ? 'checked' : ''}>
+              <span style="color:${ip.color}">${ip.avatar}</span> ${this.escHtml(ip.name)}
+            </label>
+          `).join('')}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">备注</label>
+        <textarea class="form-textarea" id="hotRemark" rows="2" placeholder="补充说明...">${this.escHtml(hot?.remark || '')}</textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:20px">
+        <button class="btn btn-primary" onclick="App.saveHot('${id || ''}')">${hot ? '保存' : '录入'}</button>
+        <button class="btn btn-secondary" onclick="App.closeModal()">取消</button>
+      </div>
+    `);
+  },
+  
+  saveHot(id) {
+    const ipChecks = document.querySelectorAll('.modal input[type="checkbox"]:checked');
+    const ipIds = Array.from(ipChecks).map(c => c.value);
+    
+    const data = {
+      title: document.getElementById('hotTitle').value.trim(),
+      source: document.getElementById('hotSource').value.trim(),
+      heat: document.getElementById('hotHeat').value,
+      trend: document.getElementById('hotTrend').value,
+      remark: document.getElementById('hotRemark').value.trim(),
+      ipIds: ipIds
+    };
+    
+    if (!data.title) { alert('请输入标题'); return; }
+    
+    if (id) {
+      Store.updateHot(id, data);
+    } else {
+      Store.addHot(data);
+    }
+    
+    this.closeModal();
+    this.renderPage('hot');
+  },
+  
+  deleteHot(id) {
+    if (!confirm('确定删除此热点？')) return;
+    Store.deleteHot(id);
+    this.renderPage('hot');
+  },
+  
+  // ─── Benchmark Modal ────────────────────────────────────────
+  showBenchModal(id) {
+    const bench = id ? Store.data.benchmarks.find(b => b.id === id) : null;
+    const ips = Store.data.ips;
+    
+    this.showModal(`
+      <div class="modal-title">${bench ? '编辑' : '添加'}对标账号</div>
+      <div class="form-group">
+        <label class="form-label">账号名</label>
+        <input type="text" class="form-input" id="benchName" value="${this.escAttr(bench?.name || '')}" placeholder="对标账号名">
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">平台</label>
+          <select class="form-select" id="benchPlatform">
+            {[...DEFAULT_PLATFORMS].map(p => 
+              `<option value="${p.key}" ${bench?.platform === p.key ? 'selected' : ''}>${p.name}</option>`
+            ).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">级别</label>
+          <select class="form-select" id="benchLevel">
+            <option value="同量级" ${bench?.level === '同量级' ? 'selected' : ''}>同量级</option>
+            <option value="高一级" ${bench?.level === '高一级' ? 'selected' : ''}>高一级</option>
+            <option value="头部标杆" ${bench?.level === '头部标杆' ? 'selected' : ''}>头部标杆</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">所属 IP</label>
+        <select class="form-select" id="benchIp">
+          <option value="">全部 IP 共用</option>
+          ${ips.map(ip => `<option value="${ip.id}" ${bench?.ipId === ip.id ? 'selected' : ''}>${ip.avatar} ${this.escHtml(ip.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">粉丝量</label>
+        <input type="text" class="form-input" id="benchFollowers" value="${bench?.followers || ''}" placeholder="如：5.2万">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:20px">
+        <button class="btn btn-primary" onclick="App.saveBench('${id || ''}')">${bench ? '保存' : '添加'}</button>
+        <button class="btn btn-secondary" onclick="App.closeModal()">取消</button>
+      </div>
+    `);
+  },
+  
+  saveBench(id) {
+    const data = {
+      name: document.getElementById('benchName').value.trim(),
+      platform: document.getElementById('benchPlatform').value,
+      level: document.getElementById('benchLevel').value,
+      ipId: document.getElementById('benchIp').value || null,
+      followers: parseNumber(document.getElementById('benchFollowers').value)
+    };
+    
+    if (!data.name) { alert('请输入账号名'); return; }
+    
+    if (id) {
+      Store.updateBenchmark(id, data);
+    } else {
+      Store.addBenchmark(data);
+    }
+    
+    this.closeModal();
+    this.renderPage('bench');
+  },
+  
+  deleteBenchmark(id) {
+    if (!confirm('确定删除此对标账号？其作品也将被删除')) return;
+    Store.deleteBenchmark(id);
+    this.renderPage('bench');
+  },
+  
+  showBenchWorks(benchId) {
+    const bench = Store.data.benchmarks.find(b => b.id === benchId);
+    const works = Store.data.benchWorks.filter(w => w.benchId === benchId);
+    
+    this.showModal(`
+      <div class="modal-title">${this.escHtml(bench?.name || '')} 的作品</div>
+      <div style="max-height:400px;overflow-y:auto">
+        ${works.length === 0 ? '<div class="text-muted text-sm">暂无作品</div>' : 
+          works.map(w => `
+            <div style="padding:12px;border-bottom:1px solid var(--line)">
+              <div style="font-weight:600;margin-bottom:4px">${this.escHtml(w.title || '无标题')}</div>
+              <div style="font-size:12px;color:var(--muted);display:flex;gap:12px">
+                <span>👍 ${formatNumber(w.likes || 0)}</span>
+                <span>💬 ${formatNumber(w.comment || 0)}</span>
+                <span>⭐ ${formatNumber(w.favorite || 0)}</span>
+                <span>🔄 ${formatNumber(w.share || 0)}</span>
+              </div>
+            </div>
+          `).join('')}
+      </div>
+      <div style="margin-top:16px">
+        <button class="btn btn-secondary" onclick="App.showBenchWorkModal('${benchId}')">+ 添加作品</button>
+        <button class="btn btn-secondary" onclick="App.closeModal()">关闭</button>
+      </div>
+    `);
+  },
+  
+  showBenchWorkModal(benchId, workId) {
+    const work = workId ? Store.data.benchWorks.find(w => w.id === workId) : null;
+    
+    this.showModal(`
+      <div class="modal-title">${work ? '编辑' : '添加'}作品</div>
+      <div class="form-group">
+        <label class="form-label">标题</label>
+        <input type="text" class="form-input" id="workTitle" value="${this.escAttr(work?.title || '')}" placeholder="作品标题">
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div class="form-group">
+          <label class="form-label">点赞</label>
+          <input type="text" class="form-input" id="workLikes" value="${work?.likes || ''}" placeholder="1.2万">
+        </div>
+        <div class="form-group">
+          <label class="form-label">评论</label>
+          <input type="text" class="form-input" id="workComment" value="${work?.comment || ''}" placeholder="500">
+        </div>
+        <div class="form-group">
+          <label class="form-label">收藏</label>
+          <input type="text" class="form-input" id="workFavorite" value="${work?.favorite || ''}" placeholder="800">
+        </div>
+        <div class="form-group">
+          <label class="form-label">转发</label>
+          <input type="text" class="form-input" id="workShare" value="${work?.share || ''}" placeholder="200">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">完整文案</label>
+        <textarea class="form-textarea" id="workContent" rows="6" placeholder="粘贴完整文案，将自动拆分...">${this.escHtml(work?.content || '')}</textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:20px">
+        <button class="btn btn-primary" onclick="App.saveBenchWork('${benchId}','${workId || ''}')">${work ? '保存' : '添加'}</button>
+        <button class="btn btn-secondary" onclick="App.closeModal()">取消</button>
+      </div>
+    `);
+  },
+  
+  saveBenchWork(benchId, workId) {
+    const data = {
+      benchId,
+      title: document.getElementById('workTitle').value.trim(),
+      likes: parseNumber(document.getElementById('workLikes').value),
+      comment: parseNumber(document.getElementById('workComment').value),
+      favorite: parseNumber(document.getElementById('workFavorite').value),
+      share: parseNumber(document.getElementById('workShare').value),
+      content: document.getElementById('workContent').value.trim()
+    };
+    
+    if (!data.title) { alert('请输入标题'); return; }
+    
+    if (workId) {
+      Store.updateBenchWork(workId, data);
+    } else {
+      Store.addBenchWork(data);
+    }
+    
+    this.closeModal();
+    this.showBenchWorks(benchId);
+  },
+  
+  // ─── Topic Modal ────────────────────────────────────────────
+  showTopicModal(id) {
+    const topic = id ? Store.data.topics.find(t => t.id === id) : null;
+    const ips = Store.data.ips;
+    
+    this.showModal(`
+      <div class="modal-title">${topic ? '编辑' : '新建'}选题</div>
+      <div class="form-group">
+        <label class="form-label">标题</label>
+        <input type="text" class="form-input" id="topicTitle" value="${this.escAttr(topic?.title || '')}" placeholder="选题标题">
+      </div>
+      <div class="form-group">
+        <label class="form-label">所属 IP</label>
+        <select class="form-select" id="topicIp">
+          ${ips.map(ip => `<option value="${ip.id}" ${topic?.ipId === ip.id ? 'selected' : ''}>${ip.avatar} ${this.escHtml(ip.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">来源</label>
+        <select class="form-select" id="topicSource">
+          <option value="manual" ${topic?.source === 'manual' || !topic ? 'selected' : ''}>手动创建</option>
+          <option value="hot" ${topic?.source === 'hot' ? 'selected' : ''}>来自热点</option>
+          <option value="bench" ${topic?.source === 'bench' ? 'selected' : ''}>来自对标</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">五维评分</label>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+          ${FIVE_DIMS.map(d => `
+            <div style="text-align:center">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${d.icon} ${d.name}</div>
+              <input type="number" min="1" max="5" class="form-input" style="text-align:center" 
+                     id="score_${d.key}" value="${topic?.scores?.[d.key] || 3}">
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">备注</label>
+        <textarea class="form-textarea" id="topicRemark" rows="2" placeholder="补充说明...">${this.escHtml(topic?.remark || '')}</textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:20px">
+        <button class="btn btn-primary" onclick="App.saveTopic('${id || ''}')">${topic ? '保存' : '创建'}</button>
+        <button class="btn btn-secondary" onclick="App.closeModal()">取消</button>
+      </div>
+    `);
+  },
+  
+  saveTopic(id) {
+    const scores = {};
+    FIVE_DIMS.forEach(d => {
+      scores[d.key] = parseInt(document.getElementById('score_' + d.key).value) || 3;
+    });
+    
+    const data = {
+      title: document.getElementById('topicTitle').value.trim(),
+      ipId: document.getElementById('topicIp').value,
+      source: document.getElementById('topicSource').value,
+      scores,
+      remark: document.getElementById('topicRemark').value.trim()
+    };
+    
+    if (!data.title) { alert('请输入标题'); return; }
+    
+    if (id) {
+      Store.updateTopic(id, data);
+    } else {
+      Store.addTopic(data);
+    }
+    
+    this.closeModal();
+    this.renderPage('topic');
+  },
+  
+  createContentFromTopic(topicId) {
+    const topic = Store.data.topics.find(t => t.id === topicId);
+    if (!topic) return;
+    
+    const content = Store.addContent({
+      ipId: topic.ipId,
+      title: topic.title,
+      stage: 'draft',
+      topicId: topicId
+    });
+    
+    Store.updateTopic(topicId, { status: 'doing' });
+    
+    this.editingId = content.id;
+    this.navigate('script');
+  },
+  
+  // ─── Content Modal ──────────────────────────────────────────
+  showContentModal(id) {
+    const content = id ? Store.getContent(id) : null;
+    const ips = Store.data.ips;
+    
+    this.showModal(`
+      <div class="modal-title">${content ? '编辑' : '新建'}稿件</div>
+      <div class="form-group">
+        <label class="form-label">标题</label>
+        <input type="text" class="form-input" id="contentTitle" value="${this.escAttr(content?.title || '')}" placeholder="稿件标题">
+      </div>
+      <div class="form-group">
+        <label class="form-label">所属 IP</label>
+        <select class="form-select" id="contentIp">
+          ${ips.map(ip => `<option value="${ip.id}" ${content?.ipId === ip.id ? 'selected' : ''}>${ip.avatar} ${this.escHtml(ip.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">阶段</label>
+        <select class="form-select" id="contentStage">
+          ${CONTENT_STAGES.map(s => `<option value="${s.key}" ${content?.stage === s.key ? 'selected' : ''}>${s.name}</option>`).join('')}
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:20px">
+        <button class="btn btn-primary" onclick="App.saveContent('${id || ''}')">${content ? '保存' : '创建'}</button>
+        <button class="btn btn-secondary" onclick="App.closeModal()">取消</button>
+      </div>
+    `);
+  },
+  
+  saveContent(id) {
+    const data = {
+      title: document.getElementById('contentTitle').value.trim(),
+      ipId: document.getElementById('contentIp').value,
+      stage: document.getElementById('contentStage').value
+    };
+    
+    if (!data.title) { alert('请输入标题'); return; }
+    
+    if (id) {
+      Store.updateContent(id, data);
+    } else {
+      Store.addContent(data);
+    }
+    
+    this.closeModal();
+    this.renderPage(this.currentPage);
+  },
+  
+  saveScript(id) {
+    const data = {
+      title: document.getElementById('scriptTitle').value.trim(),
+      hook: document.getElementById('scriptHook').value,
+      body: document.getElementById('scriptBody').value,
+      cta: document.getElementById('scriptCta').value,
+      cover: document.getElementById('scriptCover').value,
+      tags: document.getElementById('scriptTags').value
+    };
+    
+    Store.updateContent(id, data);
+    alert('已保存');
+  },
+  
+  runScriptCheck(id) {
+    const content = Store.getContent(id);
+    const ip = Store.getIP(content.ipId);
+    const result = checkScript(content, ip, Store.data.settings.standards);
+    
+    document.getElementById('checkResult').innerHTML = `
+      <div class="card-title" style="margin-bottom:12px">体检结果</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <div style="font-size:32px;font-weight:900;font-family:var(--font-mono);color:${result.score >= 80 ? 'var(--success)' : result.score >= 60 ? 'var(--warning)' : 'var(--danger)'}">${result.score}</div>
+        <div>
+          <div style="font-size:13px">通过 ${result.passed}/${result.total} 项</div>
+          <div style="font-size:12px;color:var(--muted)">${result.score >= 80 ? '优秀，可以拍摄' : result.score >= 60 ? '基本合格，建议优化' : '需要修改'}</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${result.results.map(r => `
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 10px;background:${r.pass ? '#ecfdf5' : '#fef2f2'};border-radius:var(--radius-sm)">
+            <span>${r.pass ? '✅' : '❌'}</span>
+            <span style="flex:1">${r.name}</span>
+            <span style="color:var(--muted);font-size:11px">${r.tip}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  },
+  
+  moveToShoot(id) {
+    Store.updateContent(id, { stage: 'shoot' });
+    const content = Store.getContent(id);
+    if (content && (!content.shots || content.shots.length === 0)) {
+      const shots = autoStoryboard(content, Store.data.settings.standards.wpm);
+      Store.updateContent(id, { shots });
+    }
+    this.navigate('shoot');
+  },
+  
+  insertHook(template) {
+    const hookField = document.getElementById('scriptHook');
+    if (hookField) {
+      hookField.value = template;
+    }
+  },
+  
+  useTitleFormula(pattern) {
+    const titleField = document.getElementById('scriptTitle');
+    if (titleField) {
+      titleField.value = pattern;
+    }
+  },
+  
+  useStructure(name) {
+    const structure = BODY_STRUCTURES.find(s => s.name === name);
+    if (structure) {
+      const bodyField = document.getElementById('scriptBody');
+      if (bodyField) {
+        bodyField.value = `【${structure.name}】\n${structure.pattern}\n\n${bodyField.value}`;
+      }
+    }
+  },
+  
+  saveSnapshot(contentId) {
+    const content = Store.getContent(contentId);
+    if (!content) return;
+    
+    if (!content.snaps) content.snaps = [];
+    content.snaps.push({
+      at: Date.now(),
+      title: content.title || '',
+      hook: content.hook || '',
+      body: content.body || '',
+      cta: content.cta || '',
+      cover: content.cover || '',
+      tags: content.tags || ''
+    });
+    
+    // Keep only last 20 snapshots
+    if (content.snaps.length > 20) content.snaps = content.snaps.slice(-20);
+    
+    Store.updateContent(contentId, { snaps: content.snaps });
+    this.renderPage('script');
+  },
+  
+  restoreSnapshot(contentId, index) {
+    const content = Store.getContent(contentId);
+    if (!content || !content.snaps || !content.snaps[index]) return;
+    
+    const snap = content.snaps[index];
+    Store.updateContent(contentId, {
+      title: snap.title,
+      hook: snap.hook,
+      body: snap.body,
+      cta: snap.cta,
+      cover: snap.cover,
+      tags: snap.tags
+    });
+    this.renderPage('script');
+  },
+  
+  // ─── Shoot Methods ──────────────────────────────────────────
+  editShots(contentId) {
+    const content = Store.getContent(contentId);
+    if (!content) return;
+    
+    if (!content.shots || content.shots.length === 0) {
+      const shots = autoStoryboard(content, Store.data.settings.standards.wpm);
+      Store.updateContent(contentId, { shots });
+    }
+    
+    this.editingId = contentId;
+    this.navigate('shoot');
+  },
+  
+  toggleShot(contentId, shotIndex) {
+    const content = Store.getContent(contentId);
+    if (!content || !content.shots) return;
+    
+    content.shots[shotIndex].done = !content.shots[shotIndex].done;
+    Store.updateContent(contentId, { shots: content.shots });
+    this.renderPage('shoot');
+  },
+  
+  openTeleprompter(contentId) {
+    const content = Store.getContent(contentId);
+    if (!content) return;
+    
+    const text = [content.hook, content.body, content.cta].filter(Boolean).join('\n\n');
+    document.getElementById('teleprompterText').textContent = text;
+    document.getElementById('teleprompter').classList.add('active');
+  },
+  
+  closeTeleprompter() {
+    document.getElementById('teleprompter').classList.remove('active');
+  },
+  
+  // ─── Schedule Methods ───────────────────────────────────────
+  showScheduleItem(contentId) {
+    this.showContentModal(contentId);
+  },
+  
+  markPublished(contentId) {
+    const content = Store.getContent(contentId);
+    if (!content) return;
+    
+    const targetAccounts = content.targetAccounts || [];
+    const now = new Date().toISOString();
+    
+    targetAccounts.forEach(accId => {
+      Store.addPost({
+        contentId,
+        accountId: accId,
+        publishedAt: content.scheduledAt || now,
+        backfilledAt: null
+      });
+    });
+    
+    Store.updateContent(contentId, { stage: 'published' });
+    this.renderPage('schedule');
+  },
+  
+  // ─── Review Methods ─────────────────────────────────────────
+  showBackfillModal() {
+    const posts = Store.data.posts.filter(p => p.publishedAt && !p.backfilledAt);
+    
+    this.showModal(`
+      <div class="modal-title">回填数据</div>
+      <div style="margin-bottom:16px">
+        <button class="btn btn-sm btn-secondary" onclick="App.showPasteBackfill()">📋 粘贴回填</button>
+        <button class="btn btn-sm btn-secondary" onclick="App.exportWeeklyReport()">📄 导出周报</button>
+      </div>
+      <div style="max-height:400px;overflow-y:auto">
+        ${posts.length === 0 ? '<div class="text-muted text-sm">暂无待回填记录</div>' :
+          posts.map(p => {
+            const content = Store.getContent(p.contentId);
+            const account = Store.data.accounts.find(a => a.id === p.accountId);
+            return `
+              <div style="padding:12px;border-bottom:1px solid var(--line)">
+                <div style="font-weight:600;margin-bottom:8px">${this.escHtml(content?.title || '未命名')} - ${account?.name || '未知'}</div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+                  <input type="number" class="form-input" placeholder="播放" value="${p.play || ''}" onchange="Store.updatePost('${p.id}',{play:parseInt(this.value)});Store.save()">
+                  <input type="number" class="form-input" placeholder="点赞" value="${p.likes || ''}" onchange="Store.updatePost('${p.id}',{likes:parseInt(this.value)});Store.save()">
+                  <input type="number" class="form-input" placeholder="收藏" value="${p.favorite || ''}" onchange="Store.updatePost('${p.id}',{favorite:parseInt(this.value)});Store.save()">
+                  <input type="number" class="form-input" placeholder="评论" value="${p.comment || ''}" onchange="Store.updatePost('${p.id}',{comment:parseInt(this.value)});Store.save()">
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px">
+                  <input type="number" class="form-input" placeholder="5秒完播%" value="${p.fiveSecRate || ''}" onchange="Store.updatePost('${p.id}',{fiveSecRate:parseInt(this.value)});Store.save()">
+                  <input type="number" class="form-input" placeholder="实际时长(秒)" value="${p.duration || ''}" onchange="Store.updatePost('${p.id}',{duration:parseInt(this.value)});Store.save()">
+                </div>
+                <button class="btn btn-sm btn-accent" style="margin-top:8px" onclick="Store.updatePost('${p.id}',{backfilledAt:Date.now()});Store.save();App.showBackfillModal()">标记已回填</button>
+              </div>
+            `;
+          }).join('')}
+      </div>
+      <div style="margin-top:16px">
+        <button class="btn btn-secondary" onclick="App.closeModal()">关闭</button>
+      </div>
+    `);
+  },
+  
+  showPasteBackfill() {
+    this.showModal(`
+      <div class="modal-title">粘贴回填</div>
+      <div class="form-group">
+        <label class="form-label">粘贴数据</label>
+        <textarea class="form-textarea" id="pasteData" rows="8" placeholder="从平台后台复制数据粘贴到这里&#10;格式：播放 点赞 收藏 评论&#10;例如：12000 850 320 45"></textarea>
+        <div class="text-xs text-muted" style="margin-top:4px">支持格式：空格/Tab/逗号分隔，支持"1.2万"格式</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:20px">
+        <button class="btn btn-primary" onclick="App.processPasteBackfill()">解析并填入</button>
+        <button class="btn btn-secondary" onclick="App.showBackfillModal()">返回</button>
+      </div>
+    `);
+  },
+  
+  processPasteBackfill() {
+    const text = document.getElementById('pasteData').value.trim();
+    if (!text) { alert('请粘贴数据'); return; }
+    
+    // Parse numbers from text
+    const numbers = text.split(/[\s,，\t]+/).filter(s => s).map(s => parseNumber(s));
+    
+    if (numbers.length < 4) {
+      alert('数据不足，至少需要：播放 点赞 收藏 评论');
+      return;
+    }
+    
+    // Find first non-backfilled post
+    const post = Store.data.posts.find(p => p.publishedAt && !p.backfilledAt);
+    if (!post) {
+      alert('没有待回填的记录');
+      return;
+    }
+    
+    Store.updatePost(post.id, {
+      play: numbers[0] || 0,
+      likes: numbers[1] || 0,
+      favorite: numbers[2] || 0,
+      comment: numbers[3] || 0,
+      fiveSecRate: numbers[4] || null,
+      duration: numbers[5] || null,
+      backfilledAt: Date.now()
+    });
+    Store.save();
+    
+    alert('已填入并标记为已回填');
+    this.showBackfillModal();
+  },
+  
+  exportWeeklyReport() {
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+    
+    const posts = Store.data.posts.filter(p => p.publishedAt && new Date(p.publishedAt) >= weekAgo);
+    const contents = Store.data.contents.filter(c => new Date(c.createdAt) >= weekAgo);
+    
+    const totalPlay = posts.reduce((s, p) => s + (p.play || 0), 0);
+    const totalLikes = posts.reduce((s, p) => s + (p.likes || 0), 0);
+    const totalFav = posts.reduce((s, p) => s + (p.favorite || 0), 0);
+    const totalComment = posts.reduce((s, p) => s + (p.comment || 0), 0);
+    
+    const ips = Store.data.ips;
+    
+    let report = `# 周报 · ${now.toLocaleDateString('zh-CN', {year:'numeric',month:'long',day:'numeric'})}\n\n`;
+    report += `## 本周概览\n\n`;
+    report += `- 发布数量：**${posts.length}** 条\n`;
+    report += `- 新建内容：**${contents.length}** 条\n`;
+    report += `- 总播放：**${formatNumber(totalPlay)}**\n`;
+    report += `- 总点赞：**${formatNumber(totalLikes)}**\n`;
+    report += `- 总收藏：**${formatNumber(totalFav)}**\n`;
+    report += `- 总评论：**${formatNumber(totalComment)}**\n\n`;
+    
+    if (ips.length > 0) {
+      report += `## 各IP表现\n\n`;
+      ips.forEach(ip => {
+        const ipAccounts = Store.getAccountsByIP(ip.id);
+        const ipPosts = posts.filter(p => ipAccounts.some(a => a.id === p.accountId));
+        if (ipPosts.length > 0) {
+          const ipPlay = ipPosts.reduce((s, p) => s + (p.play || 0), 0);
+          report += `### ${ip.avatar} ${ip.name}\n`;
+          report += `- 发布：${ipPosts.length} 条\n`;
+          report += `- 播放：${formatNumber(ipPlay)}\n\n`;
+        }
+      });
+    }
+    
+    report += `## 发布明细\n\n`;
+    report += `| 内容 | 账号 | 播放 | 点赞 | 收藏 | 评论 |\n`;
+    report += `|------|------|------|------|------|------|\n`;
+    posts.forEach(p => {
+      const content = Store.getContent(p.contentId);
+      const account = Store.data.accounts.find(a => a.id === p.accountId);
+      report += `| ${content?.title || '-'} | ${account?.name || '-'} | ${p.play || 0} | ${p.likes || 0} | ${p.favorite || 0} | ${p.comment || 0} |\n`;
+    });
+    
+    report += `\n---\n*由内容指挥部生成*\n`;
+    
+    // Download as markdown
+    const blob = new Blob([report], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `周报-${now.toISOString().slice(0, 10)}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    this.closeModal();
+  },
+  
+  // ─── AI Methods ─────────────────────────────────────────────
+  newChat() {
+    const chats = Store.data.settings.ai.chats || [];
+    const newChat = {
+      id: Store.genId('chat'),
+      title: '新对话',
+      messages: [],
+      createdAt: Date.now()
+    };
+    chats.unshift(newChat);
+    Store.data.settings.ai.chats = chats;
+    Store.save();
+    this.currentChatId = newChat.id;
+    this.renderPage('ai');
+  },
+  
+  useAITemplate(templateName) {
+    const input = document.getElementById('aiInput');
+    if (input) {
+      input.value = `请使用「${templateName}」模板帮我创作`;
+    }
+  },
+  
+  async sendAIMessage() {
+    const input = document.getElementById('aiInput');
+    if (!input || !input.value.trim()) return;
+    
+    const message = input.value.trim();
+    const settings = Store.data.settings.ai;
+    
+    // Create chat if needed
+    if (!this.currentChatId) {
+      this.newChat();
+    }
+    
+    const chats = settings.chats || [];
+    const chat = chats.find(c => c.id === this.currentChatId);
+    if (!chat) return;
+    
+    // Add user message
+    chat.messages.push({ role: 'user', content: message, timestamp: Date.now() });
+    
+    // Update title if first message
+    if (chat.messages.length === 1) {
+      chat.title = message.slice(0, 20) + (message.length > 20 ? '...' : '');
+    }
+    
+    input.value = '';
+    this.renderPage('ai');
+    
+    // Call AI if configured
+    if (settings.apiKey && settings.baseUrl) {
+      try {
+        const response = await fetch(settings.baseUrl + '/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${settings.apiKey}`
+          },
+          body: JSON.stringify({
+            model: settings.model || 'gpt-4o-mini',
+            messages: chat.messages.map(m => ({ role: m.role, content: m.content })),
+            stream: true
+          })
+        });
+        
+        if (!response.ok) throw new Error('API request failed');
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let assistantMessage = '';
+        
+        chat.messages.push({ role: 'assistant', content: '', timestamp: Date.now() });
+        
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
+          
+          for (const line of lines) {
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
+            
+            try {
+              const parsed = JSON.parse(data);
+              const delta = parsed.choices?.[0]?.delta?.content || '';
+              assistantMessage += delta;
+              chat.messages[chat.messages.length - 1].content = assistantMessage;
+              this.renderPage('ai');
+            } catch (e) {}
+          }
+        }
+        
+        Store.save();
+      } catch (e) {
+        chat.messages.push({ 
+          role: 'assistant', 
+          content: `❌ 请求失败：${e.message}\n\n请检查 AI 接口配置（设置 → AI 接口配置）`, 
+          timestamp: Date.now() 
+        });
+        Store.save();
+        this.renderPage('ai');
+      }
+    } else {
+      // No AI configured, show prompt template
+      const prompt = this.generatePromptTemplate(message);
+      chat.messages.push({ 
+        role: 'assistant', 
+        content: `**未配置 AI 接口**\n\n以下是为你生成的提示词，可以复制到任意 AI 工具使用：\n\n---\n\n${prompt}\n\n---\n\n💡 在设置中配置 AI 接口后可直接对话`, 
+        timestamp: Date.now() 
+      });
+      Store.save();
+      this.renderPage('ai');
+    }
+  },
+  
+  generatePromptTemplate(userMessage) {
+    const ip = this.currentIp ? Store.getIP(this.currentIp) : null;
+    const recentContents = Store.getContentsByIP(this.currentIp).slice(0, 5);
+    
+    return `你是一个短视频内容创作专家。
+
+${ip ? `当前IP信息：
+- 名称：${ip.name}
+- 赛道：${ip.track || '未设置'}
+- 人设：${ip.persona || '未设置'}
+- 目标观众：${ip.audience || '未设置'}` : ''}
+
+${recentContents.length > 0 ? `最近的内容：
+${recentContents.map(c => `- ${c.title}`).join('\n')}` : ''}
+
+用户问题：${userMessage}
+
+请给出专业、实用的建议。`;
+  },
+  
+  // ─── Data Management ────────────────────────────────────────
+  exportData() {
+    const data = Store.export();
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `内容指挥部-备份-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  },
+  
+  importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (Store.import(e.target.result)) {
+        alert('导入成功');
+        location.reload();
+      } else {
+        alert('导入失败，请检查文件格式');
+      }
+    };
+    reader.readAsText(file);
+  },
+  
+  loadSampleData() {
+    if (!confirm('载入示例数据将覆盖当前数据，确定继续？')) return;
+    
+    Store.reset();
+    
+    // Create sample IPs
+    const ip1 = Store.addIP({ name: '效率进化论', track: '效率', persona: '帮你用更少时间做更多事', audience: '25-35岁职场人', avatar: '🚀', color: '#3b82f6' });
+    const ip2 = Store.addIP({ name: '味蕾实验室', track: '美食', persona: '用科学方法做好每顿饭', audience: '爱做饭的年轻人', avatar: '🍳', color: '#ef4444' });
+    const ip3 = Store.addIP({ name: '读书笔记', track: '读书', persona: '把书读薄，把知识用厚', audience: '想养成阅读习惯的人', avatar: '📚', color: '#22c55e' });
+    
+    // Create sample accounts
+    Store.addAccount({ ipId: ip1.id, platform: 'douyin', name: '效率进化论', followers: 12000, weekGain: 500 });
+    Store.addAccount({ ipId: ip1.id, platform: 'xiaohongshu', name: '效率笔记', followers: 8000, weekGain: 300 });
+    Store.addAccount({ ipId: ip2.id, platform: 'douyin', name: '味蕾实验室', followers: 25000, weekGain: 1200 });
+    Store.addAccount({ ipId: ip3.id, platform: 'xiaohongshu', name: '读书小记', followers: 5000, weekGain: 200 });
+    
+    // Create sample topics
+    Store.addTopic({ title: '早起打卡30天的变化', ipId: ip1.id, source: 'manual', scores: { pain: 4, useful: 5, debate: 3, suspense: 4, track: 5 }, status: 'doing' });
+    Store.addTopic({ title: '5分钟早餐合集', ipId: ip2.id, source: 'manual', scores: { pain: 5, useful: 5, debate: 2, suspense: 3, track: 5 }, status: 'pool' });
+    Store.addTopic({ title: '原子习惯读书笔记', ipId: ip3.id, source: 'bench', scores: { pain: 3, useful: 5, debate: 3, suspense: 4, track: 5 }, status: 'pool' });
+    
+    // Create sample content
+    const content1 = Store.addContent({ ipId: ip1.id, title: '早起打卡30天，我的生活发生了什么变化', stage: 'draft', hook: '坚持早起30天后，我发现了一个惊人的变化...', body: '不是体重减轻了，也不是皮肤变好了，而是...', cta: '你也试试？评论区打卡', cover: '30天早起挑战', tags: '早起,自律,效率' });
+    
+    // Create sample hot
+    Store.addHot({ title: '世界读书日', source: '营销节点', heat: '高', trend: '升', ipIds: [ip3.id], remark: '4月23日' });
+    
+    // Create sample benchmark
+    const bench1 = Store.addBenchmark({ name: '效率工具派', platform: 'xiaohongshu', level: '同量级', ipId: ip1.id, followers: 15000 });
+    Store.addBenchWork({ benchId: bench1.id, title: '这个时间管理方法改变了我的工作效率', likes: 2500, comment: 180, favorite: 800, share: 120, content: '今天分享一个让我效率翻倍的方法...\n\n第一步...\n第二步...\n第三步...\n\n你试过吗？' });
+    
+    Store.save();
+    alert('示例数据已载入');
+    location.reload();
+  },
+  
+  clearData() {
+    if (!confirm('确定清空所有数据？此操作不可恢复！')) return;
+    if (!confirm('再次确认：清空所有数据？')) return;
+    
+    Store.reset();
+    location.reload();
+  },
+  
+  // ─── Page Event Binding ─────────────────────────────────────
+  bindPageEvents(page) {
+    // Events are bound inline in most cases
+  }
+};
+
+// ─── Initialize ───────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => App.init());
+</script>
+</body>
+</html>

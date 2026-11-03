@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>PRD-11 · 非功能需求</title>
+<style>:root{--bg:#f5f6f8;--ink:#22272e;--ink2:#5b6570;--line:#e3e7ec;--acc:#2563eb;--deep:#1e3a8a;--soft:#eff4ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.85 "Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}.wrap{max-width:1000px;margin:0 auto;padding:26px 26px 70px}.crumbs{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px}.crumbs b{color:var(--deep)}h1{font-size:22px;margin:6px 0 4px}h2{font-size:18px;margin:30px 0 10px;padding-left:10px;border-left:4px solid var(--acc)}p{margin:7px 0}ul,ol{margin:6px 0;padding-left:24px}li{margin:3px 0}table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px;background:#fff}th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top;text-align:left}th{background:var(--soft);color:var(--deep)}code{font-family:Consolas,monospace;background:#f0f2f5;padding:1px 5px;border-radius:4px;font-size:.92em}.fr{font-family:Consolas,monospace;font-size:12px;background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:4px;white-space:nowrap}.p0{color:#b91c1c;font-weight:700}.p1{color:#b45309;font-weight:600}.refs{background:#f8fafc;border:1px dashed #b8c4d4;border-radius:10px;padding:10px 16px;margin:18px 0;font-size:13.5px}footer.nav{display:flex;justify-content:space-between;gap:10px;margin-top:26px;font-size:13.5px}a{color:var(--acc)}@media print{body{background:#fff}}</style>
+</head>
+<body>
+<div class="wrap">
+<div class="crumbs">📄 <a href="PRD-00-主文档.html">PRD-00 主文档</a> › <b>支撑 · 非功能需求</b> ｜ 状态：<b>待核对</b></div>
+
+<h1>PRD-11 · 非功能需求（NFR-01 ~ NFR-10）</h1>
+<table>
+  <tr><th>编号</th><th>类别</th><th>需求</th><th>验收方式</th><th>优先级</th></tr>
+  <tr><td><span class="fr">NFR-01</span></td><td>零依赖</td><td>单 HTML 文件运行：不发起任何资源加载（无 CDN、字体、图片外链）；离线可用</td><td>断网双击打开全功能自测</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">NFR-02</span></td><td>出网点清单</td><td>全产品仅两类出网：用户点击的外部链接（热榜/主页）与用户配置的 AI 请求；除此之外零请求</td><td>DevTools 网络面板审计</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">NFR-03</span></td><td>性能</td><td>数据量 500 内容 / 2000 posts 内交互流畅（列表滚动、图表绘制 &lt; 300ms）；localStorage 用量显示于设置页</td><td>造数自测</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">NFR-04</span></td><td>数据可靠</td><td>写操作即存（防抖 ≤500ms）；schema 版本化迁移链；迁移失败保留原数据并报错而非清空</td><td>构造旧版本数据升级测试</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">NFR-05</span></td><td>隐私安全</td><td>Key 不入备份不明文回显；备份含个人资料的提示；所有 AI 出网前置预览（FR-09-03）</td><td>导出文件字节级检查无 Key</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">NFR-06</span></td><td>合规边界</td><td>不登录/不授权/不调用任何内容平台接口；不代发；不抓取榜单；相关声明写入「关于」页</td><td>代码审查（无平台域名请求）</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">NFR-07</span></td><td>可解释性</td><td>每个评分/体检/诊断结果可查看判定依据（命中哪条规则、阈值是多少、当前值多少）</td><td>逐模块点开检查</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">NFR-08</span></td><td>降级</td><td>localStorage 禁用时进入内存模式：顶部常驻黄色警告条 + 每次保存提示导出；全部功能可用</td><td>浏览器禁存测试</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">NFR-09</span></td><td>免责声明</td><td>「关于」页固定声明：评分/体检/诊断是创作参考，不保证平台审核结果或传播效果；不代替专业法律/合规意见</td><td>文案评审</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">NFR-10</span></td><td>可维护</td><td>规则词表（钩子/痛点/悬念/互动/极限词）与阈值集中定义为常量区，注释标明来源类目；界面文案与逻辑分离成 <code>TEXT</code> 常量区</td><td>代码审查</td><td class="p1">P1</td></tr>
+</table>
+
+<div class="refs">
+  <b>双向引用区</b><br>
+  ▸ 上游：<a href="PRD-00-主文档.html">PRD-00</a> §4 范围、D-01/D-05/D-06<br>
+  ▸ 落点模块：NFR-05/08 → <a href="PRD-10-设置与备份.html">PRD-10</a>；NFR-02/06 → <a href="PRD-02-热点雷达.html">PRD-02</a>/<a href="PRD-07-发布排期.html">PRD-07</a>/<a href="PRD-09-AI助手.html">PRD-09</a>；NFR-07 → <a href="PRD-05-文案工坊.html">PRD-05</a>/<a href="PRD-08-数据复盘.html">PRD-08</a>
+</div>
+
+<footer class="nav"><span>PRD-11 · 待核对</span><span>← <a href="PRD-00-主文档.html">主文档</a> ｜ ← <a href="PRD-10-设置与备份.html">PRD-10</a> ｜ 下一篇 → <a href="PRD-12-数据字典.html">PRD-12 数据字典</a></span></footer>
+</div>
+</body>
+</html>

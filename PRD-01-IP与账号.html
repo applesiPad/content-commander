@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>PRD-01 · IP 与账号</title>
+<style>:root{--bg:#f5f6f8;--ink:#22272e;--ink2:#5b6570;--line:#e3e7ec;--acc:#2563eb;--deep:#1e3a8a;--soft:#eff4ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.85 "Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}.wrap{max-width:1000px;margin:0 auto;padding:26px 26px 70px}.crumbs{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px}.crumbs b{color:var(--deep)}h1{font-size:22px;margin:6px 0 4px}h2{font-size:18px;margin:30px 0 10px;padding-left:10px;border-left:4px solid var(--acc)}h3{font-size:15.5px;color:var(--deep);margin:18px 0 6px}p{margin:7px 0}ul,ol{margin:6px 0;padding-left:24px}li{margin:3px 0}table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px;background:#fff}th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top;text-align:left}th{background:var(--soft);color:var(--deep)}code{font-family:Consolas,monospace;background:#f0f2f5;padding:1px 5px;border-radius:4px;font-size:.92em}.fr{font-family:Consolas,monospace;font-size:12px;background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:4px;white-space:nowrap}.p0{color:#b91c1c;font-weight:700}.p1{color:#b45309;font-weight:600}.p2{color:#5b6570}.refs{background:#f8fafc;border:1px dashed #b8c4d4;border-radius:10px;padding:10px 16px;margin:18px 0;font-size:13.5px}.note{background:var(--soft);border-left:3px solid var(--acc);padding:8px 14px;border-radius:0 8px 8px 0;margin:8px 0;font-size:13.5px}footer.nav{display:flex;justify-content:space-between;gap:10px;margin-top:26px;font-size:13.5px}a{color:var(--acc)}@media print{body{background:#fff}}</style>
+</head>
+<body>
+<div class="wrap">
+<div class="crumbs">📄 <a href="PRD-00-主文档.html">PRD-00 主文档</a> › <b>M1 IP 与账号</b> ｜ 状态：<b>待核对</b> ｜ 原型：<a href="原型.html#ip">原型 #ip</a></div>
+
+<h1>PRD-01 · IP 与账号</h1>
+<p>管理「人设层」与「账号层」：IP 的一切资料，以及各 IP 在各平台的账号登记。本模块是全产品的数据地基（见 <a href="PRD-12-数据字典.html">PRD-12</a> DD-IP / DD-ACCOUNT），其余模块全部按 <code>ipId</code> 过滤（<span class="fr">FR-01-06</span>）。</p>
+
+<h2>1 · 用户故事</h2>
+<ul>
+  <li>作为多 IP 主理人，我要为每个人设维护独立的资料与账号矩阵，切换 IP 时看到的是"那一个人"的世界。</li>
+  <li>作为主理人，我要一眼看出"哪个 IP 还没在哪个平台开号"（矩阵空位）。</li>
+</ul>
+
+<h2>2 · 功能需求</h2>
+<table>
+  <tr><th>编号</th><th>需求</th><th>验收标准</th><th>优先级</th></tr>
+  <tr><td><span class="fr">FR-01-01</span></td><td>IP 新建/编辑/删除：名称、赛道、一句话人设、目标观众、每周更新目标（条/周）、主题色（8 色板）、形象（8 个自绘 SVG 头像之一）</td><td>必填仅名称；每周目标默认 3；保存后 IP 卡片、切换器、拍摄/复盘过滤立即生效</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-01-02</span></td><td>IP 数量上限可配置，默认 8（设置项 <code>ipLimit</code>）</td><td>达到上限时新建按钮禁用并提示"到上限，可在设置调整或删除不用的 IP"</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-01-03</span></td><td>账号登记/编辑/删除：归属 IP、平台、账号名、粉丝数、近 7 日涨粉、主页链接（可选）</td><td>必填 IP+平台+账号名；同一 IP+平台+账号名组合不可重复</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-01-04</span></td><td>平台清单：默认 8 平台（抖音/小红书/视频号/B站/快手/公众号/知乎/百家号）+ 自定义追加（名称+颜色）→ <span class="fr">Q-02</span></td><td>自定义平台与内置平台在所有下拉/标签/矩阵中行为一致</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-01-05</span></td><td>矩阵覆盖表：行=IP、列=平台，格内显示粉丝数；空格显示「+ 开号」，点击直接打开账号表单并预填该 IP+平台</td><td>行列随 IP/平台增删自动增减</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-01-06</span></td><td>全局 IP 切换器（顶栏常驻）：「全部 IP」或单个 IP；切换后热点/选题/文案/拍摄/排期/复盘/指挥板全部过滤</td><td>选单 IP 时其他 IP 的内容在任何模块不可见不可编辑；刷新后记住选择</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-01-07</span></td><td>删除级联规则：删账号 → 同时删除该账号全部发布记录（posts）；删 IP → 其账号一并删除，其内容保留但标记「未归属」；两种删除均二次确认并提示"涉及 N 条发布记录，建议先备份"</td><td>确认弹窗中明确列出将被级联删除的数量；操作可被取消</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-01-08</span></td><td>IP 档案抽屉：概况（账号、本周进度、累计发布）/ 内容列表（各阶段）/ 数据汇总（总播放、涨粉）→ 是否进 v1.0 见 <span class="fr">Q-04</span></td><td>从 IP 卡片点击展开；数据口径与复盘模块一致</td><td class="p2">P2</td></tr>
+</table>
+
+<h2>3 · 规则说明</h2>
+<ul>
+  <li><strong>「未归属」状态</strong>：内容的 <code>ipId</code> 指向已删除 IP 时显示灰色"未归属"，可在编辑中重新指定 IP，不参与 IP 过滤（只在「全部 IP」视图出现）。</li>
+  <li><strong>粉丝数口径</strong>：手动录入的登记值，不自动同步平台；近 7 日涨粉为手动登记的展示值。</li>
+  <li>账号登记<strong>不登录、不授权、不验证</strong>任何平台（见 NFR-06、NFR-09）。</li>
+</ul>
+
+<div class="refs">
+  <b>双向引用区</b><br>
+  ▸ 上游：<a href="PRD-00-主文档.html">PRD-00</a> §5 模块地图 ｜ 数据：<a href="PRD-12-数据字典.html">PRD-12</a> DD-IP、DD-ACCOUNT、DD-PLAT<br>
+  ▸ 下游消费：M2 热点（IP 标记）、M3 对标（按 IP 归档）、M4 选题、M5 文案（归属 IP）、M7 排期（目标账号）、M8 复盘（账号维度）——各见 <a href="PRD-02-热点雷达.html">PRD-02</a> / <a href="PRD-03-对标拆解.html">PRD-03</a> / <a href="PRD-04-选题池.html">PRD-04</a> / <a href="PRD-05-文案工坊.html">PRD-05</a> / <a href="PRD-07-发布排期.html">PRD-07</a> / <a href="PRD-08-数据复盘.html">PRD-08</a><br>
+  ▸ 原型：<a href="原型.html#ip">原型.html#ip</a>（矩阵表 + 账号表 + IP 卡片）
+</div>
+
+<footer class="nav"><span>PRD-01 · 待核对</span><span>← <a href="PRD-00-主文档.html">主文档</a> ｜ 下一篇 → <a href="PRD-02-热点雷达.html">PRD-02 热点雷达</a></span></footer>
+</div>
+</body>
+</html>

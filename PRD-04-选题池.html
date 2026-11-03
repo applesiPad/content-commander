@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>PRD-04 · 选题池</title>
+<style>:root{--bg:#f5f6f8;--ink:#22272e;--ink2:#5b6570;--line:#e3e7ec;--acc:#2563eb;--deep:#1e3a8a;--soft:#eff4ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.85 "Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}.wrap{max-width:1000px;margin:0 auto;padding:26px 26px 70px}.crumbs{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px}.crumbs b{color:var(--deep)}h1{font-size:22px;margin:6px 0 4px}h2{font-size:18px;margin:30px 0 10px;padding-left:10px;border-left:4px solid var(--acc)}h3{font-size:15.5px;color:var(--deep);margin:18px 0 6px}p{margin:7px 0}ul,ol{margin:6px 0;padding-left:24px}li{margin:3px 0}table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px;background:#fff}th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top;text-align:left}th{background:var(--soft);color:var(--deep)}code{font-family:Consolas,monospace;background:#f0f2f5;padding:1px 5px;border-radius:4px;font-size:.92em}.fr{font-family:Consolas,monospace;font-size:12px;background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:4px;white-space:nowrap}.p0{color:#b91c1c;font-weight:700}.p1{color:#b45309;font-weight:600}.p2{color:#5b6570}.refs{background:#f8fafc;border:1px dashed #b8c4d4;border-radius:10px;padding:10px 16px;margin:18px 0;font-size:13.5px}.note{background:var(--soft);border-left:3px solid var(--acc);padding:8px 14px;border-radius:0 8px 8px 0;margin:8px 0;font-size:13.5px}footer.nav{display:flex;justify-content:space-between;gap:10px;margin-top:26px;font-size:13.5px}a{color:var(--acc)}@media print{body{background:#fff}}</style>
+</head>
+<body>
+<div class="wrap">
+<div class="crumbs">📄 <a href="PRD-00-主文档.html">PRD-00 主文档</a> › <b>M4 选题池</b> ｜ 状态：<b>待核对</b> ｜ 原型：<a href="原型.html#topic">原型 #topic</a></div>
+
+<h1>PRD-04 · 选题池</h1>
+<p>回答"哪个题最值得拍"。用五维评分 + 雷达图 + S/A/B/C 评级把"凭感觉"变成"有依据"，确定要做的一键立项进入文案工坊。</p>
+
+<h2>1 · 用户故事</h2>
+<ul>
+  <li>攒了一堆点子 → 每道题 30 秒打完五维分 → 按 S/A/B/C 排出优先级，知道先拍哪条。</li>
+  <li>没灵感 → 用标题工坊按赛道关键词套公式出 10 个候选。</li>
+</ul>
+
+<h2>2 · 功能需求</h2>
+<table>
+  <tr><th>编号</th><th>需求</th><th>验收标准</th><th>优先级</th></tr>
+  <tr><td><span class="fr">FR-04-01</span></td><td>选题录入/编辑/删除：归属 IP、标题（必填）、来源（手动/热点/对标，外部转入时自动带来源与回链）、备注</td><td>列表按评级+更新时间排序；来源徽章可点回上游热点/对标</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-04-02</span></td><td>五维打分：痛点/实用/争议/悬念/赛道契合，各 1–5（步进 1）</td><td>总分实时显示（5–25）；默认 3/3/3/3/3</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-04-03</span></td><td>评级：总分 ≥<code>gradeS</code>(21)→S、≥<code>gradeA</code>(17)→A、≥<code>gradeB</code>(13)→B、否则 C（阈值设置可调 → <span class="fr">Q-05</span>）</td><td>评级徽章配色 S=红/A=橙/B=蓝/C=灰；改分即时重算</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-04-04</span></td><td>题型判断：取五维中最高维度 → 痛点主导=点击型 / 实用主导=收藏型 / 争议主导=评论型 / 悬念主导=完播型（并列取先序）</td><td>题型标签显示于卡片，提示主打哪个指标</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-04-05</span></td><td>五维雷达图（SVG 五边形）；支持叠加显示"该 IP 已发布内容平均画像"（来自回填数据换算）作对比</td><td>无数据 IP 不叠加；图形可导出说明文字</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-04-06</span></td><td>标题工坊：输入赛道关键词，从 20+ 条原创标题公式生成 10 条候选，一键选用为选题标题；公式按 IP 赛道过滤展示</td><td>生成的标题可编辑后再保存为选题</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-04-07</span></td><td>立项写稿：选题 → 创建内容记录（<code>stage=script</code>，topicId 回链，标题预填），跳转 <a href="PRD-05-文案工坊.html">PRD-05</a>；选题状态变「进行中」</td><td>同一选题重复立项时提示并复用已有内容</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-04-08</span></td><td>看板视图：按 评级（S/A/B/C）或 状态（候选/进行中/已完成）两种分组列；拖拽仅限状态列间移动（改状态不改评分）</td><td>分组切换即时；空分组显示占位</td><td class="p2">P2</td></tr>
+</table>
+
+<h2>3 · 规则说明</h2>
+<ul>
+  <li>评分是<strong>决策辅助</strong>，不预测播放量（页面需有此声明文案，NFR-09）。</li>
+  <li>雷达图叠加的"内容平均画像"口径：实用→收藏率相对值、悬念→均播比、痛点→5 秒完播相对值、争议→评论率相对值、赛道→播放相对值，各维归一化到 1–5（具体归一化算法开发时定，记录于代码注释与使用说明）。</li>
+</ul>
+
+<div class="refs">
+  <b>双向引用区</b><br>
+  ▸ 上游：<a href="PRD-00-主文档.html">PRD-00</a> §5 ｜ 热点转入：<a href="PRD-02-热点雷达.html">PRD-02</a> FR-02-05 ｜ 对标借入：<a href="PRD-03-对标拆解.html">PRD-03</a> FR-03-07 ｜ IP 过滤：<a href="PRD-01-IP与账号.html">PRD-01</a><br>
+  ▸ 下游：立项 → <a href="PRD-05-文案工坊.html">PRD-05</a> FR-05-01 ｜ 阈值：<a href="PRD-10-设置与备份.html">PRD-10</a> FR-10-03 ｜ 数据字典：<a href="PRD-12-数据字典.html">PRD-12</a> DD-TOPIC<br>
+  ▸ 原型：<a href="原型.html#topic">原型.html#topic</a>
+</div>
+
+<footer class="nav"><span>PRD-04 · 待核对</span><span>← <a href="PRD-00-主文档.html">主文档</a> ｜ ← <a href="PRD-03-对标拆解.html">PRD-03</a> ｜ 下一篇 → <a href="PRD-05-文案工坊.html">PRD-05 文案工坊</a></span></footer>
+</div>
+</body>
+</html>

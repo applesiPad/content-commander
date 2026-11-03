@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>PRD-06 · 拍摄与提词器</title>
+<style>:root{--bg:#f5f6f8;--ink:#22272e;--ink2:#5b6570;--line:#e3e7ec;--acc:#2563eb;--deep:#1e3a8a;--soft:#eff4ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.85 "Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}.wrap{max-width:1000px;margin:0 auto;padding:26px 26px 70px}.crumbs{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px}.crumbs b{color:var(--deep)}h1{font-size:22px;margin:6px 0 4px}h2{font-size:18px;margin:30px 0 10px;padding-left:10px;border-left:4px solid var(--acc)}h3{font-size:15.5px;color:var(--deep);margin:18px 0 6px}p{margin:7px 0}ul,ol{margin:6px 0;padding-left:24px}li{margin:3px 0}table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px;background:#fff}th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top;text-align:left}th{background:var(--soft);color:var(--deep)}code{font-family:Consolas,monospace;background:#f0f2f5;padding:1px 5px;border-radius:4px;font-size:.92em}.fr{font-family:Consolas,monospace;font-size:12px;background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:4px;white-space:nowrap}.p0{color:#b91c1c;font-weight:700}.p1{color:#b45309;font-weight:600}.p2{color:#5b6570}.refs{background:#f8fafc;border:1px dashed #b8c4d4;border-radius:10px;padding:10px 16px;margin:18px 0;font-size:13.5px}.note{background:var(--soft);border-left:3px solid var(--acc);padding:8px 14px;border-radius:0 8px 8px 0;margin:8px 0;font-size:13.5px}footer.nav{display:flex;justify-content:space-between;gap:10px;margin-top:26px;font-size:13.5px}a{color:var(--acc)}@media print{body{background:#fff}}</style>
+</head>
+<body>
+<div class="wrap">
+<div class="crumbs">📄 <a href="PRD-00-主文档.html">PRD-00 主文档</a> › <b>M6 拍摄与提词器</b> ｜ 状态：<b>待核对</b> ｜ 原型：<a href="原型.html#shoot">原型 #shoot</a></div>
+
+<h1>PRD-06 · 拍摄与提词器</h1>
+<p>回答"怎么拍得顺"。拍摄日程、自动分镜、开拍检查清单、全屏提词器、逐镜完成标记。本模块<strong>不录制不剪辑</strong>，拍完剪完手动点按钮流转。</p>
+
+<h2>1 · 用户故事</h2>
+<ul>
+  <li>今天要拍 2 条 → 打开日程逐条拍 → 每拍完一镜点一下，最后全屏提词器其实是我拍摄时唯一盯着的界面。</li>
+  <li>改了稿 → 分镜一键重建（确认覆盖）。</li>
+</ul>
+
+<h2>2 · 功能需求</h2>
+<table>
+  <tr><th>编号</th><th>需求</th><th>验收标准</th><th>优先级</th></tr>
+  <tr><td><span class="fr">FR-06-01</span></td><td><strong>自动分镜</strong>：由稿件生成镜头序列（规则 §3.1）；每镜含 景别/画面提示/台词/秒数/完成标记；手动可增删改</td><td>生成后逐镜可编辑；秒数 = 台词字数÷语速向上取整 ≥1</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-06-02</span></td><td>「按文案重建分镜」：确认覆盖后重新生成（含手动编辑丢失警告）</td><td>重建前弹确认；取消则不动</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-06-03</span></td><td>拍摄日程：按 <code>shootDate</code> 分组列出待拍内容（今天/明天/本周）；可改期</td><td>过期未拍置灰提醒</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-06-04</span></td><td>开拍检查清单：5 项固定（手机电量/支架机位/灯光/收音/背景收拾）+ 自定义项；按内容+日期当天有效，次日自动清零</td><td>全勾选时显示"可以开拍"状态</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-06-05</span></td><td><strong>全屏提词器</strong>：全屏滚动字幕（按镜分组），三个控制——滚动速度、字号、镜像；空格暂停/继续，滚轮微调速度；当前镜高亮，完成后自动滚到下一镜</td><td>退出全屏保留设置；速度范围与灵敏度开发时定并记录默认值</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-06-06</span></td><td>逐镜完成标记：拍完一镜点一下（含打勾时间）；全部完成显示「拍完了，进入剪辑」</td><td>标记实时保存；误点可取消</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-06-07</span></td><td>阶段流转：拍完 →（手动）剪辑完成标记 → 「去排发布」跳转 <a href="PRD-07-发布排期.html">PRD-07</a></td><td>流转按钮在对应状态才可用</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-06-08</span></td><td>景别速查卡：全景/中景/近景/特写 四卡，说明用途与适用（原创文案）</td><td>侧栏常驻可折叠</td><td class="p2">P2</td></tr>
+</table>
+
+<h2>3 · 规则说明</h2>
+<h3>3.1 自动分镜算法（原创转写）</h3>
+<ul>
+  <li>开头段 → 1 个<strong>特写</strong>镜，画面提示"正对镜头，抛出结果/冲突"。</li>
+  <li>正文段 → 按句切分后累积：满约 28 字成镜，或遇到序号句（第X/1./首先…）独立成镜（提示"插入画面演示"）；镜景别在 近景/中景 间交替。</li>
+  <li>结尾段 → 1 个<strong>近景</strong>镜，画面提示"指向评论区收尾"。</li>
+  <li>每镜秒数 = max(1, round(台词字数 ÷ (wpm/60)))。</li>
+</ul>
+<div class="note">本模块明确不含视频录制与剪辑渲染（Out of Scope，PRD-00 §4）；「拍摄/剪辑完成」仅推进本地阶段状态。</div>
+
+<div class="refs">
+  <b>双向引用区</b><br>
+  ▸ 上游：<a href="PRD-05-文案工坊.html">PRD-05</a> FR-05-08（生成入口）｜ 语速：<a href="PRD-10-设置与备份.html">PRD-10</a><br>
+  ▸ 下游：进入剪辑/排期 → <a href="PRD-07-发布排期.html">PRD-07</a> FR-07-01 ｜ 数据：<a href="PRD-12-数据字典.html">PRD-12</a> DD-SHOT<br>
+  ▸ 原型：<a href="原型.html#shoot">原型.html#shoot</a>（含提词器示意）
+</div>
+
+<footer class="nav"><span>PRD-06 · 待核对</span><span>← <a href="PRD-00-主文档.html">主文档</a> ｜ ← <a href="PRD-05-文案工坊.html">PRD-05</a> ｜ 下一篇 → <a href="PRD-07-发布排期.html">PRD-07 发布排期</a></span></footer>
+</div>
+</body>
+</html>

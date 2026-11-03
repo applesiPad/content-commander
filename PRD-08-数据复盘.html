@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>PRD-08 · 数据复盘</title>
+<style>:root{--bg:#f5f6f8;--ink:#22272e;--ink2:#5b6570;--line:#e3e7ec;--acc:#2563eb;--deep:#1e3a8a;--soft:#eff4ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.85 "Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}.wrap{max-width:1000px;margin:0 auto;padding:26px 26px 70px}.crumbs{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px}.crumbs b{color:var(--deep)}h1{font-size:22px;margin:6px 0 4px}h2{font-size:18px;margin:30px 0 10px;padding-left:10px;border-left:4px solid var(--acc)}h3{font-size:15.5px;color:var(--deep);margin:18px 0 6px}p{margin:7px 0}ul,ol{margin:6px 0;padding-left:24px}li{margin:3px 0}table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px;background:#fff}th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top;text-align:left}th{background:var(--soft);color:var(--deep)}code{font-family:Consolas,monospace;background:#f0f2f5;padding:1px 5px;border-radius:4px;font-size:.92em}.fr{font-family:Consolas,monospace;font-size:12px;background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:4px;white-space:nowrap}.p0{color:#b91c1c;font-weight:700}.p1{color:#b45309;font-weight:600}.p2{color:#5b6570}.refs{background:#f8fafc;border:1px dashed #b8c4d4;border-radius:10px;padding:10px 16px;margin:18px 0;font-size:13.5px}.note{background:var(--soft);border-left:3px solid var(--acc);padding:8px 14px;border-radius:0 8px 8px 0;margin:8px 0;font-size:13.5px}footer.nav{display:flex;justify-content:space-between;gap:10px;margin-top:26px;font-size:13.5px}a{color:var(--acc)}@media print{body{background:#fff}}</style>
+</head>
+<body>
+<div class="wrap">
+<div class="crumbs">📄 <a href="PRD-00-主文档.html">PRD-00 主文档</a> › <b>M8 数据复盘</b> ｜ 状态：<b>待核对</b> ｜ 原型：<a href="原型.html#review">原型 #review</a></div>
+
+<h1>PRD-08 · 数据复盘</h1>
+<p>回答"流量掉在哪"。一行 = 一条内容 × 一个账号，手动回填（支持粘贴增强），四象限诊断 + 趋势 + 对比 + 自动周报。</p>
+
+<h2>1 · 用户故事</h2>
+<ul>
+  <li>昨晚发了 3 个号 → 从平台后台把数字抄过来（或直接粘贴）→ 立刻知道哪条开头不行、哪条可以做成系列。</li>
+  <li>周五看周报 → 本周比上周涨了还是跌了、最佳最差是谁、下一步做什么。</li>
+</ul>
+
+<h2>2 · 功能需求</h2>
+<table>
+  <tr><th>编号</th><th>需求</th><th>验收标准</th><th>优先级</th></tr>
+  <tr><td><span class="fr">FR-08-01</span></td><td>回填表格：每行（内容×账号）字段——实际时长/播放/5 秒完播%/均播秒/赞/评/藏/转/涨粉；「1.2万」缩写解析（DD-NUMPARSE）；逐行保存</td><td>数字解析失败标红；留空合法（如平台无该指标）</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-08-02</span></td><td>粘贴回填：从剪贴板粘贴一列/一行数字自动按当前列或行填充（支持夹杂「万」缩写与空值）→ <span class="fr">Q-04</span></td><td>粘贴前预览解析结果，确认后写入</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-08-03</span></td><td>五项总览卡：发布数 / 总播放 / 平均播放 / 平均 5 秒完播 / 总涨粉（按当前 IP 过滤与日期范围）</td><td>与表格数据实时一致</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-08-04</span></td><td><strong>单条诊断</strong>：按 §3 象限规则输出结论标签 + 逐指标解读行（达标绿/未达红/无数据灰，各带一句建议）</td><td>无 5 秒完播的平台自动跳过该项并说明</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-08-05</span></td><td>象限散点图：x=5 秒完播，y=收藏率，参考线=设置阈值；点按 IP 着色、点大小=播放；点击点看单条诊断</td><td>SVG 手绘；空数据占位</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-08-06</span></td><td>趋势折线：按发布日期的播放与收藏双轴（或切换）；可按 IP/账号筛选</td><td>最近 30 天默认窗口，可扩</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-08-07</span></td><td>对比视图：「按 IP」或「按账号」的条形对比——发布量/总播放/平均播放/5 秒完播/收藏率/评论率/涨粉（指标切换）</td><td>指标切换即时重绘；含均值参考线</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-08-08</span></td><td>筛选器：日期范围 / 平台 / IP / 账号；全部图表与总览受筛选联动</td><td>筛选条件显示为可清除的 chips</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-08-09</span></td><td><strong>自动周报</strong>：近 7 天 vs 上一周期——发布数、播放、涨粉变化（升/降%）、最佳单条与最差单条（引用诊断结论文本）；导出 Word 与 Markdown（→ <span class="fr">Q-04</span>）</td><td>周报为只读生成物，不含 Key 与敏感配置</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-08-10</span></td><td>删除发布记录：单独删除某行（二次确认，提示连带清理图表口径）</td><td>删后各视图立即重算</td><td class="p0">P0</td></tr>
+</table>
+
+<h2>3 · 诊断规则（象限，原创转写）</h2>
+<p>指标口径：<code>收藏率 = 藏/播放</code>；<code>评论率 = 评/播放</code>；<code>均播比 = 均播/实际时长</code>；参考线取设置（<span class="fr">Q-06</span>）：5 秒完播 <code>fiveLine</code>=60%、收藏率 <code>favLine</code>=2.2%、均播比 <code>avgLine</code>=40%、评论率参考 0.5%。</p>
+<table>
+  <tr><th>5 秒完播</th><th>收藏率</th><th>结论</th><th>建议方向（原创文案）</th></tr>
+  <tr><td>✓ 达标</td><td>✓ 达标</td><td><b>爆款潜质</b>（绿）</td><td>同结构做系列；若播放 &lt; 该账号历史平均 ×60%，提示检查发布时段/标签</td></tr>
+  <tr><td>✗</td><td>✓</td><td>内容好 · 开头弱（黄）</td><td>结果/冲突提到前 5 秒，删铺垫与自我介绍</td></tr>
+  <tr><td>✓</td><td>✗</td><td>开头强 · 干货弱（黄）</td><td>加清单、步骤、可直接照做的模板</td></tr>
+  <tr><td>✗</td><td>✗</td><td>需要重做（红）</td><td>回到选题五维重新评估该赛道选题</td></tr>
+  <tr><td colspan="4">平台无 5 秒完播指标时：仅按收藏率评 绿(收藏达标)/黄(收藏偏低)，并注明"此平台看收藏与互动"。</td></tr>
+</table>
+<ul>
+  <li>逐指标解读行：5 秒完播 → 推流速度；均播比 → 推流长度（中段悬念）；收藏率 → 实用性（清单化）；评论率 → 互动引导（二选一提问）。</li>
+</ul>
+
+<div class="refs">
+  <b>双向引用区</b><br>
+  ▸ 上游：<a href="PRD-07-发布排期.html">PRD-07</a> FR-07-06（posts 来源）｜ <a href="PRD-01-IP与账号.html">PRD-01</a>（账号维度）<br>
+  ▸ 下游：周报 → 导出与 <a href="PRD-09-AI助手.html">PRD-09</a> FR-09-04（AI 复盘上下文）｜ 参考线 → <a href="PRD-10-设置与备份.html">PRD-10</a> FR-10-03 ｜ 指挥板 → <a href="PRD-00-主文档.html">PRD-00</a> FR-00-01/03 ｜ 数据：<a href="PRD-12-数据字典.html">PRD-12</a> DD-POST<br>
+  ▸ 原型：<a href="原型.html#review">原型.html#review</a>
+</div>
+
+<footer class="nav"><span>PRD-08 · 待核对</span><span>← <a href="PRD-00-主文档.html">主文档</a> ｜ ← <a href="PRD-07-发布排期.html">PRD-07</a> ｜ 下一篇 → <a href="PRD-09-AI助手.html">PRD-09 AI 助手</a></span></footer>
+</div>
+</body>
+</html>

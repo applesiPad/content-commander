@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRD-00 · 主文档 · 多号创作台（暂定名）</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--ink:#22272e;--ink2:#5b6570;--line:#e3e7ec;--acc:#2563eb;--deep:#1e3a8a;--soft:#eff4ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.85 "Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}
+.wrap{max-width:1020px;margin:0 auto;padding:26px 26px 80px}
+.crumbs{font-size:13px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.crumbs b{color:var(--deep)}
+h1{font-size:23px;margin:6px 0 4px}h2{font-size:18px;margin:30px 0 10px;padding-left:10px;border-left:4px solid var(--acc)}h3{font-size:15.5px;color:var(--deep);margin:18px 0 6px}
+p{margin:7px 0}ul,ol{margin:6px 0;padding-left:24px}li{margin:3px 0}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px;background:var(--card)}
+th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top;text-align:left}th{background:var(--soft);color:var(--deep)}
+code{font-family:Consolas,monospace;background:#f0f2f5;padding:1px 5px;border-radius:4px;font-size:.92em}
+.fr{font-family:Consolas,monospace;font-size:12px;background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:4px;white-space:nowrap}
+.p0{color:#b91c1c;font-weight:700}.p1{color:#b45309;font-weight:600}.p2{color:#5b6570}
+.tag{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;border:1px solid}
+.t-review{background:#fdf1e0;color:#b45309;border-color:#f3ddba}.t-open{background:#fdeaea;color:#b91c1c;border-color:#f3c4c4}
+.refs{background:#f8fafc;border:1px dashed #b8c4d4;border-radius:10px;padding:10px 16px;margin:18px 0;font-size:13.5px}
+footer.nav{display:flex;justify-content:space-between;gap:10px;margin-top:26px;font-size:13.5px}
+.q{background:#fff8ec;border-left:3px solid #f59e0b;padding:8px 14px;border-radius:0 8px 8px 0;margin:8px 0;font-size:13.5px}
+.note{background:var(--soft);border-left:3px solid var(--acc);padding:8px 14px;border-radius:0 8px 8px 0;margin:8px 0;font-size:13.5px}
+a{color:var(--acc)}@media print{body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="crumbs">📄 需求文档树：<b>PRD-00 主文档</b>（当前）｜ 版本 v0.9 ｜ 状态：<span class="tag t-review">待核对</span> ｜ 原型：<a href="原型.html">原型.html</a></div>
+
+<h1>PRD-00 · 产品需求文档 · 主文档</h1>
+<p class="lead" style="color:var(--ink2)">多号创作台（暂定名）—— 面向短视频口播创作者的多 IP / 多账号内容工作台。本文档是子文档的入口与索引；开发以本树为唯一需求基线。</p>
+
+<h2>0 · 文档体系说明（主子模式与双向引用）</h2>
+<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 20px">
+<ul>
+  <li><strong>主子模式</strong>：本文件（PRD-00）持有产品概述、范围、决策、追踪矩阵与术语；每个功能模块的详细需求在独立子文档 PRD-01 ~ PRD-12 中。</li>
+  <li><strong>双向引用</strong>：① 主文档 §5 模块地图 → 链接到每个子文档；② 每个子文档顶部面包屑 → 返回主文档；③ 每个子文档底部「双向引用区」列出其上下游模块文档与原型锚点，被引用方也有对应回链；④ 原型每个页面 → 链接到对应 PRD 子文档，子文档 → 链接回原型锚点。</li>
+  <li><strong>需求编号</strong>：全局唯一，格式 <code>FR-{模块号}-{序号}</code>；非功能需求 <code>NFR-{序号}</code>；数据字典条目 <code>DD-{实体}</code>；开放问题 <code>Q-{序号}</code>；决策记录 <code>D-{序号}</code>。所有编号在主文档 §8 追踪矩阵汇总。</li>
+  <li><strong>版本与变更</strong>：当前 v0.9（核对稿）。你核对并答复 §7 开放问题后升 v1.0 冻结为开发基线；此后任何修改在对应文档「变更记录」追加。</li>
+</ul>
+</div>
+
+<h2>1 · 产品概述</h2>
+<p>把一条口播内容的完整生命周期——<strong>热点 → 对标拆解 → 选题 → 写稿 → 拍摄/提词 → 排期 → 复盘</strong>——装进一个浏览器工具。单文件 HTML、双击即用、数据存本机、AI 可选接入。按「IP（人设）→ 账号（IP×平台）→ 内容 → 发布记录（内容×账号）」四层组织数据，支持一稿多发、分账号回填与对比。</p>
+<table>
+  <tr><th>项</th><th>内容</th></tr>
+  <tr><td>暂定名</td><td><b>多号创作台</b>（占位）。候选：口播创作站 / 内容指挥部 / 创作多面体 → <span class="fr">Q-01</span></td></tr>
+  <tr><td>形态</td><td>单文件 HTML（内联 CSS/JS，零依赖、零构建、离线可用）</td></tr>
+  <tr><td>平台</td><td>PC 桌面浏览器（Chrome / Edge 近两年版本）</td></tr>
+  <tr><td>数据</td><td>localStorage 单键 JSON + 版本化迁移；禁用时降级内存并显著警告</td></tr>
+  <tr><td>参照物</td><td>功能对齐 workstation-media（开源版）全模块；实现完全原创，开发过程不接触参照源码</td></tr>
+</table>
+
+<h2>2 · 目标用户与核心场景</h2>
+<table>
+  <tr><th>画像</th><th>描述</th><th>典型一天</th></tr>
+  <tr><td>多 IP 主理人（主）</td><td>同做 2–8 个人设，每人在 1–3 个平台开号，每周产出 3–10 条口播</td><td>早上扫热点定选题 → 下午写稿体检 → 晚上拍摄提词 → 排期后回填昨天数据</td></tr>
+  <tr><td>单号新手（次）</td><td>只有一个号，需要方法论提示与判断标准</td><td>拆一条对标爆款 → 套结构写第一篇 → 按体检改开头</td></tr>
+  <tr><td>小型工作室（延展）</td><td>1 人主理 + 兼职剪辑，共用一台电脑</td><td>用排期视图交接：主理人排期，剪辑看「拍完了」标记</td></tr>
+</table>
+
+<h2>3 · 产品目标与成功标准</h2>
+<ul>
+  <li><strong>闭环完整</strong>：示例数据可在 10 分钟内走通「选题→写稿→分镜→排期→回填→诊断」全流程。</li>
+  <li><strong>无 AI 可用</strong>：不配置任何接口时，全部模块功能可用（AI 模板退化为提示词复制）。</li>
+  <li><strong>数据可靠</strong>：备份/恢复覆盖全部业务数据且不含 Key；schema 升级不丢数据（迁移链测试通过）。</li>
+  <li><strong>判断有据</strong>：每个模块的检查/评分/诊断都有可解释规则，且阈值可在设置中调整。</li>
+</ul>
+
+<h2>4 · 范围</h2>
+<table>
+  <tr><th style="width:50%">✅ In Scope（v1.0）</th><th>❌ Out of Scope（明确不做）</th></tr>
+  <tr><td>
+    10 个功能模块（见 §5）· 多 IP 多账号管理 · 一稿多发与分账号数据 · 规则式体检/评分/诊断 · 全屏提词器 · 手动回填 + 剪贴板粘贴增强 · 双协议 AI 接入与 16 模板 · 备份恢复 · 浅/深双主题 · 原创示例数据
+  </td><td>
+    向平台自动发布/上传 · 热榜自动抓取 · 平台数据自动回填 · 云同步/多设备 · 多人协作与权限 · 手机端 · 视频录制与剪辑渲染 · 账号登录/授权任何平台
+  </td></tr>
+</table>
+<div class="note">Out of Scope 项将在「关于/说明」页面作为产品边界明示，避免用户误解（NFR-09）。</div>
+
+<h2>5 · 模块地图（主 → 子文档索引）</h2>
+<table>
+  <tr><th>模块</th><th>子文档</th><th>原型页面</th><th>需求区间</th><th>状态</th></tr>
+  <tr><td>M1 IP 与账号</td><td><a href="PRD-01-IP与账号.html">PRD-01</a></td><td><a href="原型.html#ip">原型 #ip</a></td><td><code>FR-01-01~08</code></td><td class="tag t-review">待核对</td></tr>
+  <tr><td>M2 热点雷达</td><td><a href="PRD-02-热点雷达.html">PRD-02</a></td><td><a href="原型.html#hot">原型 #hot</a></td><td><code>FR-02-01~07</code></td><td class="tag t-review">待核对</td></tr>
+  <tr><td>M3 对标拆解</td><td><a href="PRD-03-对标拆解.html">PRD-03</a></td><td><a href="原型.html#bench">原型 #bench</a></td><td><code>FR-03-01~08</code></td><td class="tag t-review">待核对</td></tr>
+  <tr><td>M4 选题池</td><td><a href="PRD-04-选题池.html">PRD-04</a></td><td><a href="原型.html#topic">原型 #topic</a></td><td><code>FR-04-01~08</code></td><td class="tag t-review">待核对</td></tr>
+  <tr><td>M5 文案工坊</td><td><a href="PRD-05-文案工坊.html">PRD-05</a></td><td><a href="原型.html#script">原型 #script</a></td><td><code>FR-05-01~08</code></td><td class="tag t-review">待核对</td></tr>
+  <tr><td>M6 拍摄与提词器</td><td><a href="PRD-06-拍摄与提词器.html">PRD-06</a></td><td><a href="原型.html#shoot">原型 #shoot</a></td><td><code>FR-06-01~08</code></td><td class="tag t-review">待核对</td></tr>
+  <tr><td>M7 发布排期</td><td><a href="PRD-07-发布排期.html">PRD-07</a></td><td><a href="原型.html#schedule">原型 #schedule</a></td><td><code>FR-07-01~07</code></td><td class="tag t-review">待核对</td></tr>
+  <tr><td>M8 数据复盘</td><td><a href="PRD-08-数据复盘.html">PRD-08</a></td><td><a href="原型.html#review">原型 #review</a></td><td><code>FR-08-01~10</code></td><td class="tag t-review">待核对</td></tr>
+  <tr><td>M9 AI 助手</td><td><a href="PRD-09-AI助手.html">PRD-09</a></td><td><a href="原型.html#ai">原型 #ai</a></td><td><code>FR-09-01~09</code></td><td class="tag t-review">待核对</td></tr>
+  <tr><td>M10 设置 / 备份 / 引导</td><td><a href="PRD-10-设置与备份.html">PRD-10</a></td><td><a href="原型.html#settings">原型 #settings</a></td><td><code>FR-10-01~07</code></td><td class="tag t-review">待核对</td></tr>
+  <tr><td>支撑：非功能需求</td><td><a href="PRD-11-非功能需求.html">PRD-11</a></td><td>—</td><td><code>NFR-01~10</code></td><td class="tag t-review">待核对</td></tr>
+  <tr><td>支撑：数据字典</td><td><a href="PRD-12-数据字典.html">PRD-12</a></td><td>—</td><td><code>DD-*</code></td><td class="tag t-review">待核对</td></tr>
+  <tr><td>（附）指挥板首页</td><td>由 PRD-00 §5.1 定义，实现归 M1+M7+M8 聚合</td><td><a href="原型.html#studio">原型 #studio</a></td><td><code>FR-00-01~03</code></td><td class="tag t-review">待核对</td></tr>
+</table>
+
+<h3>5.1 指挥板首页（FR-00）</h3>
+<table>
+  <tr><th>编号</th><th>需求</th><th>优先级</th></tr>
+  <tr><td><span class="fr">FR-00-01</span></td><td>顶部四卡：待拍摄 / 待发布 / 待回填 / 近 7 天发布数；点击卡片跳对应模块并带过滤</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-00-02</span></td><td>本周排期时间轴：行=账号，列=今天起 7 天，格内放内容胶囊（按 IP 着色）</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-00-03</span></td><td>右栏：未过期热点 Top3、未来 30 天营销节点、近 7 天产量对比条</td><td class="p1">P1</td></tr>
+</table>
+
+<h2>6 · 版本规划与关键决策</h2>
+<table>
+  <tr><th>版本</th><th>内容</th></tr>
+  <tr><td>v1.0（本次）</td><td>全功能对齐参照物 + 指挥板 + 阈值全部可配置（P0/P1 全做）</td></tr>
+  <tr><td>v1.1（候选）</td><td>按核对结果取舍：剪贴板粘贴回填、文案快照回滚、Markdown 周报、深色主题、IP 档案抽屉 → <span class="fr">Q-04</span></td></tr>
+</table>
+<h3>决策记录</h3>
+<table>
+  <tr><th>ID</th><th>决策</th><th>理由</th></tr>
+  <tr><td><span class="fr">D-01</span></td><td>单文件 HTML，原生 JS，无框架无构建</td><td>双击即用、离线、分发零成本</td></tr>
+  <tr><td><span class="fr">D-02</span></td><td>不做仿真场景插画，首页改为数据指挥板</td><td>规避参照物美术表达；信息效率更高、维护成本低一个量级</td></tr>
+  <tr><td><span class="fr">D-03</span></td><td>数据模型四层：IP→账号→内容→发布记录（posts 为联结表）</td><td>支撑一稿多发与分账号复盘</td></tr>
+  <tr><td><span class="fr">D-04</span></td><td>全部判断阈值进设置（评分线/完播线/收藏线/爆款倍数等）</td><td>阈值是经验值，应随账号表现调整</td></tr>
+  <tr><td><span class="fr">D-05</span></td><td>开发只依据本 PRD 树与原型，不打开参照仓库源码</td><td>保证产出为洁净Room Clean原创，无署名/水印/授权义务</td></tr>
+  <tr><td><span class="fr">D-06</span></td><td>「标记已发布」只写本地状态，绝不调用平台</td><td>产品边界与合规</td></tr>
+</table>
+
+<h2>7 · 全局开放问题（核对清单）</h2>
+<div class="q"><b>Q-01 产品名称</b>：暂用「多号创作台」占位，请定名或从候选挑一个。</div>
+<div class="q"><b>Q-02 平台清单</b>：默认 抖音/小红书/视频号/B站/快手/公众号/知乎/百家号 8 个（可自定义追加），是否增删？</div>
+<div class="q"><b>Q-03 视觉</b>：默认浅色 + 可切深色（深色为 P1）；主色蓝 #2563eb。确认或给偏好色。</div>
+<div class="q"><b>Q-04 增强项取舍</b>：粘贴回填 / 文案快照 / Markdown 周报 / IP 档案抽屉，哪些进 v1.0、哪些进 v1.1 或砍掉？</div>
+<div class="q"><b>Q-05 评级阈值</b>：选题总分 25 封顶，默认 S≥21 / A≥17 / B≥13 / C 其余。确认或调整。</div>
+<div class="q"><b>Q-06 默认标准线</b>：语速 240 字/分、5 秒完播 60%、收藏率 2.2%、均播/时长 40%、评论率 0.5%、爆款倍数 2、收藏型画像 0.5。确认或调整。</div>
+<div class="q"><b>Q-07 AI 预设</b>：服务商下拉含 DeepSeek/通义/GLM/豆包/Kimi/硅基流动/Ollama/自定义；默认选中「未配置」而非预填任何一家；预填模型名仅作参考展示。是否同意？</div>
+<div class="q"><b>Q-08 原型保真度</b>：本次原型为「结构 + 字段 + 流程」中保真（非最终视觉）。你核对布局与信息结构后，开发阶段视觉细节仍可微调。</div>
+
+<h2>8 · 追踪矩阵（汇总）</h2>
+<p>完整矩阵见各子文档；此处汇总编号区间：FR-00-01~03（本文件）/ FR-01~10（各模块子文档）/ NFR-01~10（PRD-11）/ DD-*（PRD-12）。原型页面 ↔ PRD 文档映射见 §5。</p>
+
+<h2>9 · 术语表</h2>
+<table>
+  <tr><th>术语</th><th>定义</th></tr>
+  <tr><td>IP</td><td>一个人设/内容品牌：名称、赛道、人设、目标观众、更新目标、形象与主题色</td></tr>
+  <tr><td>账号</td><td>某 IP 在某平台登记的具体账号（仅资料登记，不登录不授权）</td></tr>
+  <tr><td>内容</td><td>一条选题/稿件，含五段式文本与分镜，按阶段推进：选题→稿件→拍摄→排期→已发布</td></tr>
+  <tr><td>发布记录（post）</td><td>一条内容 × 一个账号的一次发布及其回填数据，复盘的最小单位</td></tr>
+  <tr><td>五维</td><td>选题评分五维度：痛点/实用/争议/悬念/赛道契合，各 1–5 分</td></tr>
+  <tr><td>评级</td><td>按五维总分分 S/A/B/C 四档，决定优先级</td></tr>
+  <tr><td>体检</td><td>对稿件的 10 项规则检查（见 PRD-05 §3）</td></tr>
+  <tr><td>分镜</td><td>由稿件自动拆出的拍摄单元：景别/画面提示/台词/秒数/完成标记</td></tr>
+  <tr><td>象限诊断</td><td>以 5 秒完播 × 收藏率两条参考线划分四象限给出单条结论</td></tr>
+  <tr><td>对标</td><td>录入的他人账号及其作品拆解，用于借鉴角度与结构</td></tr>
+</table>
+
+<h2>10 · 文件清单（本目录）</h2>
+<p><code>PRD-00 ~ PRD-12</code> 共 13 份文档 + <code>原型.html</code>。全部自包含 HTML，可双击打开、可打印。核对通过后本目录冻结为开发基线。</p>
+
+<div class="refs">
+  <b>双向引用区</b>：<br>
+  ▸ 下游（子文档）：PRD-01 ~ PRD-12（见 §5 表格，均有回链到本文件）<br>
+  ▸ 下游（原型）：<a href="原型.html">原型.html</a>（每页均链回对应 PRD）<br>
+  ▸ 上游依据：<a href="../复刻方案-自媒体内容工作台.html">复刻方案-自媒体内容工作台.html</a>（本 PRD 的前序方案稿，需求已并入本树）
+</div>
+
+<footer class="nav"><span>PRD 树 · 主文档（起点）</span><span>下一份 → <a href="PRD-01-IP与账号.html">PRD-01 IP 与账号</a></span></footer>
+</div>
+</body>
+</html>

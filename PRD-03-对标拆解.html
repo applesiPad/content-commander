@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>PRD-03 · 对标拆解</title>
+<style>:root{--bg:#f5f6f8;--ink:#22272e;--ink2:#5b6570;--line:#e3e7ec;--acc:#2563eb;--deep:#1e3a8a;--soft:#eff4ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.85 "Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}.wrap{max-width:1000px;margin:0 auto;padding:26px 26px 70px}.crumbs{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px}.crumbs b{color:var(--deep)}h1{font-size:22px;margin:6px 0 4px}h2{font-size:18px;margin:30px 0 10px;padding-left:10px;border-left:4px solid var(--acc)}h3{font-size:15.5px;color:var(--deep);margin:18px 0 6px}p{margin:7px 0}ul,ol{margin:6px 0;padding-left:24px}li{margin:3px 0}table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px;background:#fff}th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top;text-align:left}th{background:var(--soft);color:var(--deep)}code{font-family:Consolas,monospace;background:#f0f2f5;padding:1px 5px;border-radius:4px;font-size:.92em}.fr{font-family:Consolas,monospace;font-size:12px;background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:4px;white-space:nowrap}.p0{color:#b91c1c;font-weight:700}.p1{color:#b45309;font-weight:600}.p2{color:#5b6570}.refs{background:#f8fafc;border:1px dashed #b8c4d4;border-radius:10px;padding:10px 16px;margin:18px 0;font-size:13.5px}.note{background:var(--soft);border-left:3px solid var(--acc);padding:8px 14px;border-radius:0 8px 8px 0;margin:8px 0;font-size:13.5px}footer.nav{display:flex;justify-content:space-between;gap:10px;margin-top:26px;font-size:13.5px}a{color:var(--acc)}@media print{body{background:#fff}}</style>
+</head>
+<body>
+<div class="wrap">
+<div class="crumbs">📄 <a href="PRD-00-主文档.html">PRD-00 主文档</a> › <b>M3 对标拆解</b> ｜ 状态：<b>待核对</b> ｜ 原型：<a href="原型.html#bench">原型 #bench</a></div>
+
+<h1>PRD-03 · 对标拆解</h1>
+<p>回答"学谁、学他什么"。录入同行账号及其爆款作品，把整段口播稿自动拆成开头/正文/结尾，识别选题角度与结构套路，沉淀为可借用的规律，一键「借选题」「套结构」。</p>
+
+<h2>1 · 用户故事</h2>
+<ul>
+  <li>找到 3–5 个值得学的账号 → 每人贴 3–5 条爆款文案 → 系统告诉我他的开头套路、正文结构和最常用的组合。</li>
+  <li>看到好结构 → 套进自己的新稿，占位提示留好，我只需要填自己的内容。</li>
+</ul>
+
+<h2>2 · 功能需求</h2>
+<table>
+  <tr><th>编号</th><th>需求</th><th>验收标准</th><th>优先级</th></tr>
+  <tr><td><span class="fr">FR-03-01</span></td><td>对标账号录入/编辑/删除：归属（某 IP 或全部共用）、平台、账号名、粉丝量、三档定位（同量级/高一级/头部标杆）、6 条选择标准勾选</td><td>≥4 条标准勾选时显示「好对标」徽章</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-03-02</span></td><td>作品录入：标题 + 点赞/评论/收藏/转发（支持「1.2万」式缩写，见 PRD-12 解析规则）+ 完整口播稿粘贴</td><td>数字解析失败时标红提示手动改</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-03-03</span></td><td><strong>自动分段</strong>：稿件切句后按启发式规则分到 开头/正文/结尾（规则见 §3.1）；三段均可手动改正并保存</td><td>空稿不可拆；拆分结果持久化，重开页面不丢</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-03-04</span></td><td><strong>结构识别</strong>：对三段识别 4 类标签（角度/开头钩子/正文结构/结尾方式，类目表见 §3.2）；每个标签可单击改为正确值</td><td>识别不出时留空并提示"手动归类"；改过的标签不再被自动覆盖</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-03-05</span></td><td>爆款判定与画像：点赞 ≥ 中位数 × <code>hotMult</code>（默认 2）→ 爆款徽章；收藏/点赞 ≥ <code>favRatio</code>（默认 0.5）→ 收藏型画像标签</td><td>阈值在设置中可调（D-04）；作品 &lt;2 条时中位数不可用、不判定</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-03-06</span></td><td>规律小结：录满 2 条后统计各分类分布与平均点赞，输出"最常用开头→结构→结尾组合"小结卡</td><td>随录入自动更新</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-03-07</span></td><td>借选题：从某条作品（或其角度标签）生成选题，预填标题与按标签映射的五维默认分，进入 <a href="PRD-04-选题池.html">PRD-04</a></td><td>生成后回链可跳转查看</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-03-08</span></td><td>套结构写稿：按该作品的正文结构标签在 <a href="PRD-05-文案工坊.html">PRD-05</a> 生成结构草稿（各分区留占位提示文字）</td><td>草稿为全新内容记录，不复制对标原句；占位提示为原创文案</td><td class="p0">P0</td></tr>
+</table>
+
+<h2>3 · 规则说明</h2>
+<h3>3.1 自动分段启发式（原创转写）</h3>
+<ul>
+  <li>切句：按中英文句末标点（。！？!?\n）切句并保留标点。</li>
+  <li>开头段：前 1–2 句中命中钩子词表（数字、疑问词、反差词、结果前置词）的句子；未命中则默认首句。</li>
+  <li>结尾段：末 1–2 句中命中互动引导词表（关注/评论/点赞/收藏/你会/你觉得/二选一…）的句子；未命中则默认末句。</li>
+  <li>其余全部归正文段。所有边界可手动调整。</li>
+</ul>
+<h3>3.2 结构标签类目（原创词表）</h3>
+<table>
+  <tr><th>类别</th><th>类目</th></tr>
+  <tr><td>选题角度（8）</td><td>教程 / 避坑 / 测评 / 清单 / 故事 / 观点 / 对比 / 热点借势</td></tr>
+  <tr><td>开头钩子（8）</td><td>提问式 / 数字式 / 反常识 / 结果前置 / 身份共鸣 / 悬念 / 警告 / 热点切入</td></tr>
+  <tr><td>正文结构（7）</td><td>清单式 / 递进式 / 对比式 / 故事式 / 问答式 / 总分总 / 时间线</td></tr>
+  <tr><td>结尾方式（5）</td><td>引导互动 / 总结升华 / 行动号召 / 反转 / 开放问题</td></tr>
+</table>
+<div class="note">识别规则基于关键词词表匹配，词表在实现中集中定义、可维护；识别结果定位为"参考，可修正"。</div>
+
+<div class="refs">
+  <b>双向引用区</b><br>
+  ▸ 上游：<a href="PRD-00-主文档.html">PRD-00</a> §5 ｜ IP 过滤：<a href="PRD-01-IP与账号.html">PRD-01</a> FR-01-06 ｜ 数字解析：<a href="PRD-12-数据字典.html">PRD-12</a> DD-NUMPARSE<br>
+  ▸ 下游：借选题 → <a href="PRD-04-选题池.html">PRD-04</a> ｜ 套结构 → <a href="PRD-05-文案工坊.html">PRD-05</a> FR-05-06 ｜ 深度拆解增强 → <a href="PRD-09-AI助手.html">PRD-09</a> FR-09-02<br>
+  ▸ 原型：<a href="原型.html#bench">原型.html#bench</a>
+</div>
+
+<footer class="nav"><span>PRD-03 · 待核对</span><span>← <a href="PRD-00-主文档.html">主文档</a> ｜ ← <a href="PRD-02-热点雷达.html">PRD-02</a> ｜ 下一篇 → <a href="PRD-04-选题池.html">PRD-04 选题池</a></span></footer>
+</div>
+</body>
+</html>

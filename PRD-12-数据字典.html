@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>PRD-12 · 数据字典</title>
+<style>:root{--bg:#f5f6f8;--ink:#22272e;--ink2:#5b6570;--line:#e3e7ec;--acc:#2563eb;--deep:#1e3a8a;--soft:#eff4ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.85 "Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}.wrap{max-width:1000px;margin:0 auto;padding:26px 26px 70px}.crumbs{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px}.crumbs b{color:var(--deep)}h1{font-size:22px;margin:6px 0 4px}h2{font-size:18px;margin:30px 0 10px;padding-left:10px;border-left:4px solid var(--acc)}h3{font-size:15.5px;color:var(--deep);margin:18px 0 6px}p{margin:7px 0}ul,ol{margin:6px 0;padding-left:24px}li{margin:3px 0}table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13px;background:#fff}th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top;text-align:left}th{background:var(--soft);color:var(--deep)}code{font-family:Consolas,monospace;background:#f0f2f5;padding:1px 5px;border-radius:4px;font-size:.92em}.refs{background:#f8fafc;border:1px dashed #b8c4d4;border-radius:10px;padding:10px 16px;margin:18px 0;font-size:13.5px}footer.nav{display:flex;justify-content:space-between;gap:10px;margin-top:26px;font-size:13.5px}a{color:var(--acc)}@media print{body{background:#fff}}</style>
+</head>
+<body>
+<div class="wrap">
+<div class="crumbs">📄 <a href="PRD-00-主文档.html">PRD-00 主文档</a> › <b>支撑 · 数据字典</b> ｜ 状态：<b>待核对</b></div>
+
+<h1>PRD-12 · 数据字典（DD-*）</h1>
+<p>持久化为单一 JSON（localStorage 单键），顶层结构： <code>{version, studio, ips[], accounts[], contents[], topics[], hots[], benches[], posts[], ai, std, settings}</code>。字段类型记法：<code>s</code>=字符串, <code>n</code>=数字, <code>b</code>=布尔, <code>[]</code>=数组, <code>{}</code>=对象。</p>
+
+<h2>DD-IP</h2>
+<table>
+  <tr><th>字段</th><th>类型</th><th>说明/约束</th></tr>
+  <tr><td><code>id</code></td><td>s</td><td>uid，主键</td></tr>
+  <tr><td><code>name / track / persona / audience</code></td><td>s</td><td>名称(必填)/赛道/人设一句话/目标观众</td></tr>
+  <tr><td><code>weeklyGoal</code></td><td>n</td><td>每周更新目标条数，默认 3</td></tr>
+  <tr><td><code>color / avatar</code></td><td>s</td><td>主题色索引(0–7) / 形象索引(0–7)</td></tr>
+  <tr><td><code>createdAt</code></td><td>n</td><td>时间戳</td></tr>
+</table>
+
+<h2>DD-ACCOUNT</h2>
+<table>
+  <tr><th>字段</th><th>类型</th><th>说明/约束</th></tr>
+  <tr><td><code>id / ipId</code></td><td>s</td><td>主键 / 所属 IP（外键，级联见 FR-01-07）</td></tr>
+  <tr><td><code>plat / name</code></td><td>s</td><td>平台 key / 账号名；(ipId,plat,name) 唯一</td></tr>
+  <tr><td><code>fans / fansGain7d</code></td><td>n</td><td>登记粉丝数 / 近 7 日涨粉（手动）</td></tr>
+  <tr><td><code>link</code></td><td>s</td><td>主页链接，可空</td></tr>
+</table>
+
+<h2>DD-CONTENT</h2>
+<table>
+  <tr><th>字段</th><th>类型</th><th>说明/约束</th></tr>
+  <tr><td><code>id / ipId / topicId?</code></td><td>s</td><td>主键 / 归属（可为 null=未归属）/ 溯源选题</td></tr>
+  <tr><td><code>stage</code></td><td>s</td><td>枚举 <code>topic|script|shoot|schedule|published</code>（单向推进，允许跳过无分镜直接排期）</td></tr>
+  <tr><td><code>title / hook / body / cta / cover</code></td><td>s</td><td>标题 / 开头钩子 / 正文(多行) / 结尾引导 / 封面大字</td></tr>
+  <tr><td><code>tags</code></td><td>[]s</td><td>标签数组</td></tr>
+  <tr><td><code>shootDate / shootDone / editDone</code></td><td>s/b/b</td><td>拍摄日(yyyy-mm-dd) / 拍完 / 剪完</td></tr>
+  <tr><td><code>planAt / targetAccIds</code></td><td>s/[]s</td><td>计划发布时间(ISO 本地) / 目标账号 id 列表</td></tr>
+  <tr><td><code>shots</code></td><td>[]DD-SHOT</td><td>分镜</td></tr>
+  <tr><td><code>snaps</code></td><td>[]</td><td>存稿快照 {at, title, hook, body, cta, cover, tags}，≤20，FIFO</td></tr>
+  <tr><td><code>createdAt / updatedAt</code></td><td>n</td><td>时间戳</td></tr>
+</table>
+
+<h2>DD-TOPIC</h2>
+<table>
+  <tr><th>字段</th><th>类型</th><th>说明/约束</th></tr>
+  <tr><td><code>id / ipId</code></td><td>s</td><td>主键 / 归属</td></tr>
+  <tr><td><code>title</code></td><td>s</td><td>必填</td></tr>
+  <tr><td><code>source</code></td><td>s</td><td>枚举 <code>manual|hot|bench</code>；<code>srcRef</code> 存热点/对标回链 id</td></tr>
+  <tr><td><code>sc</code></td><td>{}</td><td>五维 {pain, util, hype, susp, fit} 各 1–5</td></tr>
+  <tr><td><code>status</code></td><td>s</td><td>枚举 <code>pool|doing|done</code></td></tr>
+</table>
+
+<h2>DD-HOT</h2>
+<table>
+  <tr><th>字段</th><th>类型</th><th>说明/约束</th></tr>
+  <tr><td><code>id / title</code></td><td>s</td><td>主键 / 标题(必填)</td></tr>
+  <tr><td><code>ips</code></td><td>[]s</td><td>适用 IP id 列表（空=仅全部视图）</td></tr>
+  <tr><td><code>src / heat / trend / note</code></td><td>s</td><td>来源 / 高中低 / 升平降 / 备注</td></tr>
+  <tr><td><code>createdAt / dueAt</code></td><td>n</td><td>创建时间 / 到期=创建+72h</td></tr>
+  <tr><td><code>angles</code></td><td>{}</td><td>{ipId: [角度句×3]}；AI 增强后同结构覆盖</td></tr>
+  <tr><td><code>converted</code></td><td>[]s</td><td>已转选题 id 列表</td></tr>
+</table>
+
+<h2>DD-BENCH</h2>
+<table>
+  <tr><th>字段</th><th>类型</th><th>说明/约束</th></tr>
+  <tr><td><code>id / ipId?</code></td><td>s</td><td>主键 / 归属 IP，null=全部共用</td></tr>
+  <tr><td><code>plat / name / fans</code></td><td>s/s/n</td><td>平台 / 账号名 / 粉丝量</td></tr>
+  <tr><td><code>tier</code></td><td>s</td><td>枚举 <code>peer|higher|top</code>（同量级/高一级/头部标杆）</td></tr>
+  <tr><td><code>criteria</code></td><td>[]b</td><td>6 条选择标准勾选</td></tr>
+  <tr><td><code>works</code></td><td>[]DD-WORK</td><td>作品拆解列表</td></tr>
+</table>
+
+<h2>DD-WORK（对标作品）</h2>
+<table>
+  <tr><th>字段</th><th>类型</th><th>说明/约束</th></tr>
+  <tr><td><code>id / title</code></td><td>s</td><td>主键 / 标题</td></tr>
+  <tr><td><code>likes / cmts / favs / shares</code></td><td>n</td><td>互动数据（DD-NUMPARSE 解析）</td></tr>
+  <tr><td><code>script</code></td><td>s</td><td>整段口播稿原文</td></tr>
+  <tr><td><code>seg</code></td><td>{}</td><td>{hook, body, cta} 三段文本（自动拆后可改）</td></tr>
+  <tr><td><code>angle / hookT / struct / endT</code></td><td>s</td><td>四类标签（PRD-03 §3.2 词表 key，空=未归类）；<code>locked</code> 标记人工改过不再自动覆盖</td></tr>
+</table>
+
+<h2>DD-POST（发布记录 · 复盘最小单元）</h2>
+<table>
+  <tr><th>字段</th><th>类型</th><th>说明/约束</th></tr>
+  <tr><td><code>id / contentId / accId</code></td><td>s</td><td>主键 / 内容 / 账号；(contentId,accId) 唯一</td></tr>
+  <tr><td><code>publishedAt</code></td><td>s</td><td>实际发布时间（标记时默认 planAt）</td></tr>
+  <tr><td><code>actualSec</code></td><td>n</td><td>实际成片时长（秒）</td></tr>
+  <tr><td><code>play / five / avgSec</code></td><td>n</td><td>播放 / 5 秒完播(%) / 均播(秒)；可空</td></tr>
+  <tr><td><code>like / cmt / fav / share / gain</code></td><td>n</td><td>赞/评/藏/转/涨粉；可空</td></tr>
+</table>
+
+<h2>DD-NUMPARSE（数字解析规则）</h2>
+<ul>
+  <li>输入容忍：<code>1.2万</code> <code>1,234</code> <code>3.5w</code> <code>120</code> <code>空</code>；输出数字或 null。</li>
+  <li>规则：去逗号与空白；「万 / w / W」×10000；「亿」×100000000；纯数字直取（支持小数）；无法解析 → null 并标红（FR-03-02 / FR-08-01）。</li>
+</ul>
+
+<h2>DD-SETTINGS / DD-STD</h2>
+<table>
+  <tr><th>字段</th><th>默认</th><th>说明</th></tr>
+  <tr><td><code>std.wpm</code></td><td>240</td><td>口播语速 字/分</td></tr>
+  <tr><td><code>std.fiveLine / favLine / avgLine / cmtLine</code></td><td>60 / 2.2 / 40 / 0.5</td><td>完播% / 收藏率% / 均播比% / 评论率%</td></tr>
+  <tr><td><code>std.hotMult / favRatio</code></td><td>2 / 0.5</td><td>爆款倍数 / 收藏型画像比</td></tr>
+  <tr><td><code>std.gradeS/A/B</code></td><td>21 / 17 / 13</td><td>选题评级线（总分 25）</td></tr>
+  <tr><td><code>std.coverMax / ipLimit</code></td><td>12 / 8</td><td>封面字数上限 / IP 上限</td></tr>
+  <tr><td><code>settings.theme</code></td><td>light</td><td>light / dark</td></tr>
+  <tr><td><code>settings.plats</code></td><td>内置 8</td><td>平台清单（可自定义追加）</td></tr>
+  <tr><td><code>settings.nodes</code></td><td>内置+自定义</td><td>营销节点 {name, date, builtin}</td></tr>
+  <tr><td><code>settings.banned</code></td><td>自建词库</td><td>极限词/收益承诺词表（可增删）</td></tr>
+  <tr><td><code>ai.{provider,base,key,model,temp,chats[]}</code></td><td>未配置</td><td>key 导出时剥离（FR-10-05）</td></tr>
+</table>
+
+<div class="refs">
+  <b>双向引用区</b><br>
+  ▸ 消费方：全部 PRD-01 ~ PRD-10 ｜ 迁移链：version 逐级升级（NFR-04）<br>
+  ▸ 上游：<a href="PRD-00-主文档.html">PRD-00</a> D-03
+</div>
+
+<footer class="nav"><span>PRD-12 · 待核对</span><span>← <a href="PRD-00-主文档.html">主文档</a> ｜ ← <a href="PRD-11-非功能需求.html">PRD-11</a> ｜ 下一篇 → <a href="原型.html">原型.html</a></span></footer>
+</div>
+</body>
+</html>

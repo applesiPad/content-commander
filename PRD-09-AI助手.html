@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>PRD-09 · AI 助手</title>
+<style>:root{--bg:#f5f6f8;--ink:#22272e;--ink2:#5b6570;--line:#e3e7ec;--acc:#2563eb;--deep:#1e3a8a;--soft:#eff4ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.85 "Segoe UI","Microsoft YaHei","PingFang SC",sans-serif}.wrap{max-width:1000px;margin:0 auto;padding:26px 26px 70px}.crumbs{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px}.crumbs b{color:var(--deep)}h1{font-size:22px;margin:6px 0 4px}h2{font-size:18px;margin:30px 0 10px;padding-left:10px;border-left:4px solid var(--acc)}h3{font-size:15.5px;color:var(--deep);margin:18px 0 6px}p{margin:7px 0}ul,ol{margin:6px 0;padding-left:24px}li{margin:3px 0}table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px;background:#fff}th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top;text-align:left}th{background:var(--soft);color:var(--deep)}code{font-family:Consolas,monospace;background:#f0f2f5;padding:1px 5px;border-radius:4px;font-size:.92em}.fr{font-family:Consolas,monospace;font-size:12px;background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:4px;white-space:nowrap}.p0{color:#b91c1c;font-weight:700}.p1{color:#b45309;font-weight:600}.p2{color:#5b6570}.refs{background:#f8fafc;border:1px dashed #b8c4d4;border-radius:10px;padding:10px 16px;margin:18px 0;font-size:13.5px}.note{background:var(--soft);border-left:3px solid var(--acc);padding:8px 14px;border-radius:0 8px 8px 0;margin:8px 0;font-size:13.5px}footer.nav{display:flex;justify-content:space-between;gap:10px;margin-top:26px;font-size:13.5px}a{color:var(--acc)}@media print{body{background:#fff}}</style>
+</head>
+<body>
+<div class="wrap">
+<div class="crumbs">📄 <a href="PRD-00-主文档.html">PRD-00 主文档</a> › <b>M9 AI 助手</b> ｜ 状态：<b>待核对</b> ｜ 原型：<a href="原型.html#ai">原型 #ai</a></div>
+
+<h1>PRD-09 · AI 助手</h1>
+<p>卡住时帮一把：16 个任务模板 + 自由对话，可带入 IP 档案/稿件/近 14 天数据。不配置接口时退化为"生成提示词，复制到外部 AI"，其余模块不受影响。</p>
+
+<h2>1 · 用户故事</h2>
+<ul>
+  <li>没配 Key：选「爆款标题×10」→ 带上我的 IP 档案生成一段提示词 → 复制到任意 AI 网页 → 结果贴回来手动用。</li>
+  <li>配了 Key：直接在工作台里生成，标题一键加入选题池、开头一键替换进稿件。</li>
+</ul>
+
+<h2>2 · 功能需求</h2>
+<table>
+  <tr><th>编号</th><th>需求</th><th>验收标准</th><th>优先级</th></tr>
+  <tr><td><span class="fr">FR-09-01</span></td><td>接口层：OpenAI 兼容 <code>/chat/completions</code> 与 Anthropic <code>/messages</code> 双协议；Base URL 由用户填写（自动拼路径，不重复后缀）；SSE 流式渲染；temperature 可调</td><td>「测试连接」按钮返回成功/失败与可读错误（网络/跨域/Key 无效分类提示）</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-09-02</span></td><td>预设服务商：DeepSeek / 通义（百炼）/ 智谱 GLM / 豆包（方舟）/ Kimi / 硅基流动 / Ollama 本地 / 自定义；默认选中「未配置」；预填模型名仅展示参考并标注"以服务商控制台为准"（→ <span class="fr">Q-07</span>）</td><td>Ollama 预设本地地址、Key 可空并提示本地跨域注意事项</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-09-03</span></td><td>上下文构建：可勾选带入——IP 档案（人设/赛道/观众）、指定稿件全文、最近 14 天 posts 汇总；带入项在发送前完整预览</td><td>上下文组装为明文预览，用户可见即将发送的全部内容</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-09-04</span></td><td>16 个任务模板（提示词全部原创自写）：爆款标题×10 / 营销节点选题 / 热点角度 / 系列规划 / 对标拆解 / 打法总结 / 口播初稿 / 黄金 5 秒开头 / 分镜脚本 / 多平台改写 / 封面+标签 / 评论回复 / IP 定位 / 矩阵规划 / 周复盘 / 账号对比</td><td>每个模板有说明与必选参数校验（如"周复盘"需有回填数据）</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-09-05</span></td><td>结果回填：指定模板的输出按格式标记解析后可——标题/选题 → 加入选题池；开头 → 替换稿件开头；全文 → 填入稿件；解析失败降级为手动复制</td><td>回填前预览差异；原值可撤销一次</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-09-06</span></td><td>无 Key 模式：同模板生成完整提示词（含上下文）供复制；页面明示此模式不影响其他功能</td><td>复制按钮一键复制全部提示词</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-09-07</span></td><td>对话管理：多会话列表、重命名/删除；对话历史随备份走；出错的消息可重试</td><td>流式中断可停止；失败不写入历史</td><td class="p1">P1</td></tr>
+  <tr><td><span class="fr">FR-09-08</span></td><td>安全提示与 Key 处理：Key 仅存本机且不随备份导出（PRD-10）；对话页常驻"内容将发送到你配置的服务商"提示</td><td>请求前校验 Base URL 为 http(s)</td><td class="p0">P0</td></tr>
+  <tr><td><span class="fr">FR-09-09</span></td><td>跨域失败引导：连接失败且特征符合 CORS 时，给出三条路径——换支持浏览器直连的服务商 / 用本地 Ollama / 自建中转（提供自写的中转说明文档，不随产品捆绑代理脚本）</td><td>错误分类可读，不暴露原始堆栈</td><td class="p1">P1</td></tr>
+</table>
+
+<h2>3 · 规则说明</h2>
+<ul>
+  <li><strong>不捆绑代理脚本</strong>：只提供"如何自建中转"的原创说明文档（Nginx/Cloudflare Worker 两例，文档自写），避免分发可执行代理。</li>
+  <li>AI 生成内容一律标注"AI 生成，需人工核对事实与合规"；极限词检测（FR-05-04）同样适用于回填结果。</li>
+  <li>模板提示词中固定注入创作底线：内容真实、不承诺收益、不贬低他人。</li>
+</ul>
+
+<div class="refs">
+  <b>双向引用区</b><br>
+  ▸ 上游：<a href="PRD-00-主文档.html">PRD-00</a> §5 ｜ 上下文来源：<a href="PRD-01-IP与账号.html">PRD-01</a> / <a href="PRD-05-文案工坊.html">PRD-05</a> / <a href="PRD-08-数据复盘.html">PRD-08</a> FR-08-09<br>
+  ▸ 下游：结果回填 → <a href="PRD-04-选题池.html">PRD-04</a> / <a href="PRD-05-文案工坊.html">PRD-05</a> ｜ 接口配置 UI → <a href="PRD-10-设置与备份.html">PRD-10</a> FR-10-04 ｜ NFR：<a href="PRD-11-非功能需求.html">PRD-11</a> NFR-05/07<br>
+  ▸ 原型：<a href="原型.html#ai">原型.html#ai</a>
+</div>
+
+<footer class="nav"><span>PRD-09 · 待核对</span><span>← <a href="PRD-00-主文档.html">主文档</a> ｜ ← <a href="PRD-08-数据复盘.html">PRD-08</a> ｜ 下一篇 → <a href="PRD-10-设置与备份.html">PRD-10 设置与备份</a></span></footer>
+</div>
+</body>
+</html>
