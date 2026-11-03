@@ -13,3 +13,4 @@ Desktop.ini
 *.log
 *.tmp
 _ignore/
+.work-state/
