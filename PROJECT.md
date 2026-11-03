@@ -1,7 +1,9 @@
 # PROJECT.md · 内容指挥部 · 开发日志
 
 > 本文件是项目的**决策记录 + 进展台账 + 卡点清单 + 下次开工指南**。每次开工前先读这里；收工前把新决策/进展/卡点写回来。
-> 仓库：`github.com/<owner>/content-commander`（Private）｜ 本地：`C:\Users\32544\Desktop\工作台\复刻项目`
+> 仓库：`github.com/applesiPad/content-commander`（Private）｜ 本地：`C:\Users\32544\Desktop\工作台\复刻项目`
+>
+> **推拉代码注意**：本机直连 github.com 不稳，本仓库已配置走本地代理（`git config http.proxy http://127.0.0.1:10809`，仅此仓库生效）；`gh` CLI 使用时需 `export HTTPS_PROXY=http://127.0.0.1:10809`。gh 已装在 `C:\Users\32544\tools\gh-cli\gh.exe`（v2.103.3），账号 applesiPad。
 
 ---
 
@@ -104,6 +106,7 @@ cd "C:\Users\32544\Desktop\工作台\复刻项目"    # 仓库根
 ### 收工动作
 - 更新本文件「进展台账」和「卡点」→ commit → push
 - 差距清单 `PRD核对-功能差距清单.html` 同步更新状态列
+- 推送若超时先确认本地代理（10809 端口）在运行；仓库已配置该代理，命令行直接 `git push` 即可
 
 ## 七、合规备忘
 
