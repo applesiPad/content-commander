@@ -5,7 +5,7 @@
 const SCHEMA_VERSION = 1;
 const STORAGE_KEY = 'content-commander-v1';
 
-// 内置平台
+// 内置平台（2026-11-04 用户拍板：微博与百家号都保留，默认 9 家，支持自定义追加）
 const DEFAULT_PLATFORMS = [
   { key: 'douyin', name: '抖音', color: '#000000' },
   { key: 'xiaohongshu', name: '小红书', color: '#ff2442' },
@@ -14,7 +14,8 @@ const DEFAULT_PLATFORMS = [
   { key: 'kuaishou', name: '快手', color: '#ff4906' },
   { key: 'weibo', name: '微博', color: '#ff8200' },
   { key: 'gongzhonghao', name: '公众号', color: '#07c160' },
-  { key: 'zhihu', name: '知乎', color: '#0066ff' }
+  { key: 'zhihu', name: '知乎', color: '#0066ff' },
+  { key: 'baijiahao', name: '百家号', color: '#2932e1' }
 ];
 
 // 各平台创作者后台（发布辅助：用户点击跳转，产品不自动调用）
@@ -26,7 +27,8 @@ const PLATFORM_CREATOR_URLS = {
   kuaishou: 'https://cp.kuaishou.com/article/publish/video',
   weibo: 'https://weibo.com',
   gongzhonghao: 'https://mp.weixin.qq.com',
-  zhihu: 'https://www.zhihu.com/creator'
+  zhihu: 'https://www.zhihu.com/creator',
+  baijiahao: 'https://baijiahao.baidu.com/builder/rc/content'
 };
 
 // 8 种 IP 形象

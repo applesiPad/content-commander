@@ -688,6 +688,44 @@ const App = {
         <div class="stat-card"><div class="stat-value">${shootContents.filter(c => c.stage === 'shoot').length}</div><div class="stat-label">待拍摄</div></div>
         <div class="stat-card"><div class="stat-value">${shootContents.filter(c => c.shots?.length > 0).length}</div><div class="stat-label">已有分镜</div></div>
       </div>
+      ${(() => {
+        // FR-06-03：拍摄日程——按 shootDate 分组（今天/明天/未来/已过期/未排期），可改期，过期未拍置灰
+        const shootables = data.contents.filter(c => c.stage === 'shoot');
+        if (!shootables.length) return '';
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const tomorrowStr = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+        const groups = [
+          { name: '📅 今天', items: [] }, { name: '📅 明天', items: [] },
+          { name: '📅 未来', items: [] }, { name: '⚠️ 已过期未拍', items: [] }, { name: '未排期', items: [] }
+        ];
+        shootables.forEach(c => {
+          const sd = c.shootDate;
+          if (!sd) groups[4].items.push(c);
+          else if (sd === todayStr) groups[0].items.push(c);
+          else if (sd === tomorrowStr) groups[1].items.push(c);
+          else if (sd > tomorrowStr) groups[2].items.push(c);
+          else groups[3].items.push(c);
+        });
+        return `
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><h3 class="card-title">拍摄日程</h3><span class="text-xs text-muted">设置拍摄日期后自动分组；过期未拍置灰提醒</span></div>
+            ${groups.filter(g => g.items.length).map(g => `
+              <div style="margin-bottom:10px">
+                <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px">${g.name}（${g.items.length}）</div>
+                ${g.items.map(c => {
+                  const done = (c.shots || []).filter(s => s.done).length;
+                  const total = (c.shots || []).length;
+                  const overdue = g.name.indexOf('已过期') === 0;
+                  return `
+                    <div style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--soft);border-radius:var(--radius-sm);margin-bottom:5px;${overdue ? 'opacity:.55' : ''}">
+                      <span style="font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(c.title || '未命名')}${total ? ` <span class="text-muted text-xs">${done}/${total} 镜</span>` : ''}${overdue ? ' <span class="text-xs" style="color:var(--danger)">过期未拍</span>' : ''}</span>
+                      <input type="date" class="form-input" style="width:150px;padding:4px 8px;font-size:12px" value="${c.shootDate || ''}" onchange="Store.updateContent('${c.id}', { shootDate: this.value }); App.toast(this.value ? '已改期至 ' + this.value : '已清除拍摄日期'); App.renderPage('shoot')">
+                    </div>`;
+                }).join('')}
+              </div>`).join('') || ''}
+          </div>
+        `;
+      })()}
       <div style="display:flex;flex-direction:column;gap:12px">
         ${shootContents.length === 0 ? `
           <div class="empty-state">

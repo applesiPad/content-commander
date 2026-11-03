@@ -25,7 +25,10 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <p style="color:var(--ink2)">核对基线：PRD-00 ~ PRD-12（v0.9）｜ 核对对象：模块化版 <code>内容指挥部/</code>｜ 核对日期：2026-11-04</p>
 <p>图例：<span class="ok">✅ 达标</span> ｜ <span class="part">🟡 部分达标</span> ｜ <span class="no">❌ 未实现</span> ｜ 优先级沿用 PRD（<span class="p0">P0</span>/<span class="p1">P1</span>/<span class="p2">P2</span>）</p>
 
-<div class="note"><b>总览</b>：78 条 FR 中 — ✅ 达标 27 条 ｜ 🟡 部分达标 25 条 ｜ ❌ 未实现 26 条。P0 缺口 9 条（下表加粗标注处置轮次）。本轮（2026-11-04）已修复 P0 缺口 8 条 + 高价值 P1 4 条，其余列入 v1.1 排期建议。</div>
+<div class="note"><b>总览（2026-11-04 v1.1 冲刺后复评）</b>：全部 <b>93 项</b>（83 FR + 10 NFR）—— ✅ 达标 <b>62</b> ｜ 🟡 部分达标 <b>22</b> ｜ ❌ 未实现 <b>9</b>（达标率 67%，P0 缺口已清零）。<br>
+首轮核对（同日早些时候）：78 FR 口径下 ✅27 / 🟡25 / ❌26（当时FR行数统计有误，本表按实际 93 行复评）。<br>
+<b>本轮 v1.1 冲刺达标</b>：FR-03 全部 8 项（自动分段/结构识别/借选题/套结构/爆款判定/规律小结/好对标/解析标红）、FR-06-02/03/05/06/07（提词器/重建/日程/打勾/流转）、FR-09-02/04/05/09 + FR-10-04（AI 模板提示词/服务商预设/回填/错误引导/测试连接）、FR-08-06/07/08（趋势/对比/筛选）、FR-10-03（12 项阈值）、FR-01-02/04（IP 上限/自定义平台）、FR-04-03（评级线可配置）、NFR-03/08。<br>
+<b>剩余 9 项未实现</b>（多为 P1/P2 体验项）：FR-02-04 热点切入角度、FR-02-06 热榜直达、FR-04-05 五维雷达图、FR-04-08 看板拖拽(P2)、FR-06-04 开拍清单、FR-06-08 景别速查(P2)、FR-07-03 封面预览、FR-07-04 发布确认清单。→ 建议列入 v1.2。</div>
 
 <h2>M0 指挥板（FR-00）</h2>
 <table>
@@ -104,7 +107,7 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
 <tr><td><span class="fr">FR-06-01</span></td><td>自动分镜 + 逐镜可编辑</td><td class="p0">P0</td><td class="ok">✅</td><td></td></tr>
 <tr><td><span class="fr">FR-06-02</span></td><td>重建分镜（确认覆盖）</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮实现</b>：拍摄卡新增「重建分镜」（有分镜时显示），确认覆盖后按当前文案重新生成</td></tr>
-<tr><td><span class="fr">FR-06-03</span></td><td>拍摄日程（按日期分组/改期）</td><td class="p0">P0</td><td class="no">❌</td><td>v1.1：缺 shootDate 概念</td></tr>
+<tr><td><span class="fr">FR-06-03</span></td><td>拍摄日程（按日期分组/改期）</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮实现</b>：拍摄页新增「拍摄日程」卡——按 shootDate 分组（今天/明天/未来/已过期/未排期），行内日期选择即改期，过期未拍置灰 + 标记提醒</td></tr>
 <tr><td><span class="fr">FR-06-04</span></td><td>开拍检查清单（5 固定+自定义）</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
 <tr><td><span class="fr">FR-06-05</span></td><td>全屏提词器（速度/字号/镜像/按镜）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮实现</b>：按镜分组滚动+当前镜高亮+进度指示；速度 1~10 档（每档 24px/s，默认 3 档，滚轮 ±0.5 微调）、字号 24~80（默认 48）、左右镜像；空格暂停/继续、结尾自停；设置持久化 settings.teleprompter，退出全屏保留。无分镜时按 开头/正文/结尾 三段兜底</td></tr>
 <tr><td><span class="fr">FR-06-06</span></td><td>逐镜完成标记</td><td class="p0">P0</td><td class="ok">✅</td><td><b>本轮补强</b>：记录打勾时间 doneAt；提词器内可直接打勾；全部完成提示进入剪辑</td></tr>
