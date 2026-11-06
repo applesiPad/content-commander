@@ -284,6 +284,7 @@ const AI_PROVIDERS = [
   { key: 'kimi', name: 'Kimi（月之暗面）', baseUrl: 'https://api.moonshot.cn/v1', models: ['moonshot-v1-8k', 'moonshot-v1-32k'] },
   { key: 'siliconflow', name: '硅基流动', baseUrl: 'https://api.siliconflow.cn/v1', models: ['Qwen/Qwen2.5-7B-Instruct'] },
   { key: 'ollama', name: 'Ollama 本地', baseUrl: 'http://localhost:11434/v1', models: ['qwen2.5:7b', 'llama3.1:8b'], local: true },
+  { key: 'anthropic', name: 'Claude（Anthropic）', baseUrl: 'https://api.anthropic.com', models: ['claude-sonnet-4-5', 'claude-haiku-4-5'], protocol: 'anthropic' },
   { key: 'custom', name: '自定义', baseUrl: '', models: [] }
 ];
 

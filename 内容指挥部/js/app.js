@@ -89,28 +89,62 @@ const App = {
     content.className = 'content fade-in';
   },
   
-  // 欢迎向导
+  // 欢迎向导（FR-10-01：两步——称呼/形象 → 三选一起步）
   showWelcomeWizard() {
-    this.showModal(`
-      <div style="text-align:center;margin-bottom:24px">
-        <div style="width:64px;height:64px;background:var(--ink);border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-mono);font-size:24px;font-weight:700;margin:0 auto 16px">&gt;_</div>
-        <div style="font-size:22px;font-weight:900;margin-bottom:8px">欢迎使用内容指挥部</div>
-        <div style="font-size:14px;color:var(--muted)">面向短视频口播创作者的多 IP / 多账号内容工作台</div>
-      </div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:20px">
-        <p>这里可以管理你的全部创作流程：</p>
-        <p style="margin-top:8px">🔥 热点雷达 → 🎯 对标拆解 → 💡 选题 → ✍️ 文案 → 🎬 拍摄 → 📅 排期 → 📈 复盘</p>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <button class="btn btn-primary" style="width:100%;padding:14px" onclick="App.closeModal();App.loadSampleData()">📦 载入示例工作室</button>
-        <button class="btn btn-secondary" style="width:100%;padding:14px" onclick="App.closeModal();App.navigate('ip')">✨ 从空白开始</button>
-        <button class="btn btn-secondary" style="width:100%;padding:14px" onclick="App.closeModal();document.getElementById('importFile').click()">📂 导入已有数据</button>
-      </div>
-      <input type="file" id="importFile" style="display:none" accept=".json" onchange="App.importData(event)">
-      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);text-align:center">
-        数据存储在本地浏览器 · 离线可用 · 随时备份导出
-      </div>
-    `);
+    this._wizardStep = 1;
+    this._wizAvatar = Store.data.settings.masterAvatar || '👤';
+    this._renderWizard();
+  },
+
+  _renderWizard() {
+    if ((this._wizardStep || 1) === 1) {
+      this.showModal(`
+        <div style="text-align:center;margin-bottom:18px">
+          <div style="width:64px;height:64px;background:var(--ink);border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-mono);font-size:24px;font-weight:700;margin:0 auto 16px">&gt;_</div>
+          <div style="font-size:22px;font-weight:900;margin-bottom:8px">欢迎使用内容指挥部</div>
+          <div style="font-size:14px;color:var(--muted)">先认识一下你：怎么称呼、用什么形象</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">称呼（显示在界面上）</label>
+          <input id="wizName" class="form-input" placeholder="如：阿哲 / 室长老王" value="${escAttr(Store.data.settings.masterName || '')}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">主理人形象</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${IP_AVATARS.map(a => `<span id="wizAv_${a}" style="font-size:22px;padding:6px 10px;border-radius:10px;display:inline-block;cursor:pointer;background:${this._wizAvatar === a ? 'var(--accent)' : 'var(--soft)'}" onclick="App._wizAvatar='${a}';document.querySelectorAll('[id^=wizAv_]').forEach(el => { el.style.background = 'var(--soft)'; }); this.style.background = 'var(--accent)'">${a}</span>`).join('')}
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin:12px 0 16px;text-align:center">数据将存储在本机浏览器 · 离线可用 · 可随时备份导出</div>
+        <button class="btn btn-primary" style="width:100%;padding:12px" onclick="App._wizNext()">下一步 →</button>
+      `);
+    } else {
+      this.showModal(`
+        <div style="text-align:center;margin-bottom:20px">
+          <div style="font-size:20px;font-weight:900;margin-bottom:8px">你好，${escHtml(this._wizName || '主理人')} ${this._wizAvatar}</div>
+          <div style="font-size:13px;color:var(--muted)">选择你的起步方式（流程：🔥 热点 → 🎯 对标 → 💡 选题 → ✍️ 文案 → 🎬 拍摄 → 📅 排期 → 📈 复盘）</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn btn-primary" style="width:100%;padding:14px" onclick="App._finishWizard();App.loadSampleData()">📦 载入示例工作室</button>
+          <button class="btn btn-secondary" style="width:100%;padding:14px" onclick="App._finishWizard();App.navigate('ip')">✨ 从空白开始</button>
+          <button class="btn btn-secondary" style="width:100%;padding:14px" onclick="App._finishWizard();document.getElementById('importFile').click()">📂 导入已有数据</button>
+        </div>
+        <input type="file" id="importFile" style="display:none" accept=".json" onchange="App.importData(event)">
+        <div style="margin-top:16px;text-align:center"><a style="font-size:12px;color:var(--muted);cursor:pointer" onclick="App._wizardStep = 1;App._renderWizard()">← 返回上一步</a></div>
+      `);
+    }
+  },
+
+  _wizNext() {
+    this._wizName = document.getElementById('wizName')?.value || '';
+    this._wizardStep = 2;
+    this._renderWizard();
+  },
+
+  _finishWizard() {
+    Store.data.settings.masterName = this._wizName || Store.data.settings.masterName || '主理人';
+    Store.data.settings.masterAvatar = this._wizAvatar || Store.data.settings.masterAvatar || '👤';
+    Store.save();
+    this.closeModal();
   },
   
   // 指挥板
@@ -350,7 +384,7 @@ const App = {
                       <tr>
                         <td><span style="display:flex;align-items:center;gap:6px"><span style="color:${ip?.color || '#999'}">${ip?.avatar || '👤'}</span>${ip?.name || '未归属'}</span></td>
                         <td><span class="tag">${this.getPlatformName(acc.platform)}</span></td>
-                        <td>${escHtml(acc.name)}</td>
+                        <td>${escHtml(acc.name)}${acc.link ? ` <a href="${escAttr(acc.link)}" target="_blank" rel="noopener" title="打开主页（用户点击跳转）">🔗</a>` : ''}</td>
                         <td class="font-mono">${formatNumber(acc.followers || 0)}</td>
                         <td class="font-mono" style="color:${(acc.weekGain || 0) >= 0 ? 'var(--success)' : 'var(--danger)'}">${(acc.weekGain || 0) >= 0 ? '+' : ''}${formatNumber(acc.weekGain || 0)}</td>
                         <td>
@@ -1311,7 +1345,7 @@ const App = {
       <div class="ai-container">
         <div class="ai-sessions">
           <button class="btn btn-secondary" style="width:100%;margin-bottom:12px" onclick="App.newChat()">+ 新对话</button>
-          ${chats.map(c => `<div class="ai-session ${c.id === activeChat ? 'active' : ''}" onclick="App.currentChatId='${c.id}';App.renderPage('ai')">${escHtml(c.title || '新对话')}</div>`).join('') || '<div class="text-muted text-sm" style="padding:8px">暂无对话</div>'}
+          ${chats.map(c => `<div class="ai-session ${c.id === activeChat ? 'active' : ''}" style="display:flex;align-items:center;gap:6px"><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" onclick="App.currentChatId='${c.id}';App.renderPage('ai')">${escHtml(c.title || '新对话')}</span><a style="cursor:pointer;opacity:.55" title="重命名" onclick="App.renameChat('${c.id}')">✎</a><a style="cursor:pointer;opacity:.55" title="删除" onclick="App.deleteChat('${c.id}')">×</a></div>`).join('') || '<div class="text-muted text-sm" style="padding:8px">暂无对话</div>'}
         </div>
         <div class="ai-chat">
           <div class="ai-messages">
@@ -1321,17 +1355,24 @@ const App = {
                 <div style="font-size:14px;font-weight:600;margin-bottom:8px">AI 助手</div>
                 <div style="font-size:13px">点击下方模板生成完整提示词，填空后发送</div>
               </div>
-            ` : messages.map((m, mi) => `<div class="ai-message ${m.role}"><div class="ai-bubble">${renderMarkdown(m.content)}${m.role === 'assistant' && !m.content.startsWith('❌') && !m.content.startsWith('**未配置') ? `<div style="text-align:right;margin-top:8px"><button class="btn btn-sm btn-secondary" onclick="App.showAIBackfill(${mi})">↩ 回填到稿件</button></div>` : ''}</div></div>`).join('')}
+            ` : messages.map((m, mi) => `<div class="ai-message ${m.role}"><div class="ai-bubble">${renderMarkdown(m.content)}${m.role === 'assistant' && m.content.indexOf('❌') === 0 ? `<div style="text-align:right;margin-top:8px"><button class="btn btn-sm btn-secondary" onclick="App.retryAIMessage()">↻ 重试</button></div>` : m.role === 'assistant' && !m.content.startsWith('**未配置') ? `<div style="text-align:right;margin-top:8px"><button class="btn btn-sm btn-secondary" onclick="App.showAIBackfill(${mi})">↩ 回填到稿件</button></div>` : ''}</div></div>`).join('')}
           </div>
           <div style="padding:12px 20px 0;border-top:1px solid var(--line)">
-            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
               ${AI_TEMPLATES.map(t => `<button class="btn btn-sm btn-secondary" title="${escAttr(t.desc)}" onclick="App.useAITemplate('${t.name}')">${t.name}</button>`).join('')}
             </div>
-            ${Store.data.settings.ai.baseUrl ? `<div class="text-muted" style="font-size:11px;margin-bottom:8px">🔒 发送后内容将传给你配置的服务商（${escAttr(this._aiHost())}），API Key 仅存本机、不随备份导出</div>` : ''}
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;font-size:12px;color:var(--muted);align-items:center">
+              <span>发送时带入：</span>
+              ${[['ip', 'IP 档案'], ['script', '当前稿件全文'], ['recent', '近14天数据']].map(([k, label]) => {
+                const ctx = Store.data.settings.ai.context || { ip: true };
+                return `<label style="display:flex;align-items:center;gap:3px;cursor:pointer"><input type="checkbox" ${ctx[k] ? 'checked' : ''} onchange="App.toggleAIContext('${k}', this.checked)">${label}</label>`;
+              }).join('')}
+            </div>
+            ${Store.data.settings.ai.baseUrl ? `<div class="text-muted" style="font-size:11px;margin-bottom:8px">🔒 发送后内容将传给你配置的服务商（${escAttr(this._aiHost())}），API Key 仅存本机、不随备份导出${Store.data.settings.ai.preview === false ? ' · 发送前预览已关闭' : ' · 发送前会弹出完整预览'}</div>` : ''}
           </div>
           <div class="ai-input-area">
             <input type="text" class="ai-input" id="aiInput" placeholder="输入消息或先点模板生成提示词..." onkeypress="if(event.key==='Enter')App.sendAIMessage()">
-            <button class="btn btn-accent" onclick="App.sendAIMessage()">发送</button>
+            ${this._aiStreaming ? '<button class="btn btn-accent" onclick="App.stopAIStream()">⏹ 停止</button>' : '<button class="btn btn-accent" onclick="App.sendAIMessage()">发送</button>'}
           </div>
         </div>
       </div>
@@ -1431,6 +1472,13 @@ const App = {
         <div class="settings-section">
           <div class="settings-title">AI 接口配置</div>
           <div class="settings-row">
+            <div><div class="settings-label">接口协议</div><div class="settings-desc">OpenAI 兼容 /chat/completions ｜ Anthropic /messages</div></div>
+            <select class="form-select" style="width:250px" onchange="Store.data.settings.ai.protocol=this.value;Store.save();App.toast('协议已切换：' + (this.value === 'anthropic' ? 'Anthropic /messages' : 'OpenAI 兼容'))">
+              <option value="openai" ${(settings.ai.protocol || 'openai') === 'openai' ? 'selected' : ''}>OpenAI 兼容</option>
+              <option value="anthropic" ${settings.ai.protocol === 'anthropic' ? 'selected' : ''}>Anthropic</option>
+            </select>
+          </div>
+          <div class="settings-row">
             <div><div class="settings-label">服务商预设</div><div class="settings-desc">选中后自动填地址与参考模型（模型名以服务商控制台为准）</div></div>
             <select class="form-select" style="width:250px" onchange="App.applyAIProvider(this.value)">
               ${AI_PROVIDERS.map(p => {
@@ -1458,6 +1506,10 @@ const App = {
               <input type="range" min="0" max="2" step="0.1" style="width:140px" value="${Number(settings.ai.temperature != null ? settings.ai.temperature : 0.7)}" onchange="Store.data.settings.ai.temperature=parseFloat(this.value);Store.save();App.renderPage('settings')">
               <span class="font-mono text-sm">${Number(settings.ai.temperature != null ? settings.ai.temperature : 0.7)}</span>
             </div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">发送前预览</div><div class="settings-desc">发送前弹窗展示完整系统提示词与消息（含上下文）</div></div>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" ${settings.ai.preview !== false ? 'checked' : ''} onchange="Store.data.settings.ai.preview=this.checked;Store.save()">${settings.ai.preview !== false ? '已开启' : '已关闭'}</label>
           </div>
           <div class="settings-row">
             <div><div class="settings-label">连接测试</div><div class="settings-desc">发送一条最小请求验证地址/Key/模型</div></div>
@@ -1706,6 +1758,10 @@ const App = {
         <label class="form-label">账号名</label>
         <input type="text" class="form-input" id="accName" value="${escAttr(acc?.name || '')}" placeholder="账号名称">
       </div>
+      <div class="form-group">
+        <label class="form-label">主页链接 <span class="text-muted" style="font-weight:400;font-size:11px">（可选，IP 页账号表可直达）</span></label>
+        <input type="text" class="form-input" id="accLink" value="${escAttr(acc?.link || '')}" placeholder="https://…">
+      </div>
       <div class="grid-2">
         <div class="form-group"><label class="form-label">粉丝数</label><input type="text" class="form-input" id="accFollowers" value="${acc?.followers || ''}" placeholder="如：1.2万"></div>
         <div class="form-group"><label class="form-label">7日涨粉</label><input type="text" class="form-input" id="accWeekGain" value="${acc?.weekGain || ''}" placeholder="如：+500"></div>
@@ -1722,6 +1778,7 @@ const App = {
       ipId: document.getElementById('accIp').value,
       platform: document.getElementById('accPlatform').value,
       name: document.getElementById('accName').value.trim(),
+      link: (document.getElementById('accLink')?.value || '').trim(),
       followers: parseNumber(document.getElementById('accFollowers').value),
       weekGain: parseNumber(document.getElementById('accWeekGain').value)
     };
@@ -2141,6 +2198,7 @@ const App = {
     this.showModal(`
       <div class="modal-title">${topic ? '编辑' : '新建'}选题${p.source && p.source !== 'manual' ? ` <span class="tag tag-accent">${sourceLabels[p.source] || p.source}</span>` : ''}</div>
       <div class="form-group"><label class="form-label">标题</label><input type="text" class="form-input" id="topicTitle" value="${escAttr(p.title || '')}" placeholder="选题标题"></div>
+      ${!topic && !p.source ? `<div class="form-group"><label class="form-label">来源 <span class="text-muted" style="font-weight:400;font-size:11px">（便于回链与统计）</span></label><select class="form-select" id="topicSource"><option value="manual">手动创建</option><option value="hot">来自热点</option><option value="bench">来自对标</option></select></div>` : ''}
       <div class="form-group"><label class="form-label">所属 IP</label><select class="form-select" id="topicIp">${ips.map(ip => `<option value="${ip.id}" ${(p.ipId || ips[0]?.id) === ip.id ? 'selected' : ''}>${ip.avatar} ${escHtml(ip.name)}</option>`).join('')}</select></div>
       <div class="form-group"><label class="form-label">五维评分</label><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">${FIVE_DIMS.map(d => `<div style="text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">${d.icon} ${d.name}</div><input type="number" min="1" max="5" class="form-input" style="text-align:center" id="score_${d.key}" value="${p.scores?.[d.key] || 3}"></div>`).join('')}</div></div>
       <div style="display:flex;gap:8px;margin-top:20px">
@@ -2160,6 +2218,7 @@ const App = {
     };
     if (!data.title) { alert('请输入标题'); return; }
     if (source) data.source = source;
+    else if (!id) data.source = document.getElementById('topicSource')?.value || 'manual'; // FR-04-01：表单手动选来源
     if (srcRef) data.srcRef = srcRef;
     let saved;
     if (id) saved = Store.updateTopic(id, data);
@@ -3270,6 +3329,8 @@ const App = {
       ai.baseUrl = p.baseUrl;
       if (p.models.length && !/填入/.test(p.models[0])) ai.model = p.models[0];
     }
+    // 协议跟随预设：Anthropic 预设切 anthropic，其余预设切回 OpenAI 兼容
+    ai.protocol = (p && p.protocol) || 'openai';
     Store.save();
     this.renderPage('settings');
     if (p && p.local) this.toast('Ollama 为本机服务：免 Key；若跨域报错，需以 OLLAMA_ORIGINS=* 启动');
@@ -3289,17 +3350,23 @@ const App = {
     }
     this.toast('测试中…');
     try {
-      const resp = await fetch(ai.baseUrl.replace(/\/+$/, '') + '/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(ai.apiKey ? { 'Authorization': 'Bearer ' + ai.apiKey } : {}) },
-        body: JSON.stringify({ model: ai.model || 'gpt-4o-mini', messages: [{ role: 'user', content: '只回复两个字：成功' }], max_tokens: 200, stream: false })
-      });
+      const isAnthropic = ai.protocol === 'anthropic';
+      const url = isAnthropic
+        ? ai.baseUrl.replace(/\/+$/, '') + '/v1/messages'
+        : ai.baseUrl.replace(/\/+$/, '') + '/chat/completions';
+      const headers = isAnthropic
+        ? { 'Content-Type': 'application/json', 'x-api-key': ai.apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' }
+        : { 'Content-Type': 'application/json', ...(ai.apiKey ? { 'Authorization': 'Bearer ' + ai.apiKey } : {}) };
+      const body = isAnthropic
+        ? { model: ai.model || 'claude-sonnet-4-5', max_tokens: 32, messages: [{ role: 'user', content: '只回复两个字：成功' }] }
+        : { model: ai.model || 'gpt-4o-mini', messages: [{ role: 'user', content: '只回复两个字：成功' }], max_tokens: 200, stream: false };
+      const resp = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
       if (!resp.ok) {
         this.showModal(this.buildAIErrorModal(resp.status, ''));
         return;
       }
       const data = await resp.json();
-      const text = data.choices?.[0]?.message?.content || '';
+      const text = isAnthropic ? (data.content?.[0]?.text || '') : (data.choices?.[0]?.message?.content || '');
       this.toast(`✅ 连接成功，模型回复：${text.slice(0, 24) || '（空回复，检查模型名）'}`);
     } catch (e) {
       this.showModal(this.buildAIErrorModal(0, String(e && e.message || e)));
@@ -3336,6 +3403,38 @@ const App = {
     `;
   },
   
+  // FR-09-03：上下文构建（勾选项：IP 档案 / 当前稿件全文 / 近14天数据汇总），发送前完整预览
+  buildAIContext() {
+    const ctx = Store.data.settings.ai.context || { ip: true };
+    const parts = [];
+    if (ctx.ip) {
+      const ip = this.currentIp ? Store.getIP(this.currentIp) : null;
+      if (ip) parts.push(`【IP 档案】名称：${ip.name}；赛道：${ip.track || '未设置'}；人设：${ip.persona || '未设置'}；观众：${ip.audience || '未设置'}`);
+    }
+    if (ctx.script && this.editingId) {
+      const c = Store.getContent(this.editingId);
+      if (c) parts.push(`【当前稿件全文】${c.title || ''}\n开头：${c.hook || '（空）'}\n正文：${c.body || '（空）'}\n结尾：${c.cta || '（空）'}`);
+    }
+    if (ctx.recent) {
+      const since = Date.now() - 14 * 864e5;
+      const ps = Store.data.posts.filter(p => p.publishedAt && new Date(p.publishedAt).getTime() >= since).slice(-20);
+      if (ps.length) {
+        parts.push('【近 14 天发布数据汇总】\n' + ps.map(p => {
+          const c = Store.getContent(p.contentId);
+          return `- ${c?.title || '未命名'}：播放${p.play || 0} 点赞${p.likes || 0} 收藏${p.favorite || 0} 评论${p.comment || 0}`;
+        }).join('\n'));
+      }
+    }
+    return parts.join('\n\n');
+  },
+
+  toggleAIContext(key, checked) {
+    const ai = Store.data.settings.ai;
+    ai.context = ai.context || { ip: true };
+    ai.context[key] = !!checked;
+    Store.save();
+  },
+
   async sendAIMessage() {
     const input = document.getElementById('aiInput');
     if (!input || !input.value.trim()) return;
@@ -3349,60 +3448,24 @@ const App = {
     if (chat.messages.length === 1) chat.title = message.slice(0, 20) + (message.length > 20 ? '...' : '');
     input.value = '';
     this.renderPage('ai');
-    
+
     if (settings.apiKey && settings.baseUrl) {
-      try {
-        const ip = this.currentIp ? Store.getIP(this.currentIp) : null;
-        const sys = '你是短视频口播创作专家，回答要具体、可执行、口语化。' +
-          (ip ? `当前IP：「${ip.name}」，赛道「${ip.track || '未设置'}」，人设「${ip.persona || '未设置'}」，观众「${ip.audience || '未设置'}」。` : '');
-        const response = await fetch(settings.baseUrl.replace(/\/+$/, '') + '/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${settings.apiKey}` },
-          body: JSON.stringify({
-            model: settings.model || 'gpt-4o-mini',
-            messages: [{ role: 'system', content: sys }, ...chat.messages.map(m => ({ role: m.role, content: m.content }))],
-            stream: true,
-            temperature: Number(settings.temperature != null ? settings.temperature : 0.7)
-          })
-        });
-        if (!response.ok) {
-          const guide = (response.status === 401 || response.status === 403) ? 'Key 无效或无权限（HTTP ' + response.status + '）'
-            : response.status === 404 ? '地址或模型名不对（HTTP 404，检查 /v1 与模型 ID）'
-            : response.status === 429 ? '限流或额度不足（HTTP 429）'
-            : 'HTTP ' + response.status;
-          throw new Error(guide);
-        }
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let assistantMessage = '';
-        chat.messages.push({ role: 'assistant', content: '', timestamp: Date.now() });
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value);
-          const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
-          for (const line of lines) {
-            const data = line.slice(6);
-            if (data === '[DONE]') continue;
-            try {
-              const parsed = JSON.parse(data);
-              const delta = parsed.choices?.[0]?.delta?.content || '';
-              assistantMessage += delta;
-              chat.messages[chat.messages.length - 1].content = assistantMessage;
-              this.renderPage('ai');
-            } catch (e) {}
-          }
-        }
-        Store.save();
-      } catch (e) {
-        const msg = String(e && e.message || e);
-        const isNet = /Failed to fetch|NetworkError|Load failed/i.test(msg);
-        const text = isNet
-          ? '❌ 连接失败：请求没有到达服务器，多为浏览器跨域（CORS）限制。\n\n三条解决路径：\n① 换支持浏览器直连的服务商；\n② 本地 Ollama（以 OLLAMA_ORIGINS=* 启动）；\n③ 自建中转。\n\n到 设置 → AI 接口配置 → 「测试连接」可查看详细分类引导。'
-          : `❌ 请求失败：${msg}`;
-        chat.messages.push({ role: 'assistant', content: text, timestamp: Date.now() });
-        Store.save();
-        this.renderPage('ai');
+      const sys = '你是短视频口播创作专家，回答要具体、可执行、口语化。' + (this.buildAIContext() ? '\n\n' + this.buildAIContext() : '');
+      // FR-09-03：发送前完整预览（可在设置关闭）
+      if (settings.preview === false) {
+        await this._doSendAIMessage(chat, settings, sys);
+      } else {
+        this.showModal(`
+          <div class="modal-title">发送前预览 <span class="text-muted" style="font-weight:400;font-size:12px">（以下内容将发送到 ${escAttr(this._aiHost())}）</span></div>
+          <div style="font-size:12.5px;background:var(--soft);border-radius:10px;padding:10px 12px;max-height:38vh;overflow:auto;white-space:pre-wrap;line-height:1.8;margin-bottom:10px"><b>系统提示词（含上下文）：</b>\n${escHtml(sys)}</div>
+          <div style="font-size:12.5px;background:var(--soft);border-radius:10px;padding:10px 12px;white-space:pre-wrap;line-height:1.8;margin-bottom:12px"><b>用户消息：</b>\n${escHtml(message)}</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" id="aiSendConfirmBtn">✓ 确认发送</button>
+            <button class="btn btn-secondary" onclick="App.closeModal()">取消</button>
+          </div>
+        `);
+        const btn = document.getElementById('aiSendConfirmBtn');
+        if (btn) btn.onclick = () => { this.closeModal(); this._doSendAIMessage(chat, settings, sys); };
       }
     } else {
       // No AI configured, show prompt template
@@ -3415,6 +3478,126 @@ const App = {
       Store.save();
       this.renderPage('ai');
     }
+  },
+
+  // FR-09-01：双协议发送（OpenAI 兼容 /chat/completions ｜ Anthropic /messages），SSE 流式
+  async _doSendAIMessage(chat, settings, sys) {
+    this._aiStop = false;
+    this._aiStreaming = true;
+    this._lastSys = sys;
+    const isAnthropic = settings.protocol === 'anthropic';
+    try {
+      const url = isAnthropic
+        ? settings.baseUrl.replace(/\/+$/, '') + '/v1/messages'
+        : settings.baseUrl.replace(/\/+$/, '') + '/chat/completions';
+      const headers = isAnthropic
+        ? { 'Content-Type': 'application/json', 'x-api-key': settings.apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' }
+        : { 'Content-Type': 'application/json', 'Authorization': `Bearer ${settings.apiKey}` };
+      const body = isAnthropic
+        ? { model: settings.model || 'claude-sonnet-4-5', system: sys || undefined, messages: chat.messages.map(m => ({ role: m.role, content: m.content })), max_tokens: 4096, temperature: Number(settings.temperature != null ? settings.temperature : 0.7), stream: true }
+        : { model: settings.model || 'gpt-4o-mini', messages: [{ role: 'system', content: sys }, ...chat.messages.map(m => ({ role: m.role, content: m.content }))], stream: true, temperature: Number(settings.temperature != null ? settings.temperature : 0.7) };
+      const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
+      if (!response.ok) {
+        const guide = (response.status === 401 || response.status === 403) ? 'Key 无效或无权限（HTTP ' + response.status + '）'
+          : response.status === 404 ? '地址或模型名不对（HTTP 404，检查协议与路径拼接）'
+          : response.status === 429 ? '限流或额度不足（HTTP 429）'
+          : 'HTTP ' + response.status;
+        throw new Error(guide);
+      }
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantMessage = '';
+      chat.messages.push({ role: 'assistant', content: '', timestamp: Date.now() });
+      while (true) {
+        if (this._aiStop) break; // 流式中断可停止
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
+        for (const line of lines) {
+          const data = line.slice(6);
+          if (data === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(data);
+            const delta = isAnthropic
+              ? (parsed.type === 'content_block_delta' ? (parsed.delta?.text || '') : '')
+              : (parsed.choices?.[0]?.delta?.content || '');
+            assistantMessage += delta;
+            chat.messages[chat.messages.length - 1].content = assistantMessage;
+            this.renderPage('ai');
+          } catch (e) {}
+        }
+      }
+      if (this._aiStop && chat.messages.at(-1)?.role === 'assistant') {
+        chat.messages.at(-1).content = assistantMessage + '\n\n（已手动停止）';
+      }
+      Store.save();
+    } catch (e) {
+      const msg = String(e && e.message || e);
+      const isNet = /Failed to fetch|NetworkError|Load failed/i.test(msg);
+      const text = isNet
+        ? '❌ 连接失败：请求没有到达服务器，多为浏览器跨域（CORS）限制。\n\n三条解决路径：\n① 换支持浏览器直连的服务商；\n② 本地 Ollama（以 OLLAMA_ORIGINS=* 启动）；\n③ 自建中转。\n\n到 设置 → AI 接口配置 → 「测试连接」可查看详细分类引导。'
+        : `❌ 请求失败：${msg}`;
+      chat.messages.push({ role: 'assistant', content: text, timestamp: Date.now() });
+      Store.save();
+      this.renderPage('ai');
+    } finally {
+      this._aiStreaming = false;
+      this.renderPage('ai');
+    }
+  },
+
+  stopAIStream() {
+    this._aiStop = true;
+    this.toast('已请求停止生成…');
+  },
+
+  // FR-09-07：失败消息重试（弹出错误后按原上下文重发）
+  retryAIMessage() {
+    const chats = Store.data.settings.ai.chats || [];
+    const chat = chats.find(c => c.id === (this.currentChatId || chats[0]?.id));
+    if (!chat) return;
+    if (chat.messages.at(-1)?.content?.indexOf('❌') === 0) chat.messages.pop();
+    Store.save();
+    this.renderPage('ai');
+    this._doSendAIMessage(chat, Store.data.settings.ai, this._lastSys || '');
+  },
+
+  // FR-09-07：对话重命名 / 删除
+  renameChat(chatId) {
+    const chats = Store.data.settings.ai.chats || [];
+    const chat = chats.find(c => c.id === chatId);
+    if (!chat) return;
+    this.showModal(`
+      <div class="modal-title">重命名对话</div>
+      <div class="form-group"><input class="form-input" id="chatNewName" value="${escAttr(chat.title || '')}" placeholder="对话名称"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="App._saveChatName('${chatId}')">保存</button>
+        <button class="btn btn-secondary" onclick="App.closeModal()">取消</button>
+      </div>
+    `);
+  },
+
+  _saveChatName(chatId) {
+    const chats = Store.data.settings.ai.chats || [];
+    const chat = chats.find(c => c.id === chatId);
+    const name = (document.getElementById('chatNewName')?.value || '').trim();
+    if (chat && name) { chat.title = name; Store.save(); }
+    this.closeModal();
+    this.renderPage('ai');
+  },
+
+  deleteChat(chatId) {
+    const ai = Store.data.settings.ai;
+    const chats = ai.chats || [];
+    const chat = chats.find(c => c.id === chatId);
+    if (!chat) return;
+    if (!confirm(`删除对话「${chat.title || '新对话'}」？共 ${chat.messages.length} 条消息，不可恢复。`)) return;
+    ai.chats = chats.filter(c => c.id !== chatId);
+    if (this.currentChatId === chatId) this.currentChatId = (ai.chats[0] || {}).id;
+    Store.save();
+    this.renderPage('ai');
+    this.toast('对话已删除');
   },
 
   generatePromptTemplate(userMessage) {
@@ -3538,19 +3721,54 @@ ${recentContents.map(c => `- ${c.title}`).join('\n')}` : ''}
     URL.revokeObjectURL(url);
   },
 
+  // FR-10-06：备份恢复——结构校验 → 数量核对弹窗 → 明示覆盖 → 确认后恢复（保留当前 Key）
   importData(event) {
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-      if (Store.import(e.target.result)) {
-        alert('导入成功');
-        location.reload();
-      } else {
-        alert('导入失败，请检查文件格式');
+      let parsed = null;
+      try { parsed = JSON.parse(e.target.result); } catch (err) { alert('导入失败：不是合法的 JSON 文件'); return; }
+      if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.ips) || !Array.isArray(parsed.contents) || !Array.isArray(parsed.accounts)) {
+        alert('导入失败：文件结构不符（缺少 ips/contents/accounts），请使用本产品「导出备份」生成的文件。');
+        return;
       }
+      const curKey = (Store.data.settings.ai && Store.data.settings.ai.apiKey) || '';
+      this._pendingImport = { text: e.target.result, curKey };
+      const curCounts = { IP: Store.data.ips.length, 账号: Store.data.accounts.length, 内容: Store.data.contents.length, 发布记录: Store.data.posts.length, 选题: Store.data.topics.length };
+      const bakCounts = { IP: parsed.ips.length, 账号: parsed.accounts.length, 内容: parsed.contents.length, 发布记录: (parsed.posts || []).length, 选题: (parsed.topics || []).length };
+      this.showModal(`
+        <div class="modal-title">恢复备份 · 数量核对</div>
+        <div class="table-wrap" style="margin-bottom:10px">
+          <table class="table">
+            <thead><tr><th>数据</th><th>备份文件中</th><th>当前</th></tr></thead>
+            <tbody>
+              ${Object.keys(bakCounts).map(k => `<tr><td>${k}</td><td class="font-mono font-bold">${bakCounts[k]}</td><td class="font-mono text-muted">${curCounts[k]}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div style="background:#fff8ec;border-left:3px solid #f59e0b;padding:8px 12px;border-radius:0 8px 8px 0;font-size:13px;margin-bottom:6px">⚠️ 恢复将<b>覆盖</b>当前全部数据（不是合并）；当前浏览器的 AI Key 会保留，不会来自备份文件。</div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-primary" onclick="App.confirmImport()">确认恢复</button>
+          <button class="btn btn-secondary" onclick="App.closeModal()">取消</button>
+        </div>
+      `);
     };
     reader.readAsText(file);
+  },
+
+  confirmImport() {
+    const p = this._pendingImport;
+    this._pendingImport = null;
+    if (!p) return;
+    if (!Store.import(p.text)) { alert('导入失败：文件版本校验未通过'); return; }
+    if (p.curKey) {
+      Store.data.settings.ai = Store.data.settings.ai || {};
+      Store.data.settings.ai.apiKey = p.curKey; // FR-10-06：恢复保留当前浏览器的 Key
+      Store.save();
+    }
+    this.closeModal();
+    location.reload();
   },
 
   showIPSwitcher() {
