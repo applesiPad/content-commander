@@ -57,10 +57,10 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <tr><td><span class="fr">FR-02-01</span></td><td>热点录入/编辑/删除</td><td class="p0">P0</td><td class="ok">✅</td><td>字段齐备，72h 倒计时正常</td></tr>
 <tr><td><span class="fr">FR-02-02</span></td><td>适用 IP 多选</td><td class="p0">P0</td><td class="ok">✅</td><td></td></tr>
 <tr><td><span class="fr">FR-02-03</span></td><td>72h 窗口 &lt;24h 标橙、过期折叠</td><td class="p0">P0</td><td class="ok">✅</td><td>dueAt=创建+72h；过期区折叠</td></tr>
-<tr><td><span class="fr">FR-02-04</span></td><td>按 IP 生成 3 条切入角度</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1：本地角度模板引擎（赛道×人设×热点类型）</td></tr>
+<tr><td><span class="fr">FR-02-04</span></td><td>按 IP 生成 3 条切入角度</td><td class="p1">P1</td><td class="no">❌→✅</td><td><b>v1.2 实现</b>：本地模板引擎（赛道×人设×热点类型判定词表+原创句式池），不同 IP 互不影响，结果存热点记录，可重新生成；每条可直达转选题；标注可在 AI 助手增强</td></tr>
 <tr><td><span class="fr">FR-02-05</span></td><td>转选题（预填+回链+converted）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：热点卡新增「转选题」，预填标题/来源/回链并记录 converted</td></tr>
-<tr><td><span class="fr">FR-02-06</span></td><td>热榜直达外链集合</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1：设置可增删的链接清单</td></tr>
-<tr><td><span class="fr">FR-02-07</span></td><td>营销节点（内置+自定义）</td><td class="p1">P1</td><td class="part">🟡</td><td>指挥板有展示；缺节点管理 UI（自定义增删/隐藏内置）</td></tr>
+<tr><td><span class="fr">FR-02-06</span></td><td>热榜直达外链集合</td><td class="p1">P1</td><td class="no">❌→✅</td><td><b>v1.2 实现</b>：热点页直达链接行（默认 6 家：微博/抖音/百度/知乎/B站/头条），设置可增删（http 校验），纯跳转无抓取</td></tr>
+<tr><td><span class="fr">FR-02-07</span></td><td>营销节点（内置+自定义）</td><td class="p1">P1</td><td class="part">🟡→✅</td><td><b>v1.2 实现</b>：设置页节点管理——自定义增删（名称+MM-DD）、内置节点可隐藏（指挥板同步过滤）</td></tr>
 </table>
 
 <h2>M3 对标拆解（FR-03）</h2>
@@ -83,9 +83,9 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <tr><td><span class="fr">FR-04-02</span></td><td>五维打分</td><td class="p0">P0</td><td class="ok">✅</td><td></td></tr>
 <tr><td><span class="fr">FR-04-03</span></td><td>评级 S/A/B/C（阈值可调）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮实现</b>：评级线 ratingS/A/B 从硬编码改为读设置（默认 21/17/13），改动即时生效于选题池排序与评级</td></tr>
 <tr><td><span class="fr">FR-04-04</span></td><td>题型判断</td><td class="p1">P1</td><td class="ok">✅</td><td>calcTopicType</td></tr>
-<tr><td><span class="fr">FR-04-05</span></td><td>五维雷达图 + 平均画像叠加</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1：SVG 五边形</td></tr>
+<tr><td><span class="fr">FR-04-05</span></td><td>五维雷达图 + 平均画像叠加</td><td class="p1">P1</td><td class="no">❌→✅</td><td><b>v1.2 实现</b>：选题卡迷你雷达 + 画像弹窗大图（本选题 vs 该 IP 回填数据换算的平均画像叠加，换算口径展示，无数据不叠加），画像说明可一键复制</td></tr>
 <tr><td><span class="fr">FR-04-06</span></td><td>标题工坊（关键词生成 10 候选）</td><td class="p1">P1</td><td class="part">🟡</td><td>20 条公式在常量区并展示于文案工坊；选题池无工坊入口与关键词生成</td></tr>
-<tr><td><span class="fr">FR-04-07</span></td><td>立项写稿</td><td class="p0">P0</td><td class="ok">✅</td><td>重复立项提示未做（v1.1 小项）</td></tr>
+<tr><td><span class="fr">FR-04-07</span></td><td>立项写稿</td><td class="p0">P0</td><td class="ok">✅</td><td><b>v1.2 补</b>：重复立项提示（确定再建一稿 / 取消复用现有稿件）</td></tr>
 <tr><td><span class="fr">FR-04-08</span></td><td>看板视图（两种分组+拖拽）</td><td class="p2">P2</td><td class="no">❌</td><td>v1.2 候选</td></tr>
 </table>
 

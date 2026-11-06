@@ -385,6 +385,31 @@ function classifyBenchLabels(parts) {
   };
 }
 
+// ═══ 热点切入角度（FR-02-04，本地模板引擎，输出为建议）═══
+function detectHotType(hot) {
+  const text = (hot.title || '') + (hot.remark || '');
+  for (const t of HOT_TYPES) {
+    if (t.words.test(text)) return t.key;
+  }
+  return 'topic';
+}
+
+// 按「赛道 × 人设 × 热点类型」组合句式生成 3 条角度；不同 IP 互不影响，重生成有轮换
+function generateHotAngles(hot, ip) {
+  const type = detectHotType(hot);
+  const fill = s => s
+    .replace(/\{热点\}/g, hot.title || '该热点')
+    .replace(/\{赛道\}/g, ip.track || '本赛道')
+    .replace(/\{人设\}/g, ip.persona || ip.name || '我')
+    .replace(/\{观众\}/g, ip.audience || '观众');
+  const pool = HOT_ANGLE_TEMPLATES[type] || HOT_ANGLE_TEMPLATES.topic;
+  const seed = parseInt(String(ip.id || '').replace(/\D/g, '').slice(-2) || '0', 10)
+    + ((hot.angles || {})[ip.id] || []).length;
+  const out = [];
+  for (let i = 0; i < 3 && pool.length; i++) out.push(fill(pool[(seed + i) % pool.length]));
+  return out;
+}
+
 // HTML转义
 function escHtml(str) {
   if (!str) return '';

@@ -61,6 +61,7 @@ const Store = {
           chats: []
         },
         nodes: this.getDefaultNodes(),
+        hotLinks: DEFAULT_HOT_LINKS.map(l => ({ ...l })),
         extremeWords: this.getDefaultExtremeWords()
       },
       ui: {

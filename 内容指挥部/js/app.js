@@ -231,6 +231,7 @@ const App = {
           <div class="card-header"><h3 class="card-title">营销节点</h3></div>
           <div style="display:flex;flex-wrap:wrap;gap:8px">
             ${Store.data.settings.nodes.filter(n => {
+              if (n.hidden) return false;
               const [m, d] = n.date.split('-');
               const now = new Date();
               const nodeDate = new Date(now.getFullYear(), parseInt(m) - 1, parseInt(d));
@@ -383,6 +384,13 @@ const App = {
         </div>
         <button class="btn btn-primary" onclick="App.showHotModal()">+ 录入热点</button>
       </div>
+      <div class="card" style="margin-bottom:16px;padding:12px 16px">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:13px;font-weight:700">🔥 热榜直达</span>
+          ${(Store.data.settings.hotLinks || []).map(l => `<a class="btn btn-sm btn-secondary" style="text-decoration:none" href="${escAttr(l.url)}" target="_blank" rel="noopener">${escHtml(l.name)} ↗</a>`).join('') || '<span class="text-muted text-sm">暂无链接</span>'}
+          <a style="color:var(--accent);cursor:pointer;font-size:12px;margin-left:auto" onclick="App.navigate('settings')">在设置中管理 →</a>
+        </div>
+      </div>
       ${activeHots.length === 0 ? `
         <div class="empty-state">
           <div class="empty-icon">🔥</div>
@@ -415,7 +423,9 @@ const App = {
             <span class="tag tag-${hot.heat === '高' ? 'danger' : hot.heat === '中' ? 'warning' : ''}">${hot.heat || '中'}</span>
             <span class="tag">${hot.trend === '升' ? '↑' : hot.trend === '降' ? '↓' : '→'} ${hot.trend || '平'}</span>
             ${!expired ? `<button class="btn btn-sm btn-secondary" onclick="App.showHotModal('${hot.id}')">编辑</button>` : ''}
+            ${!expired ? `<button class="btn btn-sm btn-secondary" onclick="App.showHotAngles('${hot.id}')">💡 角度</button>` : ''}
             ${!expired ? `<button class="btn btn-sm btn-accent" onclick="App.hotToTopic('${hot.id}')">转选题</button>` : ''}
+            ${(hot.converted || []).length ? `<span class="tag tag-success" title="已生成 ${hot.converted.length} 个选题">已转选题</span>` : ''}
             <button class="btn btn-sm btn-secondary" onclick="App.deleteHot('${hot.id}')">删除</button>
           </div>
         </div>
@@ -524,6 +534,7 @@ const App = {
                     <span class="topic-title">${escHtml(t.title)}</span>
                   </div>
                   <div style="display:flex;gap:8px;align-items:center">
+                    ${this.miniRadar(t.id, t.scores)}
                     <span class="topic-rating rating-${rating.toLowerCase()}">${rating}</span>
                     <button class="btn btn-sm btn-secondary" onclick="App.showTopicModal('${t.id}')">编辑</button>
                     <button class="btn btn-sm btn-accent" onclick="App.createContentFromTopic('${t.id}')">写稿</button>
@@ -1080,6 +1091,58 @@ const App = {
     this.toast('已删除自定义平台');
   },
 
+  // FR-02-07：营销节点管理（内置可隐藏，自定义可删除）
+  toggleNode(idx, shown) {
+    const nodes = Store.data.settings.nodes || [];
+    if (nodes[idx]) nodes[idx].hidden = !shown;
+    Store.save();
+    this.renderPage('settings');
+  },
+
+  deleteNode(idx) {
+    const nodes = Store.data.settings.nodes || [];
+    if (!nodes[idx] || nodes[idx].type !== 'custom') return;
+    if (!confirm(`删除自定义节点「${nodes[idx].name}」？`)) return;
+    nodes.splice(idx, 1);
+    Store.save();
+    this.renderPage('settings');
+    this.toast('已删除自定义节点');
+  },
+
+  addCustomNode() {
+    const name = (document.getElementById('nodeName')?.value || '').trim();
+    const date = (document.getElementById('nodeDate')?.value || '').trim();
+    if (!name) { this.toast('请输入节点名称'); return; }
+    if (!/^\d{2}-\d{2}$/.test(date)) { this.toast('日期格式：MM-DD，如 03-15'); return; }
+    Store.data.settings.nodes = Store.data.settings.nodes || [];
+    Store.data.settings.nodes.push({ date, name, type: 'custom' });
+    Store.save();
+    this.renderPage('settings');
+    this.toast(`已添加节点「${name}」(${date})`);
+  },
+
+  // FR-02-06：热榜直达链接管理
+  addHotLink() {
+    const name = (document.getElementById('hotLinkName')?.value || '').trim();
+    const url = (document.getElementById('hotLinkUrl')?.value || '').trim();
+    if (!name) { this.toast('请输入名称'); return; }
+    if (!/^https?:\/\//i.test(url)) { this.toast('链接需以 http(s):// 开头'); return; }
+    Store.data.settings.hotLinks = Store.data.settings.hotLinks || [];
+    Store.data.settings.hotLinks.push({ name, url });
+    Store.save();
+    this.renderPage('settings');
+    this.toast(`已添加「${name}」`);
+  },
+
+  deleteHotLink(idx) {
+    const links = Store.data.settings.hotLinks || [];
+    if (!links[idx]) return;
+    if (!confirm(`删除热榜链接「${links[idx].name}」？`)) return;
+    links.splice(idx, 1);
+    Store.save();
+    this.renderPage('settings');
+  },
+
   // FR-08-08：复盘筛选
   setReviewFilter(key, val) {
     this.reviewFilter = this.reviewFilter || { days: 0, platform: '', account: '' };
@@ -1300,6 +1363,34 @@ const App = {
             <button class="btn btn-secondary" onclick="App.addCustomPlatform()">+ 追加平台</button>
           </div>
           <div class="settings-desc" style="margin-top:6px">追加后即可开号/建矩阵/参与筛选；填了后台地址的平台会在稿件弹窗出现「后台直达」按钮</div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-title">营销节点管理 <span style="font-weight:400;font-size:11px;color:var(--muted)">（内置可隐藏，自定义可删除）</span></div>
+          <div style="display:flex;flex-direction:column;gap:4px;max-height:200px;overflow:auto;margin-bottom:10px">
+            ${(settings.nodes || []).map((n, i) => `
+            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;padding:5px 8px;background:var(--soft);border-radius:6px;${n.hidden ? 'opacity:.5' : ''}">
+              <span class="font-mono">${n.date}</span>
+              <span style="flex:1">${escHtml(n.name)}${n.type === 'custom' ? ' <span class="text-muted">· 自定义</span>' : ''}</span>
+              <label style="display:flex;align-items:center;gap:3px;font-size:11px;cursor:pointer"><input type="checkbox" ${!n.hidden ? 'checked' : ''} onchange="App.toggleNode(${i}, this.checked)">显示</label>
+              ${n.type === 'custom' ? `<a style="color:var(--danger);cursor:pointer;font-weight:700" title="删除" onclick="App.deleteNode(${i})">×</a>` : ''}
+            </div>`).join('') || '<span class="text-muted text-sm">暂无节点</span>'}
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input id="nodeName" class="form-input" style="width:150px" placeholder="节点名称，如 女神节">
+            <input id="nodeDate" class="form-input" style="width:130px" placeholder="日期 MM-DD">
+            <button class="btn btn-sm btn-secondary" onclick="App.addCustomNode()">+ 添加自定义节点</button>
+          </div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-title">热榜直达链接 <span style="font-weight:400;font-size:11px;color:var(--muted)">（纯跳转，不抓取）</span></div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+            ${(settings.hotLinks || []).map((l, i) => `<span class="tag" style="display:inline-flex;align-items:center;gap:4px">${escHtml(l.name)}<a style="color:var(--danger);cursor:pointer;font-weight:700" title="删除" onclick="App.deleteHotLink(${i})">×</a></span>`).join('') || '<span class="text-muted text-sm">暂无链接</span>'}
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input id="hotLinkName" class="form-input" style="width:130px" placeholder="名称，如 微博热搜">
+            <input id="hotLinkUrl" class="form-input" style="width:260px" placeholder="https://…">
+            <button class="btn btn-sm btn-secondary" onclick="App.addHotLink()">+ 添加链接</button>
+          </div>
         </div>
         <div class="settings-section">
           <div class="settings-title">AI 接口配置</div>
@@ -1665,17 +1756,62 @@ const App = {
     this.renderPage('hot');
   },
 
-  // FR-02-05：热点转选题（预填标题/来源/回链，转换后记录 converted）
-  hotToTopic(hotId) {
+  // FR-02-05：热点转选题（预填标题/来源/回链，转换后记录 converted）；支持从角度句转入
+  hotToTopic(hotId, ipId, angleIdx) {
     const hot = Store.data.hots.find(h => h.id === hotId);
     if (!hot) return;
+    let title = hot.title;
+    let forcedIp = null;
+    if (ipId && angleIdx !== undefined && angleIdx !== null) {
+      const a = ((hot.angles || {})[ipId] || [])[angleIdx];
+      if (a) title = a;
+      forcedIp = ipId;
+    }
     // 已转过的提示可再次转（不同 IP 角度），但列出已有转换
     this.showTopicModal(null, {
-      title: hot.title,
+      title,
       source: 'hot',
       srcRef: hot.id,
-      ipId: (hot.ipIds && hot.ipIds[0]) || this.currentIp || Store.data.ips[0]?.id || ''
+      ipId: forcedIp || (hot.ipIds && hot.ipIds[0]) || this.currentIp || Store.data.ips[0]?.id || ''
     });
+  },
+
+  // FR-02-04：切入角度（本地模板引擎，可编辑/补充——重新生成即覆盖，转选题可带走）
+  showHotAngles(hotId) {
+    const hot = Store.data.hots.find(h => h.id === hotId);
+    if (!hot) return;
+    const ipIds = (hot.ipIds && hot.ipIds.length) ? hot.ipIds : Store.data.ips.map(i => i.id);
+    if (!ipIds.length) { this.toast('先到「IP 与账号」创建 IP，再生成切入角度'); return; }
+    this.showModal(`
+      <div class="modal-title">切入角度 · ${escHtml(hot.title)}</div>
+      <div class="text-muted text-sm" style="margin-bottom:10px">本地模板引擎生成（赛道 × 人设 × 热点类型「${({ event: '事件', product: '产品', debate: '争议' }[detectHotType(hot)] || '话题')}」），输出为建议；可在 AI 助手用「热点切入角度」模板增强。</div>
+      ${ipIds.map(ipId => {
+        const ip = Store.getIP(ipId);
+        if (!ip) return '';
+        const angles = (hot.angles || {})[ipId] || [];
+        return `
+          <div style="margin-bottom:14px;padding:10px 12px;background:var(--soft);border-radius:10px">
+            <div style="font-weight:700;margin-bottom:6px"><span style="color:${ip.color}">${ip.avatar}</span> ${escHtml(ip.name)} <span class="text-muted" style="font-weight:400;font-size:11px">${escHtml(ip.track || '')}</span></div>
+            ${angles.length ? angles.map((a, i) => `
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;padding:5px 0">
+                <span style="flex:1;line-height:1.6">${escHtml(a)}</span>
+                <button class="btn btn-sm btn-secondary" onclick="App.hotToTopic('${hotId}','${ipId}',${i})">→ 转选题</button>
+              </div>`).join('') + `<button class="btn btn-sm btn-secondary" style="margin-top:4px" onclick="App.genHotAngles('${hotId}','${ipId}')">↻ 重新生成（覆盖）</button>`
+              : `<button class="btn btn-sm btn-accent" onclick="App.genHotAngles('${hotId}','${ipId}')">💡 为该 IP 生成 3 条角度</button>`}
+          </div>`;
+      }).join('')}
+      <div style="text-align:right"><button class="btn btn-secondary" onclick="App.closeModal()">关闭</button></div>
+    `);
+  },
+
+  genHotAngles(hotId, ipId) {
+    const hot = Store.data.hots.find(h => h.id === hotId);
+    const ip = Store.getIP(ipId);
+    if (!hot || !ip) return;
+    hot.angles = hot.angles || {};
+    hot.angles[ipId] = generateHotAngles(hot, ip);
+    Store.save();
+    this.showHotAngles(hotId);
   },
   
   // 对标管理
@@ -2011,10 +2147,110 @@ const App = {
   createContentFromTopic(topicId) {
     const topic = Store.data.topics.find(t => t.id === topicId);
     if (!topic) return;
+    // FR-04-07：重复立项提示，可复用已有稿件
+    const existing = Store.data.contents.find(c => c.topicId === topicId);
+    if (existing && !confirm(`该选题已立项过「${existing.title || '未命名'}」。\n确定 = 再次新建一稿；取消 = 复用现有稿件继续写。`)) {
+      this.editingId = existing.id;
+      this.navigate('script');
+      return;
+    }
     const content = Store.addContent({ ipId: topic.ipId, title: topic.title, stage: 'draft', topicId });
     Store.updateTopic(topicId, { status: 'doing' });
     this.editingId = content.id;
     this.navigate('script');
+  },
+
+  // ═══ 五维雷达图（FR-04-05）═══
+  miniRadar(topicId, scores) {
+    const cx = 32, cy = 32, r = 25;
+    const pt = (i, v) => {
+      const ang = -Math.PI / 2 + i * 2 * Math.PI / 5;
+      return `${(cx + r * v * Math.cos(ang)).toFixed(1)},${(cy + r * v * Math.sin(ang)).toFixed(1)}`;
+    };
+    const ring = g => FIVE_DIMS.map((_, i) => pt(i, g / 5)).join(' ');
+    const poly = FIVE_DIMS.map((d, i) => pt(i, Math.min(5, Math.max(0, scores?.[d.key] || 0)) / 5)).join(' ');
+    return `<svg width="46" height="46" viewBox="0 0 64 64" style="flex-shrink:0;cursor:pointer" title="查看画像对比" onclick="App.showTopicRadar('${topicId}')">
+      ${[2, 3, 4, 5].map(g => `<polygon points="${ring(g)}" fill="none" stroke="var(--line)" stroke-width="1.5"/>`).join('')}
+      <polygon points="${poly}" fill="var(--accent)" fill-opacity=".3" stroke="var(--accent)" stroke-width="2"/>
+    </svg>`;
+  },
+
+  showTopicRadar(topicId) {
+    const topic = Store.data.topics.find(t => t.id === topicId);
+    if (!topic) return;
+    const ip = Store.getIP(topic.ipId);
+    const avg = ip ? this.ipAvgProfile(topic.ipId) : null;
+    const CX = 150, CY = 140, R = 100;
+    const pt = (i, v) => {
+      const ang = -Math.PI / 2 + i * 2 * Math.PI / 5;
+      return [CX + R * v * Math.cos(ang), CY + R * v * Math.sin(ang)];
+    };
+    const ring = g => FIVE_DIMS.map((_, i) => pt(i, g / 5).map(n => n.toFixed(1)).join(',')).join(' ');
+    const polyOf = prof => FIVE_DIMS.map((d, i) => pt(i, Math.min(5, Math.max(0, prof?.[d.key] || 0)) / 5).map(n => n.toFixed(1)).join(',')).join(' ');
+    const { rating, total } = calcRating(topic.scores || {});
+    this.showModal(`
+      <div class="modal-title">选题画像 · ${escHtml(topic.title || '未命名')}</div>
+      <svg viewBox="0 0 300 292" style="width:100%;max-width:340px;display:block;margin:0 auto">
+        ${[1, 2, 3, 4, 5].map(g => `<polygon points="${ring(g)}" fill="none" stroke="var(--line)" stroke-width="1"/>`).join('')}
+        ${FIVE_DIMS.map((d, i) => {
+          const [lx, ly] = pt(i, 1.22).map(n => n.toFixed(1));
+          const [ax, ay] = pt(i, 1).map(n => n.toFixed(1));
+          return `<line x1="${CX}" y1="${CY}" x2="${ax}" y2="${ay}" stroke="var(--line)"/><text x="${lx}" y="${ly}" text-anchor="middle" font-size="12" fill="var(--muted)">${d.icon} ${d.name}</text>`;
+        }).join('')}
+        ${avg ? `<polygon points="${polyOf(avg)}" fill="var(--muted)" fill-opacity=".15" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4"/>` : ''}
+        <polygon points="${polyOf(topic.scores)}" fill="var(--accent)" fill-opacity=".28" stroke="var(--accent)" stroke-width="2"/>
+      </svg>
+      <div style="display:flex;gap:14px;justify-content:center;font-size:12px;margin:8px 0;flex-wrap:wrap">
+        <span><span style="display:inline-block;width:10px;height:10px;background:var(--accent);opacity:.5;border-radius:2px"></span> 本选题（${rating} · ${total} 分）</span>
+        ${avg ? '<span><span style="display:inline-block;width:10px;height:10px;background:var(--muted);opacity:.4;border-radius:2px"></span> 该 IP 已发布平均画像</span>' : '<span class="text-muted">该 IP 暂无回填数据，不叠加平均画像</span>'}
+      </div>
+      <div class="text-xs text-muted" style="line-height:1.8;background:var(--soft);border-radius:8px;padding:8px 10px">口径：平均画像由该 IP 回填数据换算——痛点≈5秒完播÷达标线、实用≈收藏率÷达标线、悬念≈均播比÷达标线、争议≈评论率÷达标线（封顶 5，无数据维度取 3）；赛道维度暂无直接数据，取中间值。</div>
+      <div style="margin-top:12px;text-align:right"><button class="btn btn-sm btn-secondary" onclick="App.copyRadarSummary('${topicId}')">📋 复制画像说明</button> <button class="btn btn-secondary" onclick="App.closeModal()">关闭</button></div>
+    `);
+  },
+
+  ipAvgProfile(ipId) {
+    const posts = Store.data.posts.filter(p => {
+      const a = Store.data.accounts.find(x => x.id === p.accountId);
+      return a && a.ipId === ipId;
+    });
+    if (!posts.length) return null;
+    const std = Store.data.settings.standards;
+    const clamp5 = v => Math.max(1, Math.min(5, v));
+    const rates = posts.map(p => ({
+      five: p.fiveSecRate != null ? p.fiveSecRate : null,
+      fav: p.play ? (p.favorite || 0) / p.play * 100 : null,
+      avp: p.duration ? (p.avgPlay || 0) / p.duration * 100 : null,
+      com: p.play ? (p.comment || 0) / p.play * 100 : null
+    }));
+    const mean = f => {
+      const vals = rates.map(r => f(r)).filter(v => v !== null && !isNaN(v));
+      return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+    };
+    const five = mean(r => r.five), fav = mean(r => r.fav), avp = mean(r => r.avp), com = mean(r => r.com);
+    if (five == null && fav == null && avp == null && com == null) return null;
+    return {
+      pain: five != null ? clamp5(five / (std.fiveSecLine || 60) * 3) : 3,
+      useful: fav != null ? clamp5(fav / (std.favLine || 2.2) * 3) : 3,
+      suspense: avp != null ? clamp5(avp / (std.avgLine || 40) * 3) : 3,
+      debate: com != null ? clamp5(com / (std.commentLine || 0.5) * 3) : 3,
+      track: 3
+    };
+  },
+
+  copyRadarSummary(topicId) {
+    const topic = Store.data.topics.find(t => t.id === topicId);
+    if (!topic) return;
+    const { rating, total } = calcRating(topic.scores || {});
+    const avg = this.ipAvgProfile(topic.ipId);
+    const fmt = p => FIVE_DIMS.map(d => `${d.name}${p && p[d.key] != null ? p[d.key] : '-'}`).join('/');
+    const text = [
+      `【选题画像】${topic.title || '未命名'}`,
+      `评级 ${rating}（五维总分 ${total}）：${fmt(topic.scores)}`,
+      avg ? `IP 平均画像：${fmt(avg)}（来自回填数据换算）` : '该 IP 暂无回填数据，未叠加平均画像'
+    ].join('\n');
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => this.toast('✓ 画像说明已复制')).catch(() => this.toast(text));
+    else this.toast(text);
   },
   
   // 内容管理
