@@ -108,11 +108,11 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <tr><td><span class="fr">FR-06-01</span></td><td>自动分镜 + 逐镜可编辑</td><td class="p0">P0</td><td class="ok">✅</td><td></td></tr>
 <tr><td><span class="fr">FR-06-02</span></td><td>重建分镜（确认覆盖）</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮实现</b>：拍摄卡新增「重建分镜」（有分镜时显示），确认覆盖后按当前文案重新生成</td></tr>
 <tr><td><span class="fr">FR-06-03</span></td><td>拍摄日程（按日期分组/改期）</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮实现</b>：拍摄页新增「拍摄日程」卡——按 shootDate 分组（今天/明天/未来/已过期/未排期），行内日期选择即改期，过期未拍置灰 + 标记提醒</td></tr>
-<tr><td><span class="fr">FR-06-04</span></td><td>开拍检查清单（5 固定+自定义）</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
+<tr><td><span class="fr">FR-06-04</span></td><td>开拍检查清单（5 固定+自定义）</td><td class="p1">P1</td><td class="no">❌→✅</td><td><b>v1.2 实现</b>：拍摄卡「开拍清单」——5 固定项+自定义增删，按内容+日期当天有效次日自动清零，全勾显示「可以开拍」，卡片带进度角标</td></tr>
 <tr><td><span class="fr">FR-06-05</span></td><td>全屏提词器（速度/字号/镜像/按镜）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮实现</b>：按镜分组滚动+当前镜高亮+进度指示；速度 1~10 档（每档 24px/s，默认 3 档，滚轮 ±0.5 微调）、字号 24~80（默认 48）、左右镜像；空格暂停/继续、结尾自停；设置持久化 settings.teleprompter，退出全屏保留。无分镜时按 开头/正文/结尾 三段兜底</td></tr>
 <tr><td><span class="fr">FR-06-06</span></td><td>逐镜完成标记</td><td class="p0">P0</td><td class="ok">✅</td><td><b>本轮补强</b>：记录打勾时间 doneAt；提词器内可直接打勾；全部完成提示进入剪辑</td></tr>
 <tr><td><span class="fr">FR-06-07</span></td><td>阶段流转（拍完→剪辑→排期）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮实现</b>：全部镜头打勾 →「拍完了，进入剪辑」（editDone）→「剪辑完成，去排发布」置 stage=schedule 并跳转排期页</td></tr>
-<tr><td><span class="fr">FR-06-08</span></td><td>景别速查卡</td><td class="p2">P2</td><td class="no">❌</td><td>v1.2 候选</td></tr>
+<tr><td><span class="fr">FR-06-08</span></td><td>景别速查卡</td><td class="p2">P2</td><td class="no">❌→✅</td><td><b>v1.2 实现</b>：拍摄页常驻可折叠卡，全景/中景/近景/特写四卡原创文案（用途+适用场景）</td></tr>
 </table>
 
 <h2>M7 发布排期（FR-07）</h2>
@@ -120,11 +120,11 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
 <tr><td><span class="fr">FR-07-01</span></td><td>7 日排期视图</td><td class="p0">P0</td><td class="ok">✅</td><td>本轮补回排期时间显示</td></tr>
 <tr><td><span class="fr">FR-07-02</span></td><td>排期编辑（时间+目标账号多选）</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮实现（P0 大缺口）</b>：稿件弹窗新增排期区——日期/时间/目标账号多选，持久化 scheduledAt/scheduledTime/targetAccounts</td></tr>
-<tr><td><span class="fr">FR-07-03</span></td><td>封面预览（画幅模拟）</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
-<tr><td><span class="fr">FR-07-04</span></td><td>发布确认清单（4 项勾选）</td><td class="p1">P1</td><td class="no">❌</td><td>v1.1</td></tr>
+<tr><td><span class="fr">FR-07-03</span></td><td>封面预览（画幅模拟）</td><td class="p1">P1</td><td class="no">❌→✅</td><td><b>v1.2 实现</b>：文案工坊侧栏封面预览——9:16/3:4/16:9 画幅切换，底色随 IP 主题色渐变，封面大字随输入实时更新，可截图留存</td></tr>
+<tr><td><span class="fr">FR-07-04</span></td><td>发布确认清单（4 项勾选）</td><td class="p1">P1</td><td class="no">❌→✅</td><td><b>v1.2 实现</b>：稿件弹窗 4 项勾选（水印/错别字/赛道标签/时间）随内容保存；全勾亮「标记已发布」，未全勾需确认跳过</td></tr>
 <tr><td><span class="fr">FR-07-05</span></td><td>复制标题/标签/全文</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮实现</b>：稿件弹窗三键复制（标题/标签/全文拼接），toast 提示</td></tr>
 <tr><td><span class="fr">FR-07-06</span></td><td>标记已发布（幂等建 posts）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：幂等（已有记录不重建）+ 数量确认；默认 19:30 随排期编辑落地</td></tr>
-<tr><td><span class="fr">FR-07-07</span></td><td>待回填提醒（48h 标记）</td><td class="p1">P1</td><td class="part">🟡</td><td>指挥板计数有；48h 超时标记未做</td></tr>
+<tr><td><span class="fr">FR-07-07</span></td><td>待回填提醒（48h 标记）</td><td class="p1">P1</td><td class="part">🟡→✅</td><td><b>v1.2 实现</b>：发布记录表超 48h 未回填显示「⏰ 48h未回填」标记（指挥板/复盘计数原有）</td></tr>
 </table>
 <div class="warn"><b>发布辅助（用户关切的"自动发布"替代方案）</b>：本轮在稿件弹窗内置各平台创作者后台直达链接（用户点击跳转，符合 NFR-02 出网点清单），配合复制三连 + 排期 + 标记已发布，形成"一键准备、手动发布、回来标记"的半自动闭环。<b>全自动发布受平台 API 限制与合规约束，不做</b>（PRD-00 §4 Out of Scope / D-06），详见文末方案说明。</div>
 

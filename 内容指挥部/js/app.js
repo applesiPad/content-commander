@@ -594,7 +594,7 @@ const App = {
                 <div class="grid-2">
                   <div class="script-field">
                     <div class="script-field-label">封面大字 (<=12字)</div>
-                    <input type="text" class="form-input" id="scriptCover" value="${escAttr(content.cover || '')}" placeholder="封面上的大字">
+                    <input type="text" class="form-input" id="scriptCover" value="${escAttr(content.cover || '')}" placeholder="封面上的大字" oninput="App._liveCoverPreview()">
                   </div>
                   <div class="script-field">
                     <div class="script-field-label">标签 (逗号分隔)</div>
@@ -616,6 +616,16 @@ const App = {
                     <div class="flex justify-between"><span class="text-muted">预估时长</span><span class="font-mono">${Math.round(((content.hook || '').length + (content.body || '').length + (content.cta || '').length) / (Store.data.settings.standards.wpm || 240) * 60)}秒</span></div>
                     <div class="flex justify-between"><span class="text-muted">阶段</span><span class="tag">${CONTENT_STAGES.find(s => s.key === content.stage)?.name || content.stage}</span></div>
                   </div>
+                </div>
+                <div class="card">
+                  <div class="card-title" style="margin-bottom:12px">封面预览 <span style="font-weight:400;font-size:11px;color:var(--muted)">（画幅示意，非最终图）</span></div>
+                  <div style="display:flex;gap:6px;margin-bottom:10px;justify-content:center">
+                    ${['9:16', '3:4', '16:9'].map(r => `<button class="btn btn-sm cover-ratio-btn ${(this.coverRatio || '9:16') === r ? 'btn-accent' : 'btn-secondary'}" data-r="${r}" onclick="App.setCoverRatio('${r}')">${r}</button>`).join('')}
+                  </div>
+                  <div id="coverPreviewBox" style="width:150px;aspect-ratio:9/16;background:linear-gradient(135deg, ${ip?.color || '#1e3a8a'}, #111827);border-radius:12px;display:flex;align-items:center;justify-content:center;padding:10px;margin:0 auto">
+                    <span id="coverPreviewText" style="color:#fff;font-weight:900;font-size:24px;line-height:1.35;text-align:center;word-break:break-all;text-shadow:0 2px 8px rgba(0,0,0,.35)">${escHtml(content.cover || '（封面大字）')}</span>
+                  </div>
+                  <div class="text-xs text-muted" style="margin-top:8px;text-align:center">底色随 IP 主题色 · 可截图留存</div>
                 </div>
                 <div class="card" id="checkResult">
                   <div class="card-title" style="margin-bottom:12px">体检结果</div>
@@ -737,6 +747,9 @@ const App = {
           const ip = Store.getIP(c.ipId);
           const shots = c.shots || [];
           const completedShots = shots.filter(s => s.done).length;
+          const sc = this.getShootCheck(c);
+          const checkDone = sc.fixed.filter(Boolean).length + sc.custom.filter(x => x.done).length;
+          const checkTotal = SHOOT_CHECK_FIXED.length + sc.custom.length;
           return `
             <div class="card">
               <div class="card-header">
@@ -748,6 +761,7 @@ const App = {
                   <div style="font-size:12px;color:var(--muted);margin-top:4px">${shots.length} 个分镜 · 已完成 ${completedShots}/${shots.length}</div>
                 </div>
                 <div style="display:flex;gap:8px">
+                  <button class="btn btn-sm btn-secondary" onclick="App.showShootCheckModal('${c.id}')" title="FR-06-04：当天有效，次日自动清零">✅ 开拍清单 ${checkDone}/${checkTotal}</button>
                   ${shots.length > 0 ? `<button class="btn btn-sm btn-secondary" onclick="App.rebuildShots('${c.id}')">重建分镜</button>` : ''}
                   <button class="btn btn-sm btn-secondary" onclick="App.editShots('${c.id}')">编辑分镜</button>
                   <button class="btn btn-sm btn-accent" onclick="App.openTeleprompter('${c.id}')">提词器</button>
@@ -782,9 +796,29 @@ const App = {
           `;
         }).join('')}
       </div>
+      ${(() => {
+        // FR-06-08：景别速查卡（常驻可折叠）
+        if (!this.shotGuideOpen) {
+          return `<div class="card" style="cursor:pointer" onclick="App.toggleShotGuide()"><div style="display:flex;justify-content:space-between;align-items:center"><h3 class="card-title">🎬 景别速查</h3><span class="text-xs text-muted">展开 ▾</span></div></div>`;
+        }
+        return `
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin-bottom:12px" onclick="App.toggleShotGuide()">
+              <h3 class="card-title" style="margin:0">🎬 景别速查</h3><span class="text-xs text-muted">收起 ▴</span>
+            </div>
+            <div class="grid-4">
+              ${SHOT_TYPE_GUIDE.map(s => `
+                <div style="background:var(--soft);border-radius:var(--radius-sm);padding:12px">
+                  <div style="font-weight:700;margin-bottom:4px">${s.icon} ${s.name}</div>
+                  <div style="font-size:12px;color:var(--muted);line-height:1.7">${s.use}</div>
+                  <div style="font-size:11.5px;margin-top:6px;color:var(--accent)">适用：${s.fit}</div>
+                </div>`).join('')}
+            </div>
+          </div>`;
+      })()}
     `;
   },
-  
+
   // 发布排期
   renderSchedule() {
     const data = Store.getFilteredData(this.currentIp);
@@ -838,7 +872,7 @@ const App = {
                     <td><span class="tag tag-${c.stage === 'published' ? 'success' : 'accent'}">${c.stage === 'published' ? '已发布' : '待发布'}</span></td>
                     <td>
                       <button class="btn btn-sm btn-secondary" onclick="App.showContentModal('${c.id}')">编辑</button>
-                      ${c.stage === 'schedule' ? `<button class="btn btn-sm btn-accent" onclick="App.markPublished('${c.id}')">标记已发布</button>` : ''}
+                      ${c.stage === 'schedule' ? `<button class="btn btn-sm ${PUB_CHECK_ITEMS.every((_, i) => (c.pubCheck || [])[i]) ? 'btn-accent' : 'btn-secondary'}" title="${PUB_CHECK_ITEMS.every((_, i) => (c.pubCheck || [])[i]) ? '确认清单已全勾' : '发布确认清单未全勾，点击需确认跳过'}" onclick="App.markPublished('${c.id}')">标记已发布</button>` : ''}
                     </td>
                   </tr>
                 `;
@@ -972,7 +1006,7 @@ const App = {
                   <tr>
                     <td>${escHtml(content?.title || '未命名')}</td>
                     <td><span style="color:${ip?.color || 'var(--muted)'}">${ip?.avatar || '📱'} ${account?.name || '未知'}</span></td>
-                    <td class="font-mono text-sm">${p.publishedAt?.slice(0, 10) || '-'}</td>
+                    <td class="font-mono text-sm">${p.publishedAt?.slice(0, 10) || '-'}${this.isBackfillOverdue(p) ? ' <span class="tag tag-danger" title="已发布超过 48 小时仍未回填数据">⏰ 48h未回填</span>' : ''}</td>
                     <td class="font-mono">${formatNumber(p.play || 0)}</td>
                     <td class="font-mono">${formatNumber(p.likes || 0)}</td>
                     <td class="font-mono">${formatNumber(p.favorite || 0)}</td>
@@ -2026,6 +2060,14 @@ const App = {
           }).join('') || '<span class="text-xs text-muted">该 IP 暂无账号，先到「IP 与账号」添加</span>'}
         </div>
       </div>
+      ${content.stage === 'schedule' ? `
+      <div class="form-group">
+        <label class="form-label">发布确认清单 <span class="text-muted" style="font-weight:400;font-size:11px">（全勾选才亮「标记已发布」，可跳过并确认）</span></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+          ${PUB_CHECK_ITEMS.map((t, i) => `<label style="font-size:12.5px;display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" ${(content.pubCheck || [])[i] ? 'checked' : ''} onchange="App.togglePubCheck('${content.id}', ${i}, this.checked)">${t}</label>`).join('')}
+        </div>
+      </div>
+      ` : ''}
       ` : ''}
       <div style="display:flex;gap:8px;margin-top:20px">
         <button class="btn btn-primary" onclick="App.saveContent('${id || ''}')">${content ? '保存' : '创建'}</button>
@@ -2216,6 +2258,119 @@ const App = {
     Store.updateContent(contentId, { stage: 'schedule' });
     this.toast('剪辑完成，已进入发布排期');
     this.navigate('schedule');
+  },
+
+  // ═══ 开拍检查清单（FR-06-04：当天有效，次日自动清零）═══
+  getShootCheck(content) {
+    const today = new Date().toISOString().slice(0, 10);
+    let sc = content.shootCheck;
+    if (!sc || sc.date !== today) {
+      // 次日自动清零：固定项与勾选状态重置，自定义条目保留但取消勾选
+      sc = { date: today, fixed: SHOOT_CHECK_FIXED.map(() => false), custom: ((sc && sc.custom) || []).map(c => ({ text: c.text, done: false })) };
+    }
+    return sc;
+  },
+
+  showShootCheckModal(contentId) {
+    const content = Store.getContent(contentId);
+    if (!content) return;
+    const sc = this.getShootCheck(content);
+    const canShoot = sc.fixed.every(Boolean) && sc.custom.every(c => c.done);
+    this.showModal(`
+      <div class="modal-title">开拍清单 · ${escHtml(content.title || '未命名')}</div>
+      ${canShoot
+        ? '<div style="background:#dcfce7;color:#15803d;padding:10px 14px;border-radius:10px;font-weight:700;margin-bottom:12px">✅ 全部就绪，可以开拍！</div>'
+        : '<div class="text-muted text-sm" style="margin-bottom:12px">清单按内容+日期当天有效，次日自动清零；全部勾选显示「可以开拍」。</div>'}
+      ${SHOOT_CHECK_FIXED.map((t, i) => `
+        <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--soft);border-radius:8px;margin-bottom:6px;cursor:pointer">
+          <input type="checkbox" ${sc.fixed[i] ? 'checked' : ''} onchange="App.toggleShootCheck('${contentId}','fixed',${i})">
+          <span style="font-size:13.5px">${t}</span>
+        </label>`).join('')}
+      ${sc.custom.map((c, i) => `
+        <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--soft);border-radius:8px;margin-bottom:6px;cursor:pointer">
+          <input type="checkbox" ${c.done ? 'checked' : ''} onchange="App.toggleShootCheck('${contentId}','custom',${i})">
+          <span style="font-size:13.5px;flex:1;${c.done ? 'text-decoration:line-through;color:var(--muted)' : ''}">${escHtml(c.text)}</span>
+          <a style="color:var(--danger);cursor:pointer;font-weight:700" title="删除该项" onclick="App.delShootCheckItem('${contentId}',${i})">×</a>
+        </label>`).join('')}
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <input id="shootCheckNew" class="form-input" style="flex:1" placeholder="自定义检查项，如：提词器已调试" onkeypress="if(event.key==='Enter')App.addShootCheckItem('${contentId}')">
+        <button class="btn btn-sm btn-secondary" onclick="App.addShootCheckItem('${contentId}')">+ 添加</button>
+      </div>
+      <div style="margin-top:14px;text-align:right"><button class="btn btn-secondary" onclick="App.closeModal()">关闭</button></div>
+    `);
+  },
+
+  toggleShootCheck(contentId, kind, idx) {
+    const content = Store.getContent(contentId);
+    if (!content) return;
+    const sc = this.getShootCheck(content);
+    if (kind === 'fixed' && sc.fixed[idx] !== undefined) sc.fixed[idx] = !sc.fixed[idx];
+    else if (kind === 'custom' && sc.custom[idx]) sc.custom[idx].done = !sc.custom[idx].done;
+    Store.updateContent(contentId, { shootCheck: sc });
+    this.showShootCheckModal(contentId); // 刷新「可以开拍」状态
+  },
+
+  addShootCheckItem(contentId) {
+    const input = document.getElementById('shootCheckNew');
+    const text = (input?.value || '').trim();
+    if (!text) return;
+    const content = Store.getContent(contentId);
+    if (!content) return;
+    const sc = this.getShootCheck(content);
+    sc.custom.push({ text, done: false });
+    Store.updateContent(contentId, { shootCheck: sc });
+    this.showShootCheckModal(contentId);
+  },
+
+  delShootCheckItem(contentId, idx) {
+    const content = Store.getContent(contentId);
+    if (!content) return;
+    const sc = this.getShootCheck(content);
+    sc.custom.splice(idx, 1);
+    Store.updateContent(contentId, { shootCheck: sc });
+    this.showShootCheckModal(contentId);
+  },
+
+  toggleShotGuide() {
+    this.shotGuideOpen = !this.shotGuideOpen;
+    this.renderPage('shoot');
+  },
+
+  // ═══ 封面预览（FR-07-03：画幅示意）═══
+  setCoverRatio(r) {
+    this.coverRatio = r;
+    const box = document.getElementById('coverPreviewBox');
+    if (box) {
+      box.style.aspectRatio = r.replace(':', '/');
+      box.style.width = r === '16:9' ? '250px' : r === '3:4' ? '190px' : '150px';
+    }
+    const txt = document.getElementById('coverPreviewText');
+    if (txt) txt.style.fontSize = r === '16:9' ? '20px' : '24px';
+    document.querySelectorAll('.cover-ratio-btn').forEach(b => {
+      b.classList.toggle('btn-accent', b.dataset.r === r);
+      b.classList.toggle('btn-secondary', b.dataset.r !== r);
+    });
+  },
+
+  _liveCoverPreview() {
+    const t = document.getElementById('coverPreviewText');
+    const inp = document.getElementById('scriptCover');
+    if (t && inp) t.textContent = inp.value || '（封面大字）';
+  },
+
+  // ═══ 发布确认清单（FR-07-04）与 48h 待回填（FR-07-07）═══
+  togglePubCheck(contentId, idx, checked) {
+    const content = Store.getContent(contentId);
+    if (!content) return;
+    const arr = PUB_CHECK_ITEMS.map((_, i) => !!(content.pubCheck || [])[i]);
+    arr[idx] = !!checked;
+    Store.updateContent(contentId, { pubCheck: arr });
+  },
+
+  isBackfillOverdue(post) {
+    if (!post || post.backfilledAt) return false;
+    const t = new Date(post.publishedAt || 0).getTime();
+    return t > 0 && (Date.now() - t) > 48 * 3600000;
   },
 
   // ═══ 全屏提词器（FR-06-05）═══
@@ -2416,6 +2571,10 @@ const App = {
     if (targetAccounts.length === 0) {
       alert('尚未设置目标账号。请点击「编辑」在稿件弹窗中勾选目标账号后再标记发布。');
       return;
+    }
+    // FR-07-04：发布确认清单未全勾时需确认跳过
+    if (!PUB_CHECK_ITEMS.every((_, i) => (content.pubCheck || [])[i])) {
+      if (!confirm('发布确认清单未全部勾选（封面水印/错别字/赛道标签/发布时间），确认跳过检查直接标记？')) return;
     }
     // FR-07-06：幂等——已有发布记录的账号跳过
     const existing = new Set(Store.data.posts.filter(p => p.contentId === contentId).map(p => p.accountId));
