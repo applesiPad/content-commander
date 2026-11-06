@@ -543,11 +543,16 @@ const App = {
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
         <div>
           <h2 style="font-size:18px;font-weight:700;margin-bottom:4px">选题池</h2>
-          <p class="text-muted text-sm">五维评分，S/A/B/C 评级排序</p>
+          <p class="text-muted text-sm">五维评分，S/A/B/C 评级排序${this.topicView === 'board' ? ' · 看板模式' : ''}</p>
         </div>
-        <button class="btn btn-primary" onclick="App.showTopicModal()">+ 新建选题</button>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn btn-sm ${(this.topicView || 'list') === 'list' ? 'btn-accent' : 'btn-secondary'}" onclick="App.topicView='list';App.renderPage('topic')">列表</button>
+          <button class="btn btn-sm ${this.topicView === 'board' ? 'btn-accent' : 'btn-secondary'}" onclick="App.topicView='board';App.renderPage('topic')">看板</button>
+          ${this.topicView === 'board' ? `<select class="form-select" style="width:auto" onchange="App.topicGroupBy=this.value;App.renderPage('topic')"><option value="status" ${(this.topicGroupBy || 'status') === 'status' ? 'selected' : ''}>按状态</option><option value="rating" ${this.topicGroupBy === 'rating' ? 'selected' : ''}>按评级</option></select>` : ''}
+          <button class="btn btn-primary" onclick="App.showTopicModal()">+ 新建选题</button>
+        </div>
       </div>
-      ${topics.length === 0 ? `
+      ${this.topicView === 'board' && topics.length > 0 ? this.renderTopicBoard(topics) : topics.length === 0 ? `
         <div class="empty-state">
           <div class="empty-icon">💡</div>
           <div class="empty-title">选题池是空的</div>
@@ -585,10 +590,54 @@ const App = {
             `;
           }).join('')}
         </div>
-      `}
+      `}}
     `;
   },
-  
+
+  // FR-04-08：看板视图（按状态可拖拽改状态 / 按评级只读）
+  renderTopicBoard(topics) {
+    const byStatus = this.topicGroupBy !== 'rating';
+    const groups = byStatus
+      ? [
+          { key: 'pool', name: '候选', color: '#94a3b8' },
+          { key: 'doing', name: '进行中', color: '#3b82f6' },
+          { key: 'done', name: '已完成', color: '#22c55e' }
+        ]
+      : ['S', 'A', 'B', 'C'].map(r => ({ key: r, name: r + ' 级', color: r === 'S' ? '#f59e0b' : r === 'A' ? '#3b82f6' : '#94a3b8' }));
+    return `
+      <div style="display:grid;grid-template-columns:repeat(${groups.length},1fr);gap:10px;align-items:start">
+        ${groups.map(g => {
+          const items = topics.filter(t => byStatus ? (t.status || 'pool') === g.key : calcRating(t.scores || {}).rating === g.key);
+          return `
+            <div style="background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:10px;min-height:120px" ondragover="event.preventDefault()" ondrop="App.dropTopic('${g.key}')">
+              <div style="font-size:12px;font-weight:700;color:${g.color};margin-bottom:8px">${g.name}（${items.length}）</div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                ${items.map(t => {
+                  const { rating, total } = calcRating(t.scores || {});
+                  return `<div draggable="true" ondragstart="App._dragTopicId='${t.id}'" onclick="App.showTopicModal('${t.id}')" style="background:var(--soft);border-radius:8px;padding:8px;font-size:12px;cursor:grab">
+                    <div style="font-weight:600;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(t.title || '未命名')}</div>
+                    <div style="display:flex;gap:4px;align-items:center"><span class="tag" style="font-size:10px">${rating}·${total}</span><span class="tag" style="font-size:10px">${calcTopicType(t.scores || {})}</span></div>
+                  </div>`;
+                }).join('') || '<div class="text-xs text-muted" style="text-align:center;padding:8px">空</div>'}
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+      <div class="text-xs text-muted" style="margin-top:8px">${byStatus ? '拖拽卡片到目标列即可改状态' : '按评级为只读展示（评级由五维分实时计算）；切到「按状态」可拖拽改状态'}</div>
+    `;
+  },
+
+  dropTopic(status) {
+    const id = this._dragTopicId;
+    this._dragTopicId = null;
+    if (!id || this.topicGroupBy === 'rating') return;
+    const t = Store.data.topics.find(x => x.id === id);
+    if (!t || (t.status || 'pool') === status) return;
+    Store.updateTopic(id, { status });
+    this.toast(`已移至「${status === 'pool' ? '候选' : status === 'doing' ? '进行中' : '已完成'}」`);
+    this.renderPage('topic');
+  },
+
   // 文案工坊
   renderScript() {
     const data = Store.getFilteredData(this.currentIp);
@@ -1402,10 +1451,24 @@ const App = {
     return `
       <div style="max-width:700px">
         <div class="settings-section">
-          <div class="settings-title">主理人信息</div>
+          <div class="settings-title">主理人与工作室（FR-10-02）</div>
           <div class="settings-row">
-            <div><div class="settings-label">名称</div></div>
+            <div><div class="settings-label">主理人称呼</div></div>
             <input type="text" class="form-input" style="width:200px" value="${escAttr(settings.masterName || '')}" onchange="Store.data.settings.masterName=this.value;Store.save()">
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">工作室名称</div><div class="settings-desc">显示在周报与备份说明中</div></div>
+            <input type="text" class="form-input" style="width:200px" value="${escAttr(settings.studioName || '')}" placeholder="如：拾光内容室" onchange="Store.data.settings.studioName=this.value;Store.save()">
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">主理人形象</div></div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              ${IP_AVATARS.map(a => `<span style="font-size:18px;padding:4px 8px;border-radius:8px;cursor:pointer;background:${(settings.masterAvatar || '👤') === a ? 'var(--accent)' : 'var(--soft)'}" onclick="Store.data.settings.masterAvatar='${a}';Store.save();App.renderPage('settings')">${a}</span>`).join('')}
+            </div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">IP 数量上限</div><div class="settings-desc">在「数据标准线」中调整（默认 8）</div></div>
+            <span class="text-muted text-sm">${standards.ipLimit || 8} 个</span>
           </div>
         </div>
         <div class="settings-section">
@@ -2500,11 +2563,20 @@ const App = {
 
   useStructure(name) {
     const structure = BODY_STRUCTURES.find(s => s.name === name);
-    if (structure) {
-      const bodyField = document.getElementById('scriptBody');
-      if (bodyField) {
-        bodyField.value = `【${structure.name}】\n${structure.pattern}\n\n${bodyField.value}`;
-      }
+    if (!structure) return;
+    // FR-05-06：套结构草稿——结构映射到原创占位提示（与对标拆解共用 STRUCTURE_DRAFTS）
+    const draftKey = { '清单体': '清单式', '对比式': '对比式', '时间线': '时间线', '故事弧': '故事式', 'SCQA': '问答式', '问题-方案': '总分总', '金字塔': '总分总' }[name];
+    const draft = STRUCTURE_DRAFTS[draftKey] || null;
+    const bodyField = document.getElementById('scriptBody');
+    const hookField = document.getElementById('scriptHook');
+    const ctaField = document.getElementById('scriptCta');
+    if (draft) {
+      if (bodyField) bodyField.value = draft.body + (bodyField.value ? '\n\n' + bodyField.value : '');
+      if (hookField && !hookField.value.trim()) hookField.value = draft.hook;
+      if (ctaField && !ctaField.value.trim()) ctaField.value = draft.cta;
+      this.toast(`已套用「${name}」结构占位，把 ____ 换成你的内容`);
+    } else if (bodyField) {
+      bodyField.value = `【${structure.name}】\n${structure.pattern}\n\n${bodyField.value}`;
     }
   },
 

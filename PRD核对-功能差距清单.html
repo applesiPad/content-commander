@@ -25,10 +25,10 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <p style="color:var(--ink2)">核对基线：PRD-00 ~ PRD-12（v0.9）｜ 核对对象：模块化版 <code>内容指挥部/</code>｜ 核对日期：2026-11-04</p>
 <p>图例：<span class="ok">✅ 达标</span> ｜ <span class="part">🟡 部分达标</span> ｜ <span class="no">❌ 未实现</span> ｜ 优先级沿用 PRD（<span class="p0">P0</span>/<span class="p1">P1</span>/<span class="p2">P2</span>）</p>
 
-<div class="note"><b>总览（2026-11-04 v1.1 冲刺后复评）</b>：全部 <b>93 项</b>（83 FR + 10 NFR）—— ✅ 达标 <b>62</b> ｜ 🟡 部分达标 <b>22</b> ｜ ❌ 未实现 <b>9</b>（达标率 67%，P0 缺口已清零）。<br>
-首轮核对（同日早些时候）：78 FR 口径下 ✅27 / 🟡25 / ❌26（当时FR行数统计有误，本表按实际 93 行复评）。<br>
-<b>本轮 v1.1 冲刺达标</b>：FR-03 全部 8 项（自动分段/结构识别/借选题/套结构/爆款判定/规律小结/好对标/解析标红）、FR-06-02/03/05/06/07（提词器/重建/日程/打勾/流转）、FR-09-02/04/05/09 + FR-10-04（AI 模板提示词/服务商预设/回填/错误引导/测试连接）、FR-08-06/07/08（趋势/对比/筛选）、FR-10-03（12 项阈值）、FR-01-02/04（IP 上限/自定义平台）、FR-04-03（评级线可配置）、NFR-03/08。<br>
-<b>剩余 9 项未实现</b>（多为 P1/P2 体验项）：FR-02-04 热点切入角度、FR-02-06 热榜直达、FR-04-05 五维雷达图、FR-04-08 看板拖拽(P2)、FR-06-04 开拍清单、FR-06-08 景别速查(P2)、FR-07-03 封面预览、FR-07-04 发布确认清单。→ 建议列入 v1.2。</div>
+<div class="note"><b>总览（2026-11-07 v1.2 冲刺后终评）</b>：全部 <b>93 项</b>（83 FR + 10 NFR）—— ✅ 达标 <b>85</b> ｜ 🟡 部分达标 <b>8</b> ｜ ❌ 未实现 <b>0</b>（达标率 <b>91%</b>，FR 全部实现，P0/P1/P2 无未实现项）。<br>
+<b>v1.2 冲刺（2026-11-07）达标</b>：FR-06-04/08（开拍清单/景别速查）、FR-07-03/04/07（封面预览/发布确认/48h标记）、FR-02-04/06/07（切入角度/热榜直达/节点管理）、FR-04-05/06 部分/07/08（雷达图/重复立项/看板）、FR-08-02/05/09（粘贴预览/象限点诊断/周报环比+Word）、FR-05-04/06（极限词库/套结构占位）、FR-09-01/03/07（Anthropic 双协议/上下文预览/会话管理）、FR-10-01/02/06（两步向导/工作室设置/恢复校验）、FR-01-03（账号链接）、NFR-07/09（判定依据/免责声明）。<br>
+<b>剩余 8 项 🟡</b>（均为小尾巴，建议 v1.3）：FR-01-08 IP 档案抽屉(P2)、FR-04-06 标题工坊关键词生成、FR-05-05 模板量补足 15+、NFR-03 性能实测（用量显示已做）。<br>
+历史：v1.1（2026-11-04）从首轮 27/25/41 提升到 62/22/9（P0 清零）；v1.2 完成 FR 收官。</div>
 
 <h2>M0 指挥板（FR-00）</h2>
 <table>
@@ -86,7 +86,7 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <tr><td><span class="fr">FR-04-05</span></td><td>五维雷达图 + 平均画像叠加</td><td class="p1">P1</td><td class="no">❌→✅</td><td><b>v1.2 实现</b>：选题卡迷你雷达 + 画像弹窗大图（本选题 vs 该 IP 回填数据换算的平均画像叠加，换算口径展示，无数据不叠加），画像说明可一键复制</td></tr>
 <tr><td><span class="fr">FR-04-06</span></td><td>标题工坊（关键词生成 10 候选）</td><td class="p1">P1</td><td class="part">🟡</td><td>20 条公式在常量区并展示于文案工坊；选题池无工坊入口与关键词生成</td></tr>
 <tr><td><span class="fr">FR-04-07</span></td><td>立项写稿</td><td class="p0">P0</td><td class="ok">✅</td><td><b>v1.2 补</b>：重复立项提示（确定再建一稿 / 取消复用现有稿件）</td></tr>
-<tr><td><span class="fr">FR-04-08</span></td><td>看板视图（两种分组+拖拽）</td><td class="p2">P2</td><td class="no">❌</td><td>v1.2 候选</td></tr>
+<tr><td><span class="fr">FR-04-08</span></td><td>看板视图（两种分组+拖拽）</td><td class="p2">P2</td><td class="no">❌→✅</td><td><b>v1.2 实现</b>：选题池看板（列表/看板切换）——按状态（候选/进行中/已完成，拖拽改状态）+ 按评级（S/A/B/C 只读）两种分组，卡片含评级与题型</td></tr>
 </table>
 
 <h2>M5 文案工坊（FR-05）</h2>
@@ -97,7 +97,7 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <tr><td><span class="fr">FR-05-03</span></td><td>10 项体检 + 逐项建议</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：体检结果逐项显示改法建议（tip 原本已算未展示）；环形进度 v1.1</td></tr>
 <tr><td><span class="fr">FR-05-04</span></td><td>极限词检测 + 词库可增删</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>v1.2 实现</b>：设置页极限词库管理（增删，体检第 10 项实时使用）</td></tr>
 <tr><td><span class="fr">FR-05-05</span></td><td>模板插入（各 15+ 条）</td><td class="p1">P1</td><td class="part">🟡</td><td>插入机制有；模板量 钩子10/标题20/结构7，钩子结构数量不足 15+</td></tr>
-<tr><td><span class="fr">FR-05-06</span></td><td>套结构草稿（占位提示）</td><td class="p1">P1</td><td class="part">🟡</td><td>useStructure 为近似实现（插入结构句式）</td></tr>
+<tr><td><span class="fr">FR-05-06</span></td><td>套结构草稿（占位提示）</td><td class="p1">P1</td><td class="part">🟡→✅</td><td><b>v1.2 升级</b>：useStructure 映射 STRUCTURE_DRAFTS 原创——正文插入分段占位，开头/结尾为空时一并预填占位提示</td></tr>
 <tr><td><span class="fr">FR-05-07</span></td><td>存稿快照（对比+回滚）</td><td class="p1">P1</td><td class="part">🟡→✅</td><td><b>v1.2 实现</b>：快照行新增「对比」——六字段逐项 快照(旧) vs 当前(新) 双栏视图，变化字段标红绿，可从对比直接回滚</td></tr>
 <tr><td><span class="fr">FR-05-08</span></td><td>进入拍摄→自动分镜</td><td class="p0">P0</td><td class="ok">✅</td><td>moveToShoot + autoStoryboard</td></tr>
 </table>
@@ -161,7 +161,7 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <table>
 <tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
 <tr><td><span class="fr">FR-10-01</span></td><td>欢迎向导</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>v1.2 实现</b>：两步向导——①称呼+主理人形象（8 选 1）②三选一起步（示例/空白/导入），完成才写设置</td></tr>
-<tr><td><span class="fr">FR-10-02</span></td><td>工作室设置（名称/形象/IP上限）</td><td class="p0">P0</td><td class="part">🟡</td><td>主理人名称+主题有；工作室名/形象/IP上限 v1.1</td></tr>
+<tr><td><span class="fr">FR-10-02</span></td><td>工作室设置（名称/形象/IP上限）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>v1.2 实现</b>：设置「主理人与工作室」——称呼/工作室名称/形象选择（IP_AVATARS 8 选 1）/IP 上限入口</td></tr>
 <tr><td><span class="fr">FR-10-03</span></td><td>数据标准（11 项阈值 + 恢复默认）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮实现</b>：12 项全部可配置（语速/5秒完播线/收藏率线/均播比线/评论率线/爆款倍数/收藏画像比/评级线 S·A·B/封面字数上限/IP 上限），单项↺恢复 + 全局恢复默认，非负校验 + 评级线 S&gt;A&gt;B 提醒</td></tr>
 <tr><td><span class="fr">FR-10-04</span></td><td>AI 设置（服务商/温度/测试连接）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮补全</b>：服务商预设下拉 + 温度滑条（0~2 默认 0.7）+ 测试连接按钮，随请求生效</td></tr>
 <tr><td><span class="fr">FR-10-05</span></td><td>备份导出（剥离 Key）</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮修复</b>：导出文件剥离 ai.apiKey，附导出时间</td></tr>
@@ -178,9 +178,9 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <tr><td><span class="fr">NFR-04</span></td><td>写操作即存 + 版本迁移链</td><td class="p0">P0</td><td class="ok">✅</td><td>migrate() 存在</td></tr>
 <tr><td><span class="fr">NFR-05</span></td><td>Key 不入备份不明文回显</td><td class="p0">P0</td><td class="part">🟡→✅</td><td>密码框本就有；导出剥离本轮修复</td></tr>
 <tr><td><span class="fr">NFR-06</span></td><td>合规边界（不登录不代发不抓取）</td><td class="p0">P0</td><td class="ok">✅</td><td>代码无平台域名请求</td></tr>
-<tr><td><span class="fr">NFR-07</span></td><td>判定依据可查看</td><td class="p0">P0</td><td class="part">🟡</td><td>体检逐项 tip 本轮可见；诊断建议已有</td></tr>
+<tr><td><span class="fr">NFR-07</span></td><td>判定依据可查看</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>v1.2 达标</b>：体检逐项 tip + 单条诊断逐指标对照达标线 + 雷达图换算口径展示 + 象限图判定依据入口，阈值全部在设置可见可调</td></tr>
 <tr><td><span class="fr">NFR-08</span></td><td>localStorage 禁用降级警告</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮实现</b>：启动探测存储可写性，禁用时页面顶部常驻警告条，只读模式运行不抛异常</td></tr>
-<tr><td><span class="fr">NFR-09</span></td><td>关于页免责声明</td><td class="p0">P0</td><td class="part">🟡</td><td><b>本轮补充</b>：关于页加合规边界与"创作参考不保证效果"声明</td></tr>
+<tr><td><span class="fr">NFR-09</span></td><td>关于页免责声明</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>已达标</b>：关于页含合规边界三条（不调用平台/创作参考不保证效果/AI 内容需人工核对）与产品边界说明</td></tr>
 <tr><td><span class="fr">NFR-10</span></td><td>词表/阈值集中常量区</td><td class="p1">P1</td><td class="ok">✅</td><td>constants.js</td></tr>
 </table>
 
