@@ -95,10 +95,10 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <tr><td><span class="fr">FR-05-01</span></td><td>五段式内容记录</td><td class="p0">P0</td><td class="ok">✅</td><td></td></tr>
 <tr><td><span class="fr">FR-05-02</span></td><td>时长估算</td><td class="p0">P0</td><td class="ok">✅</td><td>侧栏字数+秒数</td></tr>
 <tr><td><span class="fr">FR-05-03</span></td><td>10 项体检 + 逐项建议</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：体检结果逐项显示改法建议（tip 原本已算未展示）；环形进度 v1.1</td></tr>
-<tr><td><span class="fr">FR-05-04</span></td><td>极限词检测 + 词库可增删</td><td class="p0">P0</td><td class="part">🟡</td><td>体检含极限词项；设置中词库增删未做（v1.1）</td></tr>
+<tr><td><span class="fr">FR-05-04</span></td><td>极限词检测 + 词库可增删</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>v1.2 实现</b>：设置页极限词库管理（增删，体检第 10 项实时使用）</td></tr>
 <tr><td><span class="fr">FR-05-05</span></td><td>模板插入（各 15+ 条）</td><td class="p1">P1</td><td class="part">🟡</td><td>插入机制有；模板量 钩子10/标题20/结构7，钩子结构数量不足 15+</td></tr>
 <tr><td><span class="fr">FR-05-06</span></td><td>套结构草稿（占位提示）</td><td class="p1">P1</td><td class="part">🟡</td><td>useStructure 为近似实现（插入结构句式）</td></tr>
-<tr><td><span class="fr">FR-05-07</span></td><td>存稿快照（对比+回滚）</td><td class="p1">P1</td><td class="part">🟡</td><td>快照+回滚有；对比视图未做</td></tr>
+<tr><td><span class="fr">FR-05-07</span></td><td>存稿快照（对比+回滚）</td><td class="p1">P1</td><td class="part">🟡→✅</td><td><b>v1.2 实现</b>：快照行新增「对比」——六字段逐项 快照(旧) vs 当前(新) 双栏视图，变化字段标红绿，可从对比直接回滚</td></tr>
 <tr><td><span class="fr">FR-05-08</span></td><td>进入拍摄→自动分镜</td><td class="p0">P0</td><td class="ok">✅</td><td>moveToShoot + autoStoryboard</td></tr>
 </table>
 
@@ -132,14 +132,14 @@ summary{cursor:pointer;font-weight:600;margin:6px 0}
 <table>
 <tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>说明</th></tr>
 <tr><td><span class="fr">FR-08-01</span></td><td>回填表格（9 字段）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮修复</b>：回填弹窗补 5秒完播/转发/涨粉（原有播放/点赞/收藏/评论）</td></tr>
-<tr><td><span class="fr">FR-08-02</span></td><td>粘贴回填（预览确认）</td><td class="p1">P1</td><td class="part">🟡</td><td>粘贴解析可用（含"1.2万"）；逐行填充与预览确认 v1.1</td></tr>
+<tr><td><span class="fr">FR-08-02</span></td><td>粘贴回填（预览确认）</td><td class="p1">P1</td><td class="part">🟡→✅</td><td><b>v1.2 实现</b>：多行粘贴逐行解析（支持「1.2万」与空值）→ 预览表格对照目标稿件 → 确认后按序写入并标记回填</td></tr>
 <tr><td><span class="fr">FR-08-03</span></td><td>五项总览卡</td><td class="p0">P0</td><td class="ok">✅</td><td>字段口径与 PRD 略异（总点赞 vs 总涨粉）</td></tr>
 <tr><td><span class="fr">FR-08-04</span></td><td>单条诊断（结论+逐指标解读）</td><td class="p0">P0</td><td class="ok">✅</td><td>diagnosePost</td></tr>
-<tr><td><span class="fr">FR-08-05</span></td><td>象限散点图（点大小=播放 可点击）</td><td class="p1">P1</td><td class="part">🟡</td><td>SVG 有；点大小/点击看诊断 v1.1</td></tr>
+<tr><td><span class="fr">FR-08-05</span></td><td>象限散点图（点大小=播放 可点击）</td><td class="p1">P1</td><td class="part">🟡→✅</td><td><b>v1.2 实现</b>：点半径随播放量缩放（√刻度封顶），点击弹出单条诊断（结论+逐指标对照达标线+建议+判定依据入口）</td></tr>
 <tr><td><span class="fr">FR-08-06</span></td><td>趋势折线（30 天双轴）</td><td class="p1">P1</td><td class="no">❌→✅</td><td><b>本轮实现</b>：近 30 天 SVG 双轴——每日发布数（柱/左轴）+ 每日播放量（线/右轴），随筛选联动</td></tr>
 <tr><td><span class="fr">FR-08-07</span></td><td>对比视图（按 IP/账号条形）</td><td class="p1">P1</td><td class="no">❌→✅</td><td><b>本轮实现</b>：按 IP / 按账号切换，指标可选 播放/点赞/收藏，横向条形含条数标注，随筛选联动</td></tr>
 <tr><td><span class="fr">FR-08-08</span></td><td>筛选器（日期/平台/账号）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>本轮实现</b>：时间（全部/近7天/近30天）× 平台 × 账号三联筛选（会话内记忆），作用于总览卡/趋势/对比/象限/记录表</td></tr>
-<tr><td><span class="fr">FR-08-09</span></td><td>自动周报（vs 上周期 + Word）</td><td class="p0">P0</td><td class="part">🟡</td><td>Markdown 周报有；环比对比/最佳最差/Word 导出 v1.1</td></tr>
+<tr><td><span class="fr">FR-08-09</span></td><td>自动周报（vs 上周期 + Word）</td><td class="p0">P0</td><td class="part">🟡→✅</td><td><b>v1.2 实现</b>：周报弹窗——近7天 vs 上一周期五指标环比（升/降%）、最佳/最差单条引用诊断结论；导出 Word（Blob .doc 零依赖）与 Markdown；只读生成物不含 Key</td></tr>
 <tr><td><span class="fr">FR-08-10</span></td><td>删除发布记录</td><td class="p0">P0</td><td class="no">❌→✅</td><td><b>本轮修复</b>：回填弹窗每行新增删除按钮（二次确认）</td></tr>
 </table>
 

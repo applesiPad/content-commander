@@ -670,9 +670,12 @@ const App = {
                   <div class="card-title" style="margin-bottom:12px">文案快照</div>
                   <div id="snapshotList" style="display:flex;flex-direction:column;gap:6px">
                     ${(content.snaps || []).slice(-5).reverse().map((s, i) => `
-                      <div style="font-size:11px;padding:6px 10px;background:var(--soft);border-radius:var(--radius-sm);display:flex;justify-content:space-between;align-items:center">
+                      <div style="font-size:11px;padding:6px 10px;background:var(--soft);border-radius:var(--radius-sm);display:flex;justify-content:space-between;align-items:center;gap:4px">
                         <span>${new Date(s.at).toLocaleString('zh-CN', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
-                        <button class="btn btn-sm btn-secondary" onclick="App.restoreSnapshot('${content.id}', ${(content.snaps || []).length - 1 - i})">恢复</button>
+                        <span style="display:flex;gap:4px">
+                          <button class="btn btn-sm btn-secondary" onclick="App.showSnapshotCompare('${content.id}', ${(content.snaps || []).length - 1 - i})">对比</button>
+                          <button class="btn btn-sm btn-secondary" onclick="App.restoreSnapshot('${content.id}', ${(content.snaps || []).length - 1 - i})">恢复</button>
+                        </span>
                       </div>
                     `).join('') || '<div class="text-muted text-sm">暂无快照</div>'}
                   </div>
@@ -1121,6 +1124,28 @@ const App = {
     this.toast(`已添加节点「${name}」(${date})`);
   },
 
+  // FR-05-04：极限词库管理
+  addExtremeWord() {
+    const input = document.getElementById('newExtremeWord');
+    const w = (input?.value || '').trim();
+    if (!w) { this.toast('请输入极限词'); return; }
+    const words = Store.data.settings.extremeWords = Store.data.settings.extremeWords || [];
+    if (words.includes(w)) { this.toast('该词已在词库中'); return; }
+    words.push(w);
+    Store.save();
+    this.renderPage('settings');
+    this.toast(`已添加「${w}」`);
+  },
+
+  deleteExtremeWord(idx) {
+    const words = Store.data.settings.extremeWords || [];
+    if (!words[idx]) return;
+    if (!confirm(`从词库删除「${words[idx]}」？删除后体检不再检测该词。`)) return;
+    words.splice(idx, 1);
+    Store.save();
+    this.renderPage('settings');
+  },
+
   // FR-02-06：热榜直达链接管理
   addHotLink() {
     const name = (document.getElementById('hotLinkName')?.value || '').trim();
@@ -1261,14 +1286,15 @@ const App = {
         <text x="${padding + 10}" y="${height - padding - 10}" font-size="10" fill="var(--muted)">需要重做</text>
         <text x="${width - padding - 80}" y="${height - padding - 10}" font-size="10" fill="var(--warning)">开头强干货弱</text>
 
-        <!-- Data points -->
+        <!-- Data points（FR-08-05：点大小=播放量，点击看单条诊断） -->
         ${validPosts.map(p => {
           const favRate = p.play > 0 ? (p.favorite / p.play * 100) : 0;
           const x = padding + (width - padding * 2) * (p.fiveSecRate || 0) / 100;
           const y = height - padding - (height - padding * 2) * Math.min(favRate, 5) / 5;
           const ip = Store.data.accounts.find(a => a.id === p.accountId);
           const color = ip ? Store.getIP(ip.ipId)?.color || 'var(--accent)' : 'var(--accent)';
-          return `<circle cx="${x}" cy="${y}" r="5" fill="${color}" opacity="0.7"/>`;
+          const r = 3 + Math.min(9, Math.sqrt(p.play || 0) / 45);
+          return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${color}" opacity="0.7" style="cursor:pointer" onclick="App.showPostDiagnosis('${p.id}')"><title>${escHtml(Store.getContent(p.contentId)?.title || '')}</title></circle>`;
         }).join('')}
       </svg>
     `;
@@ -1390,6 +1416,16 @@ const App = {
             <input id="hotLinkName" class="form-input" style="width:130px" placeholder="名称，如 微博热搜">
             <input id="hotLinkUrl" class="form-input" style="width:260px" placeholder="https://…">
             <button class="btn btn-sm btn-secondary" onclick="App.addHotLink()">+ 添加链接</button>
+          </div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-title">极限词库 <span style="font-weight:400;font-size:11px;color:var(--muted)">（文案体检「无极限词」项检测用，可增删）</span></div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+            ${(settings.extremeWords || []).map((w, i) => `<span class="tag" style="display:inline-flex;align-items:center;gap:4px">${escHtml(w)}<a style="color:var(--danger);cursor:pointer;font-weight:700" title="删除" onclick="App.deleteExtremeWord(${i})">×</a></span>`).join('') || '<span class="text-muted text-sm">词库为空，体检将不再检测极限词</span>'}
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input id="newExtremeWord" class="form-input" style="width:220px" placeholder="添加极限词，如 史上最低" onkeypress="if(event.key==='Enter')App.addExtremeWord()">
+            <button class="btn btn-sm btn-secondary" onclick="App.addExtremeWord()">+ 添加</button>
           </div>
         </div>
         <div class="settings-section">
@@ -2841,7 +2877,7 @@ const App = {
       <div class="modal-title">回填数据</div>
       <div style="margin-bottom:16px">
         <button class="btn btn-sm btn-secondary" onclick="App.showPasteBackfill()">📋 粘贴回填</button>
-        <button class="btn btn-sm btn-secondary" onclick="App.exportWeeklyReport()">📄 导出周报</button>
+        <button class="btn btn-sm btn-secondary" onclick="App.showWeeklyReport()">📊 周报（环比+导出）</button>
       </div>
       <div style="max-height:400px;overflow-y:auto">
         ${posts.length === 0 ? '<div class="text-muted text-sm">暂无待回填记录</div>' : posts.map(p => {
@@ -2893,89 +2929,147 @@ const App = {
     `);
   },
 
+  // FR-08-02：粘贴回填——逐行解析 → 预览确认 → 写入
   processPasteBackfill() {
     const text = document.getElementById('pasteData').value.trim();
     if (!text) { alert('请粘贴数据'); return; }
+    const targets = Store.data.posts.filter(p => p.publishedAt && !p.backfilledAt);
+    if (!targets.length) { alert('没有待回填的记录'); return; }
+    // 每行一条：播放 点赞 收藏 评论 [5秒完播%]，支持「1.2万」与空值（跳过记 0）
+    const rows = text.split(/\n+/)
+      .map(line => line.split(/[\s,，\t|]+/).filter(s => s).map(s => parseNumber(s)))
+      .filter(nums => nums.length >= 4);
+    if (!rows.length) { alert('未解析出有效数据行（每行至少：播放 点赞 收藏 评论）'); return; }
+    this._pasteRows = rows;
+    this.showModal(`
+      <div class="modal-title">粘贴回填 · 预览确认</div>
+      <div class="text-muted text-sm" style="margin-bottom:8px">共解析 ${rows.length} 行，将按顺序写入前 ${Math.min(rows.length, targets.length)} 条待回填记录；第 5 个数字作为「5秒完播%」（可空）。空值按 0 记。</div>
+      <div class="table-wrap" style="max-height:300px;overflow:auto">
+        <table class="table">
+          <thead><tr><th>目标稿件</th><th>播放</th><th>点赞</th><th>收藏</th><th>评论</th><th>5秒%</th></tr></thead>
+          <tbody>
+            ${rows.map((nums, i) => {
+              const t = targets[i];
+              const c = t ? Store.getContent(t.contentId) : null;
+              return `<tr style="${t ? '' : 'opacity:.5'}">
+                <td>${t ? escHtml(c?.title || '未命名') : '<span class="text-muted">（无更多待回填记录，忽略）</span>'}</td>
+                <td class="font-mono">${nums[0]}</td><td class="font-mono">${nums[1]}</td>
+                <td class="font-mono">${nums[2]}</td><td class="font-mono">${nums[3]}</td>
+                <td class="font-mono">${nums[4] || '-'}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-primary" onclick="App.applyPasteBackfill()">✓ 确认写入并标记已回填</button>
+        <button class="btn btn-secondary" onclick="App.showPasteBackfill()">返回修改</button>
+      </div>
+    `);
+  },
 
-    // Parse numbers from text
-    const numbers = text.split(/[\s,，\t]+/).filter(s => s).map(s => parseNumber(s));
-
-    if (numbers.length < 4) {
-      alert('数据不足，至少需要：播放 点赞 收藏 评论');
-      return;
-    }
-
-    // Find first non-backfilled post
-    const post = Store.data.posts.find(p => p.publishedAt && !p.backfilledAt);
-    if (!post) {
-      alert('没有待回填的记录');
-      return;
-    }
-
-    Store.updatePost(post.id, {
-      play: numbers[0] || 0,
-      likes: numbers[1] || 0,
-      favorite: numbers[2] || 0,
-      comment: numbers[3] || 0,
-      fiveSecRate: numbers[4] || null,
-      duration: numbers[5] || null,
-      backfilledAt: Date.now()
+  applyPasteBackfill() {
+    const rows = this._pasteRows || [];
+    const targets = Store.data.posts.filter(p => p.publishedAt && !p.backfilledAt);
+    let n = 0;
+    rows.forEach((nums, i) => {
+      const post = targets[i];
+      if (!post) return;
+      Store.updatePost(post.id, {
+        play: nums[0] || 0,
+        likes: nums[1] || 0,
+        favorite: nums[2] || 0,
+        comment: nums[3] || 0,
+        fiveSecRate: nums[4] || null,
+        backfilledAt: Date.now()
+      });
+      n++;
     });
     Store.save();
-
-    alert('已填入并标记为已回填');
+    this.toast(`✓ 已写入 ${n} 条并标记回填`);
     this.showBackfillModal();
   },
 
-  exportWeeklyReport() {
+  // ═══ 自动周报（FR-08-09：近7天 vs 上一周期 + 最佳最差 + Word/Markdown 导出）═══
+  buildWeeklyData() {
+    const now = Date.now();
+    const inRange = (p, from, to) => {
+      const t = new Date(p.publishedAt || 0).getTime();
+      return t > from && t <= to;
+    };
+    const cur = Store.data.posts.filter(p => p.publishedAt && inRange(p, now - 7 * 864e5, now));
+    const prev = Store.data.posts.filter(p => p.publishedAt && inRange(p, now - 14 * 864e5, now - 7 * 864e5));
+    const sum = (arr, k) => arr.reduce((s, p) => s + (p[k] || 0), 0);
+    const std = Store.data.settings.standards;
+    const avgPlay = cur.length ? sum(cur, 'play') / cur.length : 0;
+    const sorted = [...cur].sort((a, b) => (b.play || 0) - (a.play || 0));
+    const delta = (a, b) => (b > 0 ? Math.round((a - b) / b * 100) : (a > 0 ? 100 : 0));
+    return {
+      cur, prev,
+      stats: [
+        { label: '发布数', cur: cur.length, prev: prev.length },
+        { label: '总播放', cur: sum(cur, 'play'), prev: sum(prev, 'play') },
+        { label: '总点赞', cur: sum(cur, 'likes'), prev: sum(prev, 'likes') },
+        { label: '总收藏', cur: sum(cur, 'favorite'), prev: sum(prev, 'favorite') },
+        { label: '总涨粉', cur: sum(cur, 'gain'), prev: sum(prev, 'gain') }
+      ].map(s => ({ ...s, delta: delta(s.cur, s.prev) })),
+      best: sorted[0] ? {
+        post: sorted[0],
+        title: Store.getContent(sorted[0].contentId)?.title || '未命名',
+        diag: diagnosePost(sorted[0], std, avgPlay).conclusion
+      } : null,
+      worst: sorted.length > 1 ? {
+        post: sorted[sorted.length - 1],
+        title: Store.getContent(sorted[sorted.length - 1].contentId)?.title || '未命名',
+        diag: diagnosePost(sorted[sorted.length - 1], std, avgPlay).conclusion
+      } : null
+    };
+  },
+
+  showWeeklyReport() {
+    const d = this.buildWeeklyData();
     const now = new Date();
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+    const fmtDelta = v => v > 0 ? `<span style="color:var(--success)">↑ ${v}%</span>` : v < 0 ? `<span style="color:var(--danger)">↓ ${Math.abs(v)}%</span>` : '<span class="text-muted">—</span>';
+    this.showModal(`
+      <div class="modal-title">自动周报 <span class="text-muted" style="font-weight:400;font-size:12px">（${now.toISOString().slice(0, 10)} 生成，只读不含敏感配置）</span></div>
+      ${d.cur.length === 0 ? '<div class="text-muted text-sm" style="margin-bottom:10px">近 7 天无发布记录——先到排期标记发布并回填数据。</div>' : ''}
+      <div class="table-wrap" style="margin-bottom:12px">
+        <table class="table">
+          <thead><tr><th>指标</th><th>本周（近7天）</th><th>上一周期</th><th>环比</th></tr></thead>
+          <tbody>
+            ${d.stats.map(s => `<tr><td>${s.label}</td><td class="font-mono">${formatNumber(s.cur)}</td><td class="font-mono">${formatNumber(s.prev)}</td><td>${fmtDelta(s.delta)}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      ${d.best ? `<div style="background:rgba(34,197,94,.08);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:13px"><b>🏆 最佳单条</b>：${escHtml(d.best.title)}（播放 ${formatNumber(d.best.post.play || 0)}）——诊断结论：${escHtml(d.best.diag)}</div>` : ''}
+      ${d.worst ? `<div style="background:rgba(239,68,68,.06);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:13px"><b>🔻 最差单条</b>：${escHtml(d.worst.title)}（播放 ${formatNumber(d.worst.post.play || 0)}）——诊断结论：${escHtml(d.worst.diag)}</div>` : ''}
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="App.exportWeeklyWord()">📄 导出 Word</button>
+        <button class="btn btn-secondary" onclick="App.exportWeeklyMarkdown()">📝 导出 Markdown</button>
+        <button class="btn btn-secondary" onclick="App.closeModal()">关闭</button>
+      </div>
+    `);
+  },
 
-    const posts = Store.data.posts.filter(p => p.publishedAt && new Date(p.publishedAt) >= weekAgo);
-    const contents = Store.data.contents.filter(c => new Date(c.createdAt) >= weekAgo);
-
-    const totalPlay = posts.reduce((s, p) => s + (p.play || 0), 0);
-    const totalLikes = posts.reduce((s, p) => s + (p.likes || 0), 0);
-    const totalFav = posts.reduce((s, p) => s + (p.favorite || 0), 0);
-    const totalComment = posts.reduce((s, p) => s + (p.comment || 0), 0);
-
-    const ips = Store.data.ips;
-
-    let report = `# 周报 · ${now.toLocaleDateString('zh-CN', {year:'numeric',month:'long',day:'numeric'})}\n\n`;
-    report += `## 本周概览\n\n`;
-    report += `- 发布数量：**${posts.length}** 条\n`;
-    report += `- 新建内容：**${contents.length}** 条\n`;
-    report += `- 总播放：**${formatNumber(totalPlay)}**\n`;
-    report += `- 总点赞：**${formatNumber(totalLikes)}**\n`;
-    report += `- 总收藏：**${formatNumber(totalFav)}**\n`;
-    report += `- 总评论：**${formatNumber(totalComment)}**\n\n`;
-
-    if (ips.length > 0) {
-      report += `## 各IP表现\n\n`;
-      ips.forEach(ip => {
-        const ipAccounts = Store.getAccountsByIP(ip.id);
-        const ipPosts = posts.filter(p => ipAccounts.some(a => a.id === p.accountId));
-        if (ipPosts.length > 0) {
-          const ipPlay = ipPosts.reduce((s, p) => s + (p.play || 0), 0);
-          report += `### ${ip.avatar} ${ip.name}\n`;
-          report += `- 发布：${ipPosts.length} 条\n`;
-          report += `- 播放：${formatNumber(ipPlay)}\n\n`;
-        }
-      });
-    }
-
-    report += `## 发布明细\n\n`;
-    report += `| 内容 | 账号 | 播放 | 点赞 | 收藏 | 评论 |\n`;
-    report += `|------|------|------|------|------|------|\n`;
+  exportWeeklyMarkdown() {
+    const d = this.buildWeeklyData();
+    const now = new Date();
+    const posts = d.cur;
+    let report = `# 周报 · ${now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}\n\n`;
+    report += `## 近 7 天 vs 上一周期\n\n| 指标 | 本周 | 上周 | 环比 |\n|------|------|------|------|\n`;
+    d.stats.forEach(s => {
+      const dd = s.delta > 0 ? `↑${s.delta}%` : s.delta < 0 ? `↓${Math.abs(s.delta)}%` : '—';
+      report += `| ${s.label} | ${s.cur} | ${s.prev} | ${dd} |\n`;
+    });
+    if (d.best) report += `\n**🏆 最佳单条**：${d.best.title}（播放 ${d.best.post.play || 0}）——诊断：${d.best.diag}\n`;
+    if (d.worst) report += `\n**🔻 最差单条**：${d.worst.title}（播放 ${d.worst.post.play || 0}）——诊断：${d.worst.diag}\n`;
+    report += `\n## 发布明细\n\n| 内容 | 账号 | 播放 | 点赞 | 收藏 | 评论 |\n|------|------|------|------|------|------|\n`;
     posts.forEach(p => {
       const content = Store.getContent(p.contentId);
       const account = Store.data.accounts.find(a => a.id === p.accountId);
       report += `| ${content?.title || '-'} | ${account?.name || '-'} | ${p.play || 0} | ${p.likes || 0} | ${p.favorite || 0} | ${p.comment || 0} |\n`;
     });
-
-    report += `\n---\n*由内容指挥部生成*\n`;
-
-    // Download as markdown
+    report += `\n---\n*由内容指挥部生成（只读报告，不含 Key 与敏感配置）*\n`;
     const blob = new Blob([report], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -2983,10 +3077,91 @@ const App = {
     a.download = `周报-${now.toISOString().slice(0, 10)}.md`;
     a.click();
     URL.revokeObjectURL(url);
+    this.toast('✓ Markdown 周报已导出');
+  },
 
-    this.closeModal();
+  exportWeeklyWord() {
+    const d = this.buildWeeklyData();
+    const now = new Date();
+    const fmtDelta = v => v > 0 ? `↑${v}%` : v < 0 ? `↓${Math.abs(v)}%` : '—';
+    const rows = d.stats.map(s => `<tr><td>${s.label}</td><td>${s.cur}</td><td>${s.prev}</td><td>${fmtDelta(s.delta)}</td></tr>`).join('');
+    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>周报</title></head><body>
+      <h1>内容指挥部 · 周报（${now.toISOString().slice(0, 10)}）</h1>
+      <h2>近 7 天 vs 上一周期</h2>
+      <table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse;font-size:12pt"><tr><th>指标</th><th>本周</th><th>上一周期</th><th>环比</th></tr>${rows}</table>
+      ${d.best ? `<h3>🏆 最佳单条</h3><p><b>${escHtml(d.best.title)}</b>（播放 ${d.best.post.play || 0}）——诊断结论：${escHtml(d.best.diag)}</p>` : ''}
+      ${d.worst ? `<h3>🔻 最差单条</h3><p><b>${escHtml(d.worst.title)}</b>（播放 ${d.worst.post.play || 0}）——诊断结论：${escHtml(d.worst.diag)}</p>` : ''}
+      <p style="color:#888;font-size:10pt">由内容指挥部生成 · 只读报告，不含 Key 与敏感配置</p>
+    </body></html>`;
+    const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `周报-${now.toISOString().slice(0, 10)}.doc`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.toast('✓ Word 周报已导出（可用 Word/WPS 打开）');
   },
   
+  // FR-08-05：象限图点击 → 单条诊断（结论+逐指标+判定依据）
+  showPostDiagnosis(postId) {
+    const post = Store.data.posts.find(p => p.id === postId);
+    if (!post) return;
+    const content = Store.getContent(post.contentId);
+    const std = Store.data.settings.standards;
+    const posts = Store.data.posts.filter(x => x.publishedAt);
+    const avgPlay = posts.length ? posts.reduce((s, x) => s + (x.play || 0), 0) / posts.length : 0;
+    const d = diagnosePost(post, std, avgPlay);
+    const m = d.metrics;
+    const stat = (val, label) => `<div style="text-align:center;background:var(--soft);border-radius:8px;padding:8px 4px"><div class="font-mono font-bold">${val}</div><div class="text-xs text-muted">${label}</div></div>`;
+    this.showModal(`
+      <div class="modal-title">单条诊断 · ${escHtml(content?.title || '未命名')}</div>
+      <div style="margin-bottom:12px"><span class="tag tag-${d.color === 'green' ? 'success' : d.color === 'yellow' ? 'warning' : d.color === 'red' ? 'danger' : ''}" style="font-size:14px">${d.conclusion}</span></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+        ${stat(m.fiveSec != null ? m.fiveSec + '%' : '—', `5秒完播（线${std.fiveSecLine}%）`)}
+        ${stat(m.favRate.toFixed(2) + '%', `收藏率（线${std.favLine}%）`)}
+        ${stat(m.avgRate.toFixed(0) + '%', `均播比（线${std.avgLine}%）`)}
+        ${stat(m.commentRate.toFixed(2) + '%', `评论率（线${std.commentLine}%）`)}
+      </div>
+      ${d.suggestions.length ? `<div style="font-size:13px;line-height:1.9"><b>改进建议：</b>${d.suggestions.map(s => `<div>• ${s}</div>`).join('')}</div>` : '<div class="text-sm text-muted">各项均达标，保持当前节奏。</div>'}
+      <div class="text-xs text-muted" style="margin-top:10px">判定依据可在「设置 → 数据标准线」调整，随账号表现调优。</div>
+      <div style="margin-top:12px;text-align:right"><button class="btn btn-secondary" onclick="App.closeModal()">关闭</button></div>
+    `);
+  },
+
+  // FR-05-07：快照对比（快照 vs 当前，逐字段）
+  showSnapshotCompare(contentId, index) {
+    const content = Store.getContent(contentId);
+    const snap = content?.snaps?.[index];
+    if (!content || !snap) return;
+    const fields = [['title', '标题'], ['hook', '开头'], ['body', '正文'], ['cta', '结尾'], ['cover', '封面大字'], ['tags', '标签']];
+    const when = new Date(snap.at).toLocaleString('zh-CN');
+    this.showModal(`
+      <div class="modal-title">快照对比 <span class="text-muted" style="font-weight:400;font-size:12px">（${when} 的快照 vs 当前）</span></div>
+      <div style="display:flex;flex-direction:column;gap:10px;max-height:55vh;overflow:auto">
+        ${fields.map(([k, label]) => {
+          const a = snap[k] || '';
+          const b = content[k] || '';
+          const same = a === b;
+          return `
+            <div style="border:1px solid var(--line);border-radius:8px;overflow:hidden">
+              <div style="padding:5px 10px;background:var(--soft);font-size:12px;font-weight:700">${label}${same ? ' <span style="color:var(--muted);font-weight:400">· 无变化</span>' : ' <span style="color:var(--warning);font-weight:700">· 有变化</span>'}</div>
+              ${same
+                ? `<div style="padding:8px 10px;font-size:12.5px;white-space:pre-wrap;color:var(--muted)">${a ? escHtml(a) : '（空）'}</div>`
+                : `<div style="display:grid;grid-template-columns:1fr 1fr">
+                    <div style="padding:8px 10px;font-size:12.5px;white-space:pre-wrap;background:rgba(239,68,68,.05);border-right:1px solid var(--line)"><div class="text-xs text-muted" style="margin-bottom:4px">快照（旧）</div>${escHtml(a) || '（空）'}</div>
+                    <div style="padding:8px 10px;font-size:12.5px;white-space:pre-wrap;background:rgba(34,197,94,.05)"><div class="text-xs text-muted" style="margin-bottom:4px">当前（新）</div>${escHtml(b) || '（空）'}</div>
+                  </div>`}
+            </div>`;
+        }).join('')}
+      </div>
+      <div style="margin-top:12px;text-align:right">
+        <button class="btn btn-sm btn-secondary" onclick="App.closeModal();App.restoreSnapshot('${contentId}',${index})">↩ 恢复此快照</button>
+        <button class="btn btn-secondary" onclick="App.closeModal()">关闭</button>
+      </div>
+    `);
+  },
+
   // AI助手
   newChat() {
     const chats = Store.data.settings.ai.chats || [];
